@@ -1,0 +1,98 @@
+.scene {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.buttons {
+    position: absolute;
+    bottom: 20px; /* Posicionado na parte inferior com 20px de distância da borda */
+    display: flex;
+    justify-content: center; /* Centraliza os botões horizontalmente */
+    align-items: center; /* Centraliza os botões verticalmente */
+    width: 100%; /* A largura é a mesma da cena para manter os botões centralizados */
+    gap: 20px; /* Espaçamento entre os botões */
+}
+
+.buttons button {
+    width: 50px; /* Largura do botão */
+    height: 50px; /* Altura do botão */
+    background-color: #000; /* Cor de fundo do botão */
+    color: #FFF; /* Cor do ícone/texto do botão */
+    font-size: 24px; /* Tamanho do ícone do botão */
+    border: none; /* Sem borda */
+    border-radius: 25px; /* Bordas arredondadas */
+    display: flex;
+    justify-content: center; /* Centraliza o ícone/texto horizontalmente */
+    align-items: center; /* Centraliza o ícone/texto verticalmente */
+    cursor: pointer; /* Cursor de mão quando o mouse está sobre o botão */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para efeito de elevação */
+    transition: transform 0.2s; /* Transição suave para transformações */
+}
+
+.buttons button:hover {
+    transform: scale(1.1); /* Efeito de aumento ao passar o mouse */
+}
+
+.buttons button:active {
+    transform: scale(0.9); /* Efeito de pressionamento quando o botão é clicado */
+}
+
+.voice-button {
+    position: absolute;
+    left: 50%; /* Centraliza horizontalmente */
+    bottom: 20px; /* Distância do fundo */
+    transform: translateX(-50%); /* Ajusta a centralização considerando a largura do botão */
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-color: red;
+    border-radius: 30px; /* Bordas arredondadas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para efeito de elevação */
+}
+
+.loading{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.text{
+    position: fixed;
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    bottom: 0;
+    left: 0;
+    background-color: white;
+    border-radius: 20px, 20px, 0, 0;
+    color: black;
+    padding: 20px;
+    animation: slideInFromBottom 1s ease;
+}
+
+/* animacao de aparecer de baixo para cima */
+@keyframes slideInFromBottom {
+    0% {
+        transform: translateY(100%);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
