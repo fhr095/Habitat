@@ -5,9 +5,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '../firebase';
 import * as TWEEN from '@tweenjs/tween.js';
+
 import LoadingScreen from '../components/LoadingScreen';
 import Message from '../components/Message';
 import VoiceButton from '../components/VoiceButton';
+
 import '../styles/SceneScreen.css';
 
 export default function SceneScreen() {
@@ -18,11 +20,11 @@ export default function SceneScreen() {
   const controls = useRef(new OrbitControls(camera.current, renderer.current.domElement));
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
-  const [locationData, setLocationData] = useState('');
+  let socket = useRef(null);
 
   useEffect(() => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
-    renderer.current.setClearColor(new THREE.Color('#008080')); // Dark green
+    renderer.current.setClearColor(new THREE.Color('#008080')); // Verde escuro
     mount.current.appendChild(renderer.current.domElement);
 
     camera.current.position.set(0, 20, 50);
@@ -36,39 +38,58 @@ export default function SceneScreen() {
 
     const loader = new GLTFLoader();
     const modelRef = ref(storage, 'model/cidade_completa_mg.glb');
-    getDownloadURL(modelRef).then(url => {
-      loader.load(url, gltf => {
-          scene.current.add(gltf.scene);
-          setIsLoading(false);
-        }, undefined, error => console.error("Error loading GLB model:", error));
-    }).catch(error => console.error("Error fetching model URL:", error));
+    getDownloadURL(modelRef)
+      .then(url => {
+        loader.load(url, gltf => {
+            scene.current.add(gltf.scene);
+            setIsLoading(false);
+          },
+          undefined,
+          error => console.error("Erro ao carregar o modelo GLB:", error)
+        );
+      })
+      .catch(error => console.error("Erro ao obter a URL do modelo:", error));
 
     window.addEventListener('resize', onWindowResize, false);
 
     return () => {
       mount.current.removeChild(renderer.current.domElement);
       window.removeEventListener('resize', onWindowResize);
+      socket.current?.close();
     };
   }, []);
 
-  const postData = (data) => {
-    fetch('https://your-endpoint.com/api', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-    .then(response => response.json())
-    .then(data => {
-      setMessage(data.message);
-      if (data.fade) {
-        focusOnLocation(data.fade);
-      }
-    })
-    .catch((error) => {
-      console.error('Error:', error);
-    });
+  let retryCount = 0;
+
+  const connectWebSocket = () => {
+    console.log("Conectando ao WebSocket...");
+    socket.current = new WebSocket("wss://roko.flowfuse.cloud/ws/centro");
+  
+    socket.current.onopen = () => {
+      console.log("Conexão WebSocket estabelecida.");
+      retryCount = 0;  // Reset retry count on successful connection
+    };
+  
+    socket.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.texto) setMessage(data.texto);
+      if (data.fade) focusOnLocation(data.fade);
+      if (data.audio) playAudio(data.audio);
+    };
+  
+    socket.current.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+  
+    socket.current.onclose = () => {
+      console.log("Conexão WebSocket fechada. Tentando reconectar...");
+      setTimeout(() => {
+        if (retryCount < 5) {  // Limit the number of retries
+          connectWebSocket();
+          retryCount++;
+        }
+      }, Math.pow(2, retryCount) * 1000);  // Exponential backoff
+    };
   };
 
   const focusOnLocation = (targetName) => {
@@ -110,6 +131,7 @@ export default function SceneScreen() {
   };
 
   useEffect(() => {
+    connectWebSocket();
     animate();
   }, []);
 
@@ -117,10 +139,12 @@ export default function SceneScreen() {
     <div ref={mount} className="scene">
       {isLoading && <LoadingScreen />}
       {message && <Message message={message} />}
-      <VoiceButton setTranscript={(transcript) => {
-        console.log("Voice transcript received:", transcript);
-        postData({ text: transcript });
-      }} />
+      <VoiceButton
+        setTranscript={(transcript) => {
+          console.log("Voice transcript received:", transcript);
+          socket.current.send(JSON.stringify({ text: transcript }));
+        }}
+      />
     </div>
   );
 }
