@@ -19,8 +19,9 @@ export default function SceneScreen() {
   const renderer = useRef(new THREE.WebGLRenderer({ antialias: true }));
   const controls = useRef(new OrbitControls(camera.current, renderer.current.domElement));
   const [isLoading, setIsLoading] = useState(true);
+  const [transcript, setTranscript] = useState('');
   const [message, setMessage] = useState('');
-  let socket = useRef(null);
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
@@ -55,40 +56,43 @@ export default function SceneScreen() {
     return () => {
       mount.current.removeChild(renderer.current.domElement);
       window.removeEventListener('resize', onWindowResize);
-      socket.current?.close();
+      socket?.close();
     };
   }, []);
 
-  let retryCount = 0;
-
   const connectWebSocket = () => {
-    console.log("Conectando ao WebSocket...");
-    socket.current = new WebSocket("wss://roko.flowfuse.cloud/ws/centro");
-  
-    socket.current.onopen = () => {
+    const webSocket = new WebSocket("wss://roko.flowfuse.cloud/ws/centro");
+    setSocket(webSocket);
+
+    webSocket.onopen = () => {
       console.log("Conexão WebSocket estabelecida.");
-      retryCount = 0;  // Reset retry count on successful connection
     };
-  
-    socket.current.onmessage = (event) => {
+
+    webSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.texto) setMessage(data.texto);
-      if (data.fade) focusOnLocation(data.fade);
-      if (data.audio) playAudio(data.audio);
+      console.log("Mensagem recebida:", data)
+
+      if (data.texto) {
+        console.log("Mensagem recebida:", data.texto);
+        setMessage(data.texto);
+      }
+      if (data.fade) {
+        focusOnLocation(data.fade);
+      }
+      if (data.audio) {
+        const audio = new Audio(data.audio);
+        audio.play();
+        audio.onended = () => setMessage("");
+      }
     };
-  
-    socket.current.onerror = (error) => {
+
+    webSocket.onerror = (error) => {
       console.error("WebSocket Error:", error);
     };
-  
-    socket.current.onclose = () => {
+
+    webSocket.onclose = () => {
       console.log("Conexão WebSocket fechada. Tentando reconectar...");
-      setTimeout(() => {
-        if (retryCount < 5) {  // Limit the number of retries
-          connectWebSocket();
-          retryCount++;
-        }
-      }, Math.pow(2, retryCount) * 1000);  // Exponential backoff
+      setTimeout(connectWebSocket, 1000);
     };
   };
 
@@ -135,15 +139,26 @@ export default function SceneScreen() {
     animate();
   }, []);
 
+  function sendText(text) {
+    if(socket){
+      console.log("Enviando mensagem:", text);
+      socket.send(JSON.stringify({text: text}));
+    }
+  }
+
+  useEffect(() => {
+    if(transcript){
+      console.log("Transcrição:", transcript);
+      sendText(transcript);
+    }
+  }, [transcript]);
+
   return (
     <div ref={mount} className="scene">
       {isLoading && <LoadingScreen />}
       {message && <Message message={message} />}
       <VoiceButton
-        setTranscript={(transcript) => {
-          console.log("Voice transcript received:", transcript);
-          socket.current.send(JSON.stringify({ text: transcript }));
-        }}
+        setTranscript={setTranscript}
       />
     </div>
   );
