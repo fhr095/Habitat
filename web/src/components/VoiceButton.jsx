@@ -57,7 +57,7 @@ export default function VoiceButton({ setTranscript }) {
         transition: "transform 0.2s",
       }}
     >
-      <FaMicrophone />
+      <FaMicrophone color="white" size={20}/>
     </button>
   );
 }
