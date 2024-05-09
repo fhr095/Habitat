@@ -24,7 +24,7 @@ export default function SceneScreen() {
 
   useEffect(() => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
-    renderer.current.setClearColor(new THREE.Color('#008080')); // Verde escuro
+    renderer.current.setClearColor(new THREE.Color('#fff')); // Verde escuro
     mount.current.appendChild(renderer.current.domElement);
 
     camera.current.position.set(0, 20, 50);

@@ -52,7 +52,8 @@
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    background-color: red;
+    background-color: #004737;
+    border: none;
     border-radius: 30px; /* Bordas arredondadas */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para efeito de elevação */
 }
