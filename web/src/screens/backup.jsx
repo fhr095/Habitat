@@ -10,9 +10,7 @@ import LoadingScreen from '../components/LoadingScreen';
 import Message from '../components/Message';
 import VoiceButton from '../components/VoiceButton';
 
-import { GoHomeFill } from "react-icons/go";
-
-import '../styles/SceneScreen.scss';
+import '../styles/SceneScreen.css';
 
 export default function SceneScreen() {
   const mount = useRef(null);
@@ -23,16 +21,14 @@ export default function SceneScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [transcript, setTranscript] = useState('');
   const [message, setMessage] = useState('');
-
-  // Definindo a posição inicial da câmera
-  const initialCameraPosition = { x: 0, y: 20, z: 50 };
-  camera.current.position.set(initialCameraPosition.x, initialCameraPosition.y, initialCameraPosition.z);
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
-    renderer.current.setClearColor(new THREE.Color('#fff'));
+    renderer.current.setClearColor(new THREE.Color('#fff')); // Verde escuro
     mount.current.appendChild(renderer.current.domElement);
 
+    camera.current.position.set(0, 20, 50);
     controls.current.enableZoom = false;
     controls.current.autoRotate = true;
     controls.current.autoRotateSpeed = 0.5;
@@ -46,87 +42,58 @@ export default function SceneScreen() {
     getDownloadURL(modelRef)
       .then(url => {
         loader.load(url, gltf => {
-          scene.current.add(gltf.scene);
-          setIsLoading(false);
-        }, undefined, error => console.error("Erro ao carregar o modelo GLB:", error));
-      }).catch(error => console.error("Erro ao obter a URL do modelo:", error));
+            scene.current.add(gltf.scene);
+            setIsLoading(false);
+          },
+          undefined,
+          error => console.error("Erro ao carregar o modelo GLB:", error)
+        );
+      })
+      .catch(error => console.error("Erro ao obter a URL do modelo:", error));
 
     window.addEventListener('resize', onWindowResize, false);
-
-    animate();
 
     return () => {
       mount.current.removeChild(renderer.current.domElement);
       window.removeEventListener('resize', onWindowResize);
+      socket?.close();
     };
   }, []);
 
-  const onWindowResize = () => {
-    camera.current.aspect = window.innerWidth / window.innerHeight;
-    camera.current.updateProjectionMatrix();
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
-  };
+  const connectWebSocket = () => {
+    const webSocket = new WebSocket("wss://roko.flowfuse.cloud/ws/centro");
+    setSocket(webSocket);
 
-  const animate = () => {
-    requestAnimationFrame(animate);
-    TWEEN.update();
-    controls.current.update();
-    renderer.current.render(scene.current, camera.current);
-  };
+    webSocket.onopen = () => {
+      console.log("Conexão WebSocket estabelecida.");
+    };
 
-  const resetCamera = () => {
-    new TWEEN.Tween(camera.current.position)
-      .to({ ...initialCameraPosition }, 2000)
-      .easing(TWEEN.Easing.Cubic.Out)
-      .onUpdate(() => controls.current.update())
-      .start();
-  };
+    webSocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Mensagem recebida:", data)
 
-  function sendPostRequest(text) {
-    console.log("Enviando requisição POST...");
-    fetch("https://roko.flowfuse.cloud/talkwithifc", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ msg: text })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log("Resposta recebida via POST:", data);
-      processServerCommands(data.comandos);
-    })
-    .catch(error => {
-      console.error('Erro ao enviar requisição POST:', error);
-    });
-  };
-
-  function sendText(text) {
-    console.log("Enviando mensagem:", text);
-    sendPostRequest(text);
-  }
-
-  useEffect(() => {
-    if (transcript) {
-      console.log("Transcrição:", transcript);
-      sendText(transcript);
-    }
-  }, [transcript]);
-
-  const processServerCommands = (commands) => {
-    commands.forEach(command => {
-      if (command.texto) {
-        setMessage(command.texto);
+      if (data.texto) {
+        console.log("Mensagem recebida:", data.texto);
+        setMessage(data.texto);
       }
-      if (command.fade) {
-        focusOnLocation(command.fade);
+      if (data.fade) {
+        focusOnLocation(data.fade);
       }
-      if (command.audio) {
-        const audio = new Audio(command.audio);
+      if (data.audio) {
+        const audio = new Audio(data.audio);
         audio.play();
         audio.onended = () => setMessage("");
       }
-    });
+    };
+
+    webSocket.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+    };
+
+    webSocket.onclose = () => {
+      console.log("Conexão WebSocket fechada. Tentando reconectar...");
+      setTimeout(connectWebSocket, 1000);
+    };
   };
 
   const focusOnLocation = (targetName) => {
@@ -154,14 +121,45 @@ export default function SceneScreen() {
     }
   };
 
+  const onWindowResize = () => {
+    camera.current.aspect = window.innerWidth / window.innerHeight;
+    camera.current.updateProjectionMatrix();
+    renderer.current.setSize(window.innerWidth, window.innerHeight);
+  };
+
+  const animate = () => {
+    requestAnimationFrame(animate);
+    TWEEN.update();
+    controls.current.update();
+    renderer.current.render(scene.current, camera.current);
+  };
+
+  useEffect(() => {
+    connectWebSocket();
+    animate();
+  }, []);
+
+  function sendText(text) {
+    if(socket){
+      console.log("Enviando mensagem:", text);
+      socket.send(JSON.stringify({text: text}));
+    }
+  }
+
+  useEffect(() => {
+    if(transcript){
+      console.log("Transcrição:", transcript);
+      sendText(transcript);
+    }
+  }, [transcript]);
+
   return (
     <div ref={mount} className="scene">
       {isLoading && <LoadingScreen />}
       {message && <Message message={message} />}
-      <div className='button-container'>
-        <button onClick={resetCamera} className="home-button"><GoHomeFill color='white' size={20}/></button>
-        <VoiceButton setTranscript={setTranscript} />
-      </div>
+      <VoiceButton
+        setTranscript={setTranscript}
+      />
     </div>
   );
 }
