@@ -22,6 +22,36 @@
       border: none;
     }
   }
+  .rating-box {
+    position: fixed;
+    height: 50px;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    p {
+      font-size: 1.2rem;
+      color: #333;
+    }
+    button {
+      background-color: transparent;
+      border: none;
+      font-size: 1.2rem;
+      color: #004736;
+      border-bottom: 1px solid #004736;
+    }
+  }
+}
+
+.star-rating span {
+  font-size: 25px;
+  cursor: pointer;
+  color: gold;
 }
 
 .loading {

@@ -5,10 +5,13 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import LoadingScreen from "../components/LoadingScreen";
 import Message from "../components/Message";
 import VoiceButton from "../components/VoiceButton";
+import ModalAssessment from "../components/ModalAssessment";
 
 import { GoHomeFill } from "react-icons/go";
 
@@ -30,8 +33,10 @@ export default function SceneScreen() {
     new OrbitControls(camera.current, renderer.current.domElement)
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [transcript, setTranscript] = useState("");
   const [message, setMessage] = useState("");
-  const [isResponseActive, setIsResponseActive] = useState(false);
+  const [messageIa, setMessageIa] = useState("");	
+  const [showModal, setShowModal] = useState(false);
 
   const initialCameraPosition = { x: 0, y: 20, z: 50 };
   camera.current.position.set(
@@ -118,7 +123,6 @@ export default function SceneScreen() {
       .then((response) => response.json())
       .then((data) => {
         processServerCommands(data.comandos);
-        setIsResponseActive(true);
       })
       .catch((error) => {
         console.error("Erro ao enviar requisição POST:", error);
@@ -130,6 +134,7 @@ export default function SceneScreen() {
       const command = commands[0];
       if (command.texto) {
         setMessage(command.texto);
+        setMessageIa(command.texto);
       }
       if (command.fade) {
         focusOnLocation(command.fade);
@@ -139,7 +144,16 @@ export default function SceneScreen() {
         audio.play();
         audio.onended = () => {
           setMessage("");
-          setIsResponseActive(false);
+          toast.info("Gostaria de avaliar a resposta?", {
+            position: "top-right",
+            autoClose: 5000,  // Disappears after 5000ms
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            onClick: handleModalOpen,
+          });
         };
       }
     }
@@ -158,7 +172,7 @@ export default function SceneScreen() {
         }
       }
     });
-  
+
     if (targetMesh) {
       const targetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(targetPosition);
@@ -174,13 +188,10 @@ export default function SceneScreen() {
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
         .onComplete(() => {
-          // Monitor response state and change opacity based on its value
-          if (!isResponseActive) { // Ensure opacity is adjusted only when the response is not active
-            const tweenOpacity = new TWEEN.Tween(targetMesh.material)
-              .to({ opacity: 0.5 }, 3000) // Adjust the duration as needed
-              .easing(TWEEN.Easing.Cubic.Out)
-              .start();
-          }
+          const tweenOpacity = new TWEEN.Tween(targetMesh.material)
+            .to({ opacity: 0.5 }, 3000) // Adjust the duration as needed
+            .easing(TWEEN.Easing.Cubic.Out)
+            .start();
         })
         .start();
     } else {
@@ -188,8 +199,18 @@ export default function SceneScreen() {
     }
   };
 
+  function handleModalOpen() {
+    setShowModal(true);
+  }
+
+  function handleModalClose() {
+    setShowModal(false);
+  }
+
   return (
     <div ref={mount} className="scene">
+      <ToastContainer />
+      <ModalAssessment show={showModal} onClose={handleModalClose} question={transcript} messageIa={messageIa} />
       {isLoading && <LoadingScreen />}
       {message && <Message message={message} />}
       <div className="button-container">
@@ -199,6 +220,7 @@ export default function SceneScreen() {
         <VoiceButton
           setTranscript={(transcript) => {
             console.log("Transcrição recebida via voz:", transcript);
+            setTranscript(transcript);
             sendPostRequest(transcript);
           }}
         />

@@ -32,7 +32,6 @@ export default function SceneScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  // Definindo a posição inicial da câmera
   const initialCameraPosition = { x: 0, y: 20, z: 50 };
   camera.current.position.set(
     initialCameraPosition.x,
@@ -63,7 +62,7 @@ export default function SceneScreen() {
             gltf.scene.traverse((object) => {
               if (object.isMesh) {
                 object.material.transparent = true;
-                object.material.opacity = 0.5; // Ajuste este valor conforme necessário para mais ou menos transparência
+                object.material.opacity = 0.5; // Initial transparency for all objects
               }
             });
             scene.current.add(gltf.scene);
@@ -117,7 +116,6 @@ export default function SceneScreen() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Resposta recebida via POST:", data);
         processServerCommands(data.comandos);
       })
       .catch((error) => {
@@ -126,7 +124,8 @@ export default function SceneScreen() {
   }
 
   const processServerCommands = (commands) => {
-    commands.forEach((command) => {
+    if (commands.length > 0) {
+      const command = commands[0];
       if (command.texto) {
         setMessage(command.texto);
       }
@@ -136,9 +135,11 @@ export default function SceneScreen() {
       if (command.audio) {
         const audio = new Audio(command.audio);
         audio.play();
-        audio.onended = () => setMessage("");
+        audio.onended = () => {
+          setMessage("");
+        };
       }
-    });
+    }
   };
 
   const focusOnLocation = (targetName) => {
@@ -149,13 +150,16 @@ export default function SceneScreen() {
         child.name.includes(targetName.replace(/\s+/g, "_"))
       ) {
         targetMesh = child;
+        if (targetMesh) {
+          targetMesh.material.opacity = 1; // Set opacity to fully opaque when focused
+        }
       }
     });
 
     if (targetMesh) {
       const targetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(targetPosition);
-      const tween = new TWEEN.Tween(camera.current.position)
+      const tweenPosition = new TWEEN.Tween(camera.current.position)
         .to(
           {
             x: targetPosition.x,
@@ -166,6 +170,12 @@ export default function SceneScreen() {
         )
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
+        .onComplete(() => {
+          const tweenOpacity = new TWEEN.Tween(targetMesh.material)
+            .to({ opacity: 0.5 }, 3000) // Adjust the duration as needed
+            .easing(TWEEN.Easing.Cubic.Out)
+            .start();
+        })
         .start();
     } else {
       console.error("Target mesh not found:", targetName);
@@ -180,10 +190,12 @@ export default function SceneScreen() {
         <button onClick={resetCamera} className="home-button">
           <GoHomeFill color="white" size={20} />
         </button>
-        <VoiceButton setTranscript={(transcript) => {
-          console.log("Transcrição recebida via voz:", transcript)
-          sendPostRequest(transcript);
-        }} />
+        <VoiceButton
+          setTranscript={(transcript) => {
+            console.log("Transcrição recebida via voz:", transcript);
+            sendPostRequest(transcript);
+          }}
+        />
       </div>
     </div>
   );
