@@ -33,6 +33,13 @@ export default function SceneScreen() {
   const [message, setMessage] = useState("");
   const [isResponseActive, setIsResponseActive] = useState(false);
 
+  const initialCameraPosition = { x: 0, y: 20, z: 50 };
+  camera.current.position.set(
+    initialCameraPosition.x,
+    initialCameraPosition.y,
+    initialCameraPosition.z
+  );
+
   useEffect(() => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
@@ -56,7 +63,7 @@ export default function SceneScreen() {
             gltf.scene.traverse((object) => {
               if (object.isMesh) {
                 object.material.transparent = true;
-                object.material.opacity = 0.5;
+                object.material.opacity = 0.5; // Initial transparency for all objects
               }
             });
             scene.current.add(gltf.scene);
@@ -69,6 +76,7 @@ export default function SceneScreen() {
       .catch((error) => console.error("Erro ao obter a URL do modelo:", error));
 
     window.addEventListener("resize", onWindowResize, false);
+
     animate();
 
     return () => {
@@ -109,9 +117,8 @@ export default function SceneScreen() {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Resposta recebida via POST:", data);
         processServerCommands(data.comandos);
-        setIsResponseActive(true); // Set response active when data is received
+        setIsResponseActive(true);
       })
       .catch((error) => {
         console.error("Erro ao enviar requisição POST:", error);
@@ -132,11 +139,8 @@ export default function SceneScreen() {
         audio.play();
         audio.onended = () => {
           setMessage("");
-          setIsResponseActive(false); // Response is no longer active when audio ends
+          setIsResponseActive(false);
         };
-      } else {
-        // If there is no audio, consider response finished after 5 seconds
-        setTimeout(() => setIsResponseActive(false), 5000);
       }
     }
   };
@@ -150,17 +154,38 @@ export default function SceneScreen() {
       ) {
         targetMesh = child;
         if (targetMesh) {
-          targetMesh.material.opacity = 1;
-          if (!isResponseActive) {
-            // Only start the opacity tween if the response is not active
-            const tweenOpacity = new TWEEN.Tween(targetMesh.material)
-              .to({ opacity: 0.5 }, 2000)
-              .easing(TWEEN.Easing.Cubic.Out)
-              .start();
-          }
+          targetMesh.material.opacity = 1; // Set opacity to fully opaque when focused
         }
       }
     });
+  
+    if (targetMesh) {
+      const targetPosition = new THREE.Vector3();
+      targetMesh.getWorldPosition(targetPosition);
+      const tweenPosition = new TWEEN.Tween(camera.current.position)
+        .to(
+          {
+            x: targetPosition.x,
+            y: targetPosition.y + 10,
+            z: targetPosition.z + 30,
+          },
+          2000
+        )
+        .easing(TWEEN.Easing.Cubic.InOut)
+        .onUpdate(() => controls.current.update())
+        .onComplete(() => {
+          // Monitor response state and change opacity based on its value
+          if (!isResponseActive) { // Ensure opacity is adjusted only when the response is not active
+            const tweenOpacity = new TWEEN.Tween(targetMesh.material)
+              .to({ opacity: 0.5 }, 3000) // Adjust the duration as needed
+              .easing(TWEEN.Easing.Cubic.Out)
+              .start();
+          }
+        })
+        .start();
+    } else {
+      console.error("Target mesh not found:", targetName);
+    }
   };
 
   return (
