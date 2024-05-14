@@ -1,10 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Switch, Link } from "react-router-dom";
-import SceneScreen from "./screens/SceneScreen";
-import ChatScreen from "./screens/ChatScreen"; // Import the ChatScreen component
-import "bootstrap/dist/css/bootstrap.min.css";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import SceneScreen from './screens/SceneScreen';
+import ChatScreen from './screens/ChatScreen';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-function App() {
+export default function App() {
   return (
     <Router>
       <div>
@@ -19,19 +19,12 @@ function App() {
           </ul>
         </nav>
 
-        {/* A <Switch> looks through its children <Route>s and
-            renders the first one that matches the current URL. */}
-        <Switch>
-          <Route path="/">
-            <SceneScreen />
-          </Route>
-          <Route path="/chat">
-            <ChatScreen />
-          </Route>
-        </Switch>
+        {/* The Routes component replaces Switch in React Router v6 */}
+        <Routes>
+          <Route path="/chat" element={<ChatScreen />} />
+          <Route path="/" element={<SceneScreen />} />
+        </Routes>
       </div>
     </Router>
   );
 }
-
-export default App;
