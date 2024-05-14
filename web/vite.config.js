@@ -1,27 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/', // Set the base path, it's important for deployment on subdirectories
   build: {
-    outDir: 'dist', // Specify the output directory (default is 'dist')
+    chunkSizeWarningLimit: 1000, // Aumenta o limite de tamanho do chunk para 1000 kB
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'), // Your main HTML entry point
-      },
-      // Additional configuration here if necessary
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom']  // Separa React e ReactDOM em um chunk próprio
+        }
+      }
     }
-  },
-  resolve: {
-    alias: {
-      // Resolve paths to avoid relative path confusion, optional
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  server: {
-    port: 3000, // Default development port; change as necessary
   }
 });

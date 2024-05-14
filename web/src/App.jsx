@@ -1,18 +1,18 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import SceneScreen from './screens/SceneScreen';
-import ChatScreen from './screens/ChatScreen';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SceneScreen from "./screens/SceneScreen";
+import ChatScreen from "./screens/ChatScreen";
+import "./App.css";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <div className='app-container'>
+    <div className="app-container">
+      <Router>
         <Routes>
           <Route path="/" element={<SceneScreen />} />
           <Route path="/chat" element={<ChatScreen />} />
         </Routes>
-      </div>
-    </BrowserRouter>
+      </Router>
+    </div>
   );
 }
