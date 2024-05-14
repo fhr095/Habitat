@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
-import { ListGroup, Container } from "react-bootstrap";
+import { Container, ListGroup } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import '../styles/ChatScreen.scss';  // Assuming you have a CSS file for additional styles
+import '../styles/ChatScreen.scss';
 
 export default function ChatScreen() {
   const [messages, setMessages] = useState([]);
@@ -18,7 +18,7 @@ export default function ChatScreen() {
       setMessages(updatedMessages);
     });
 
-    return () => unsubscribe(); // Clean up the subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -30,7 +30,7 @@ export default function ChatScreen() {
             className={`chat-message ${msg.tag === "user" ? "user-message" : "ia-message"}`}
           >
             <div className="message-content">
-              {msg.question}
+              <div className="text">{msg.question}</div>
               {msg.tag === "ia" && <div className="message-rating">Avaliação: {msg.rating}</div>}
             </div>
           </ListGroup.Item>

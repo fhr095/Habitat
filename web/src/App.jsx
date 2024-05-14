@@ -1,30 +1,18 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SceneScreen from './screens/SceneScreen';
 import ChatScreen from './screens/ChatScreen';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
 export default function App() {
   return (
-    <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/chat">Chat</Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* The Routes component replaces Switch in React Router v6 */}
+    <BrowserRouter>
+      <div className='app-container'>
         <Routes>
-          <Route path="/chat" element={<ChatScreen />} />
           <Route path="/" element={<SceneScreen />} />
+          <Route path="/chat" element={<ChatScreen />} />
         </Routes>
       </div>
-    </Router>
+    </BrowserRouter>
   );
 }
