@@ -17,30 +17,29 @@ import "../styles/SceneScreen.scss";
 export default function SceneScreen() {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
-  const camera = useRef(
-    new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    )
-  );
+  const camera = useRef(new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000));
   const renderer = useRef(new THREE.WebGLRenderer({ antialias: true }));
-  const controls = useRef(
-    new OrbitControls(camera.current, renderer.current.domElement)
-  );
+  const controls = useRef(new OrbitControls(camera.current, renderer.current.domElement));
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [transcript, setTranscript] = useState("");
 
-  const initialCameraPosition = { x: 0, y: 20, z: 50 };
-  camera.current.position.set(
-    initialCameraPosition.x,
-    initialCameraPosition.y,
-    initialCameraPosition.z
-  );
-
+  // Configure the initial camera position only once on mount
   useEffect(() => {
+    camera.current.position.set(0, 20, 50);
+    setupScene();
+    loadModel();
+    window.addEventListener("resize", onWindowResize);
+    const animateLoop = animate();  // Start the animation loop
+
+    return () => {
+      mount.current.removeChild(renderer.current.domElement);
+      window.removeEventListener("resize", onWindowResize);
+      cancelAnimationFrame(animateLoop); // Cancel the animation frame request when component unmounts
+    };
+  }, []);
+
+  const setupScene = () => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
     mount.current.appendChild(renderer.current.domElement);
@@ -52,38 +51,26 @@ export default function SceneScreen() {
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 20, 10);
     scene.current.add(light);
+  };
 
+  const loadModel = () => {
     const loader = new GLTFLoader();
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-    getDownloadURL(modelRef)
-      .then((url) => {
-        loader.load(
-          url,
-          (gltf) => {
-            gltf.scene.traverse((object) => {
-              if (object.isMesh) {
-                object.material.transparent = true;
-                object.material.opacity = 0.5; // Initial transparency for all objects
-              }
-            });
-            scene.current.add(gltf.scene);
-            setIsLoading(false);
-          },
-          undefined,
-          (error) => console.error("Erro ao carregar o modelo GLB:", error)
-        );
-      })
-      .catch((error) => console.error("Erro ao obter a URL do modelo:", error));
-
-    window.addEventListener("resize", onWindowResize, false);
-
-    animate();
-
-    return () => {
-      mount.current.removeChild(renderer.current.domElement);
-      window.removeEventListener("resize", onWindowResize);
-    };
-  }, []);
+    getDownloadURL(modelRef).then((url) => {
+      loader.load(url, (gltf) => {
+        gltf.scene.traverse((object) => {
+          if (object.isMesh) {
+            object.material.transparent = true;
+            object.material.opacity = 0.5;
+          }
+        });
+        scene.current.add(gltf.scene);
+        setIsLoading(false);
+      }, undefined, (error) => {
+        console.error("Erro ao carregar o modelo GLB:", error);
+      });
+    });
+  };
 
   const onWindowResize = () => {
     camera.current.aspect = window.innerWidth / window.innerHeight;
@@ -100,13 +87,13 @@ export default function SceneScreen() {
 
   const resetCamera = () => {
     new TWEEN.Tween(camera.current.position)
-      .to({ ...initialCameraPosition }, 2000)
+      .to({ x: 0, y: 20, z: 50 }, 2000)
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .start();
   };
 
-  function sendPostRequest(text) {
+  const sendPostRequest = (text) => {
     console.log("Enviando requisição POST...");
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
       method: "POST",
@@ -115,14 +102,14 @@ export default function SceneScreen() {
       },
       body: JSON.stringify({ msg: text }),
     })
-      .then((response) => response.json())
-      .then((data) => {
-        processServerCommands(data.comandos);
-      })
-      .catch((error) => {
-        console.error("Erro ao enviar requisição POST:", error);
-      });
-  }
+    .then(response => response.json())
+    .then(data => {
+      processServerCommands(data.comandos);
+    })
+    .catch(error => {
+      console.error("Erro ao enviar requisição POST:", error);
+    });
+  };
 
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
@@ -146,10 +133,7 @@ export default function SceneScreen() {
   const focusOnLocation = (targetName) => {
     let targetMesh = null;
     scene.current.traverse((child) => {
-      if (
-        child.isMesh &&
-        child.name.includes(targetName.replace(/\s+/g, "_"))
-      ) {
+      if (child.isMesh && child.name.includes(targetName.replace(/\s+/g, "_"))) {
         targetMesh = child;
         if (targetMesh) {
           targetMesh.material.opacity = 1; // Set opacity to fully opaque when focused
@@ -161,14 +145,11 @@ export default function SceneScreen() {
       const targetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(targetPosition);
       const tweenPosition = new TWEEN.Tween(camera.current.position)
-        .to(
-          {
-            x: targetPosition.x,
-            y: targetPosition.y + 10,
-            z: targetPosition.z + 30,
-          },
-          2000
-        )
+        .to({
+          x: targetPosition.x,
+          y: targetPosition.y + 10,
+          z: targetPosition.z + 30,
+        }, 2000)
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
         .onComplete(() => {
@@ -192,10 +173,9 @@ export default function SceneScreen() {
           <GoHomeFill color="white" size={20} />
         </button>
         <VoiceButton
-          setTranscript={(transcript) => {
-            console.log("Transcrição recebida via voz:", transcript);
-            setTranscript(transcript);
-            sendPostRequest(transcript);
+          setTranscript={(newTranscript) => {
+            setTranscript(newTranscript);
+            sendPostRequest(newTranscript);
           }}
         />
       </div>

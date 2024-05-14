@@ -1,13 +1,58 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react"; 
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
+import { toast, ToastContainer } from 'react-toastify';
 import { Button } from "react-bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { AiFillLike, AiFillDislike, AiOutlineRobot } from "react-icons/ai";
 
-import { AiFillLike, AiFillDislike } from "react-icons/ai";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Message({ iaMessage, question }) {
+  
+  useEffect(() => {
+    showToast();
+  }, [iaMessage]);
+
+  const showToast = () => {
+    toast(
+      <div>
+        <AiOutlineRobot size={24} style={{ marginRight: 10 }} />
+        <strong>{iaMessage}</strong>
+        <div style={{ marginTop: 10 }}>
+          <Button
+            variant="danger"
+            onClick={() => handleRating("Não gostei")}
+          >
+            <AiFillDislike size={24} />
+          </Button>
+          <Button
+            variant="success"
+            onClick={() => handleRating("Gostei")}
+          >
+            <AiFillLike size={24} />
+          </Button>
+        </div>
+      </div>,
+      {
+        position: "bottom-right",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: true,
+        onClose: () => {}
+      }
+    );
+  };
+
+  function handleRating(rating){
+    saveUserMessage().then(() => {
+      saveIaMessage(rating);
+    }).catch((e) => {
+      console.error("Error saving feedback: ", e);
+    });
+  };
+
   async function saveUserMessage() {
     try {
       await addDoc(collection(db, "feedback"), {
@@ -34,45 +79,9 @@ export default function Message({ iaMessage, question }) {
     }
   }
 
-  function handleDislike() {
-    saveUserMessage()
-      .then(() => {
-        saveIaMessage("Não gostei");
-      })
-      .catch((e) => {
-        console.error("Error saving feedback: ", e);
-      });
-  }
-
-  function handleLike() {
-    saveUserMessage()
-      .then(() => {
-        saveIaMessage("Gostei");
-      })
-      .catch((e) => {
-        console.error("Error saving feedback: ", e);
-      });
-  }
-
   return (
-    <div className="message-container">
-      <p>{iaMessage}</p>
-      <div className="rating-container">
-        <Button
-          variant="danger"
-          className="rating-button"
-          onClick={handleDislike}
-        >
-          <AiFillDislike size={24} />
-        </Button>
-        <Button
-          variant="success"
-          className="rating-button"
-          onClick={handleLike}
-        >
-          <AiFillLike size={24} />
-        </Button>
-      </div>
+    <div>
+      <ToastContainer />
     </div>
   );
 }
