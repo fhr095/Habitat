@@ -3,6 +3,15 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/talkwithifc': {
+        target: 'https://roko.flowfuse.cloud',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/talkwithifc/, '')
+      }
+    }
+  },
   build: {
     chunkSizeWarningLimit: 1000, // Aumenta o limite de tamanho do chunk para 1000 kB
     rollupOptions: {

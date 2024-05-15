@@ -174,6 +174,7 @@ export default function SceneScreen() {
         </button>
         <VoiceButton
           setTranscript={(newTranscript) => {
+            console.log("Transcript:", newTranscript);
             setTranscript(newTranscript);
             sendPostRequest(newTranscript);
           }}
