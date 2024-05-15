@@ -7,10 +7,11 @@ import { storage } from "../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
 
 import LoadingScreen from "../components/LoadingScreen";
+import Chat from "../components/Chat";
 import Message from "../components/Message";
 import VoiceButton from "../components/VoiceButton";
 
-import { GoHomeFill } from "react-icons/go";
+import { GoHomeFill, GoDiscussionClosed  } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
 
@@ -23,6 +24,8 @@ export default function SceneScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [transcript, setTranscript] = useState("");
+
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Configure the initial camera position only once on mount
   useEffect(() => {
@@ -167,6 +170,13 @@ export default function SceneScreen() {
   return (
     <div ref={mount} className="scene">
       {isLoading && <LoadingScreen />}
+
+      <button className='chat-button' style={chatOpen ? {right: "50%"} : {right:"0"}} onClick={() => setChatOpen(!chatOpen)}>
+        <GoDiscussionClosed color="white" size={20} />
+      </button>
+
+      {chatOpen && <Chat isOpen={chatOpen} />}
+
       {message && <Message iaMessage={message} question={transcript} />}
       <div className="button-container">
         <button onClick={resetCamera} className="home-button">
