@@ -70,38 +70,6 @@
   z-index: 1000;
 }
 
-.chat-container {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 50%;
-  height: 100vh;
-  background-color: white;
-  transition: transform 0.3s ease-in-out;
-  transform: translateX(100%);
-  overflow-y: auto;
-  z-index: 2000;
-  .message-item {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-  }
-  .message-item.user {
-    align-items: flex-end;
-    background-color: #f0f0f0; /* Fundo para mensagens do usuário */
-  }
-  .message-item.ia {
-    align-items: flex-start;
-    background-color: #d1e7dd; /* Fundo para respostas da IA */
-  }
-  .message-content {
-    max-width: 80%; /* Limita a largura da mensagem */
-  }
-}
-
-.chat-container.show {
-  transform: translateX(0);
-}
 
 .message-container {
   display: flex;
