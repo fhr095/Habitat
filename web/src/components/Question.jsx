@@ -14,14 +14,18 @@ export default function Question({ question }) {
                 closeOnClick: true,
                 draggable: true,
             });
-        } else if (question && toastId.current) {
-            toast.update(toastId.current, {
-                render: `Resposta: ${question}`,
-                type: toast.TYPE.INFO,
-                autoClose: 5000,
-                isLoading: false,
-            });
-            toastId.current = null;
+
+            setTimeout(() => {
+                if (toastId.current) {
+                    toast.update(toastId.current, {
+                        render: `Resposta: ${question}`,
+                        type: "info",
+                        autoClose: 5000,
+                        isLoading: false,
+                    });
+                    toastId.current = null;
+                }
+            }, 5000); // Fechar após 5 segundos
         }
 
         return () => {
@@ -29,7 +33,7 @@ export default function Question({ question }) {
                 toast.dismiss(toastId.current);
             }
         };
-    }, [question]); // As dependências permanecem inalteradas
+    }, [question]);
 
     return <ToastContainer />;
 }
