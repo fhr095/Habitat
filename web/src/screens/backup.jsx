@@ -2,18 +2,54 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ref, getDownloadURL } from "firebase/storage"; // Comentado para o carregamento local
-import { storage } from "../firebase"; // Comentado para o carregamento local
+import { ref, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
 
 import LoadingScreen from "../components/LoadingScreen";
 import Chat from "../components/Chat";
+import Question from "../components/Question";
 import Message from "../components/Message";
 import VoiceButton from "../components/VoiceButton";
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
+
+// Funções IndexedDB
+const openDB = (name, version) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, version);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("models")) {
+        db.createObjectStore("models");
+      }
+    };
+  });
+};
+
+const getFromDB = (db, storeName, key) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const request = store.get(key);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
+
+const saveToDB = (db, storeName, key, value) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readwrite");
+    const store = transaction.objectStore(storeName);
+    const request = store.put(value, key);
+    request.onsuccess = () => resolve();
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
 
 export default function SceneScreen({ isKioskMode }) {
   const mount = useRef(null);
@@ -24,21 +60,22 @@ export default function SceneScreen({ isKioskMode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [transcript, setTranscript] = useState("");
-
   const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     camera.current.position.set(0, 20, 50);
     setupScene();
-    loadModelFromFirebase(); // Comentado para o carregamento local
-    //loadLocalModel();
+    loadModel();
     window.addEventListener("resize", onWindowResize);
-    const animateLoop = animate();
+    const animateLoop = requestAnimationFrame(animate);
 
     return () => {
-      mount.current.removeChild(renderer.current.domElement);
+      if (mount.current && renderer.current.domElement.parentNode === mount.current) {
+        mount.current.removeChild(renderer.current.domElement);
+      }
       window.removeEventListener("resize", onWindowResize);
       cancelAnimationFrame(animateLoop);
+      disposeResources();
     };
   }, []);
 
@@ -56,43 +93,47 @@ export default function SceneScreen({ isKioskMode }) {
     scene.current.add(light);
   };
 
-  /*const loadLocalModel = () => {
-    const loader = new GLTFLoader();
-    const modelUrl = '/model/cidade_completa_mg.glb'; // Caminho do arquivo no diretório public
-    loader.load(modelUrl, (gltf) => {
-      gltf.scene.traverse((object) => {
-        if (object.isMesh) {
-          object.material.transparent = true;
-          object.material.opacity = 0.5;
-        }
-      });
-      scene.current.add(gltf.scene);
-      setIsLoading(false);
-    }, undefined, (error) => {
-      console.error("Erro ao carregar o modelo GLB:", error);
-    });
-  };*/
-
-  
-  const loadModelFromFirebase = () => {
-    const loader = new GLTFLoader();
-    const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-    getDownloadURL(modelRef).then((url) => {
-      loader.load(url, (gltf) => {
-        gltf.scene.traverse((object) => {
-          if (object.isMesh) {
-            object.material.transparent = true;
-            object.material.opacity = 0.5;
-          }
-        });
-        scene.current.add(gltf.scene);
-        setIsLoading(false);
-      }, undefined, (error) => {
-        console.error("Erro ao carregar o modelo GLB:", error);
-      });
+  const applyMaterialSettings = (gltf) => {
+    gltf.scene.traverse((object) => {
+      if (object.isMesh) {
+        object.material.transparent = true;
+        object.material.opacity = 0.5;
+      }
     });
   };
-  
+
+  const loadModel = async () => {
+    const loader = new GLTFLoader();
+    const modelRef = ref(storage, "model/cidade_completa_mg.glb");
+
+    // Abrir IndexedDB
+    const db = await openDB("ModelCache", 1);
+
+    // Verificar IndexedDB primeiro
+    const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
+    if (cachedModel) {
+      console.log("Carregando modelo a partir do cache");
+      loader.parse(cachedModel, '', (gltf) => {
+        applyMaterialSettings(gltf);
+        scene.current.add(gltf.scene);
+        setIsLoading(false);
+      });
+    } else {
+      console.log("Carregando modelo a partir do Firebase Storage");
+      getDownloadURL(modelRef).then((url) => {
+        fetch(url).then(response => response.arrayBuffer()).then(arrayBuffer => {
+          loader.parse(arrayBuffer, '', (gltf) => {
+            applyMaterialSettings(gltf);
+            scene.current.add(gltf.scene);
+            setIsLoading(false);
+            saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
+          });
+        });
+      }).catch((error) => {
+        console.error("Erro ao carregar modelo GLB:", error);
+      });
+    }
+  };
 
   const onWindowResize = () => {
     camera.current.aspect = window.innerWidth / window.innerHeight;
@@ -115,7 +156,7 @@ export default function SceneScreen({ isKioskMode }) {
       .onComplete(() => {
         scene.current.traverse((child) => {
           if (child.isMesh) {
-            child.material.opacity = 0.5; // Reseta a opacidade dos objetos
+            child.material.opacity = 0.5; // Reset object opacity
           }
         });
       })
@@ -126,13 +167,13 @@ export default function SceneScreen({ isKioskMode }) {
     let targetMesh = null;
     scene.current.traverse((child) => {
       if (child.isMesh && child.name.includes(targetName.replace(/\s+/g, "_"))) {
-        console.log(`Target mesh found: ${child.name}`); // Log do objeto encontrado
+        console.log(`Target mesh found: ${child.name}`); // Log found object
         targetMesh = child;
-        targetMesh.material = targetMesh.material.clone(); // Clona o material para evitar conflitos
-        targetMesh.material.opacity = 1; // Torna o objeto alvo opaco
+        targetMesh.material = targetMesh.material.clone(); // Clone material to avoid conflicts
+        targetMesh.material.opacity = 1; // Make target object opaque
       } else if (child.isMesh) {
-        child.material = child.material.clone(); // Clona o material para evitar conflitos
-        child.material.opacity = 0.05; // Torna o restante da cena transparente
+        child.material = child.material.clone(); // Clone material to avoid conflicts
+        child.material.opacity = 0.05; // Make the rest of the scene transparent
       }
     });
 
@@ -150,7 +191,7 @@ export default function SceneScreen({ isKioskMode }) {
         .onComplete(() => {
           setTimeout(() => {
             resetCameraAndTransparency();
-          }, 5000); // Reseta após 5 segundos
+          }, 5000); // Reset after 5 seconds
         })
         .start();
     } else {
@@ -159,7 +200,7 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const sendPostRequest = (text) => {
-    console.log("Enviando requisição POST...");
+    console.log("Sending POST request...");
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
       method: "POST",
       headers: {
@@ -188,6 +229,7 @@ export default function SceneScreen({ isKioskMode }) {
       if (command.audio) {
         const audio = new Audio(command.audio);
         audio.play();
+        setTranscript("");
         audio.onended = () => {
           setMessage("");
         };
@@ -195,15 +237,30 @@ export default function SceneScreen({ isKioskMode }) {
     }
   };
 
+  const disposeResources = () => {
+    scene.current.children.forEach(child => {
+      if (child.geometry) {
+        child.geometry.dispose();
+      }
+      if (child.material) {
+        child.material.dispose();
+      }
+    });
+    renderer.current.dispose();
+  };
+
   return (
     <div ref={mount} className={`scene ${isKioskMode ? 'kiosk-mode' : ''}`}>
       {isLoading && <LoadingScreen />}
       {!isKioskMode && (
-        <button className='chat-button' style={chatOpen ? {right: "50%"} : {right:"0"}} onClick={() => setChatOpen(!chatOpen)}>
+        <button className='chat-button' style={chatOpen ? {right: "40%"} : {right:"0"}} onClick={() => setChatOpen(!chatOpen)}>
           <GoDiscussionClosed color="white" size={20} />
         </button>
       )}
       {chatOpen && <Chat isOpen={chatOpen} />}
+
+      {transcript !== "" ? <Question question={transcript}/> : null}
+
       {message && <Message iaMessage={message} question={transcript} />}
       <div className="button-container">
         <button onClick={resetCameraAndTransparency} className="home-button">

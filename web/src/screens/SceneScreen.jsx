@@ -9,7 +9,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 import LoadingScreen from "../components/LoadingScreen";
 import Chat from "../components/Chat";
 import Question from "../components/Question";
-import Message from "../components/Message";
+import Response from "../components/Response"; // Importando o componente correto
 import VoiceButton from "../components/VoiceButton";
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
@@ -58,7 +58,7 @@ export default function SceneScreen({ isKioskMode }) {
   const renderer = useRef(new THREE.WebGLRenderer({ antialias: true }));
   const controls = useRef(new OrbitControls(camera.current, renderer.current.domElement));
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [response, setResponse] = useState([]); // Renomeando para response
   const [transcript, setTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -167,7 +167,6 @@ export default function SceneScreen({ isKioskMode }) {
     let targetMesh = null;
     scene.current.traverse((child) => {
       if (child.isMesh && child.name.includes(targetName.replace(/\s+/g, "_"))) {
-        console.log(`Target mesh found: ${child.name}`); // Log found object
         targetMesh = child;
         targetMesh.material = targetMesh.material.clone(); // Clone material to avoid conflicts
         targetMesh.material.opacity = 1; // Make target object opaque
@@ -219,21 +218,7 @@ export default function SceneScreen({ isKioskMode }) {
 
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
-      const command = commands[0];
-      if (command.texto) {
-        setMessage(command.texto);
-      }
-      if (command.fade) {
-        focusOnLocation(command.fade);
-      }
-      if (command.audio) {
-        const audio = new Audio(command.audio);
-        audio.play();
-        setTranscript("");
-        audio.onended = () => {
-          setMessage("");
-        };
-      }
+      setResponse(commands);
     }
   };
 
@@ -261,7 +246,7 @@ export default function SceneScreen({ isKioskMode }) {
 
       {transcript !== "" ? <Question question={transcript}/> : null}
 
-      {message && <Message iaMessage={message} question={transcript} />}
+      {response.length > 0 && <Response iaResponse={response} question={transcript} focusOnLocation={focusOnLocation} />}
       <div className="button-container">
         <button onClick={resetCameraAndTransparency} className="home-button">
           <GoHomeFill color="white" size={20} />
