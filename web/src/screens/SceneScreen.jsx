@@ -16,6 +16,41 @@ import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
 
+// Funções IndexedDB
+const openDB = (name, version) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, version);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("models")) {
+        db.createObjectStore("models");
+      }
+    };
+  });
+};
+
+const getFromDB = (db, storeName, key) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const request = store.get(key);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
+
+const saveToDB = (db, storeName, key, value) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readwrite");
+    const store = transaction.objectStore(storeName);
+    const request = store.put(value, key);
+    request.onsuccess = () => resolve();
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
+
 export default function SceneScreen({ isKioskMode }) {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
@@ -30,7 +65,7 @@ export default function SceneScreen({ isKioskMode }) {
   useEffect(() => {
     camera.current.position.set(0, 20, 50);
     setupScene();
-    loadModelFromFirebase();
+    loadModel();
     window.addEventListener("resize", onWindowResize);
     const animateLoop = requestAnimationFrame(animate);
 
@@ -58,23 +93,46 @@ export default function SceneScreen({ isKioskMode }) {
     scene.current.add(light);
   };
 
-  const loadModelFromFirebase = () => {
+  const applyMaterialSettings = (gltf) => {
+    gltf.scene.traverse((object) => {
+      if (object.isMesh) {
+        object.material.transparent = true;
+        object.material.opacity = 0.5;
+      }
+    });
+  };
+
+  const loadModel = async () => {
     const loader = new GLTFLoader();
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-    getDownloadURL(modelRef).then((url) => {
-      loader.load(url, (gltf) => {
-        gltf.scene.traverse((object) => {
-          if (object.isMesh) {
-            object.material.transparent = true;
-            object.material.opacity = 0.5;
-          }
-        });
+
+    // Abrir IndexedDB
+    const db = await openDB("ModelCache", 1);
+
+    // Verificar IndexedDB primeiro
+    const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
+    if (cachedModel) {
+      console.log("Carregando modelo a partir do cache");
+      loader.parse(cachedModel, '', (gltf) => {
+        applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
         setIsLoading(false);
-      }, undefined, (error) => {
-        console.error("Error loading GLB model:", error);
       });
-    });
+    } else {
+      console.log("Carregando modelo a partir do Firebase Storage");
+      getDownloadURL(modelRef).then((url) => {
+        fetch(url).then(response => response.arrayBuffer()).then(arrayBuffer => {
+          loader.parse(arrayBuffer, '', (gltf) => {
+            applyMaterialSettings(gltf);
+            scene.current.add(gltf.scene);
+            setIsLoading(false);
+            saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
+          });
+        });
+      }).catch((error) => {
+        console.error("Erro ao carregar modelo GLB:", error);
+      });
+    }
   };
 
   const onWindowResize = () => {
@@ -155,7 +213,7 @@ export default function SceneScreen({ isKioskMode }) {
       processServerCommands(data.comandos);
     })
     .catch(error => {
-      console.error("Error sending POST request:", error);
+      console.error("Erro ao enviar requisição POST:", error);
     });
   };
 
