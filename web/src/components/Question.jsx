@@ -9,7 +9,7 @@ export default function Question({ question }) {
 
   useEffect(() => {
     if (question) {
-      setNotificationMessage(`Carregando resposta para: "${question}"`);
+      setNotificationMessage(`Pensando em uma resposta para: "${question}"`);
       setShowNotification(true);
 
       const timeoutId = setTimeout(() => {
