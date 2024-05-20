@@ -19,7 +19,7 @@
   .notification-progress {
     height: 5px;
     background-color: #007bff;
-    animation: progressBar 5s linear;
+    animation: notificationProgressBar 5s linear;
   }
 }
 
@@ -44,7 +44,7 @@
   }
 }
 
-@keyframes progressBar {
+@keyframes notificationProgressBar {
   from {
     width: 100%;
   }

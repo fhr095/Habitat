@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { Button, ProgressBar } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { AiFillLike, AiFillDislike, AiOutlineRobot } from "react-icons/ai";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 import '../styles/Response.scss';
 
 export default function Response({ iaResponse, question, focusOnLocation }) {
@@ -43,9 +42,6 @@ export default function Response({ iaResponse, question, focusOnLocation }) {
   const handleNextMessage = () => {
     if (currentMessageIndex === iaResponse.length - 1) {
       setShowProgress(true);
-      setTimeout(() => {
-        setShowProgress(false);
-      }, 5000);
     }
     setCurrentMessageIndex((prevIndex) => prevIndex + 1);
   };
@@ -84,7 +80,13 @@ export default function Response({ iaResponse, question, focusOnLocation }) {
               <Button variant="success" onClick={() => saveFeedback("Gostei")}>
                 <AiFillLike size={24} />
               </Button>
-              {showProgress && <ProgressBar animated now={100} striped variant="info" />}
+            </div>
+          )}
+          {currentMessageIndex === iaResponse.length - 1 && (
+            <div className="response-progress-bar-container">
+              <div className="response-progress-bar">
+                <div className="response-progress"></div>
+              </div>
             </div>
           )}
         </div>

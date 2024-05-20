@@ -11,11 +11,8 @@ export default function Question({ question }) {
       setShowNotification(true);
 
       const timeoutId = setTimeout(() => {
-        setNotificationMessage(`Resposta: ${question}`);
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000); // Oculta a notificação após 5 segundos
-      }, 5000); // Atualiza a mensagem após 5 segundos
+        setShowNotification(false);
+      }, 5000); // Oculta a notificação após 5 segundos
 
       return () => {
         clearTimeout(timeoutId);
