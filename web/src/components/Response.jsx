@@ -6,7 +6,7 @@ import { AiFillLike, AiFillDislike, AiOutlineRobot } from "react-icons/ai";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/Response.scss';
 
-export default function Response({ iaResponse, question, focusOnLocation }) {
+export default function Response({ iaResponse, setIaReponse, question, focusOnLocation }) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -17,20 +17,26 @@ export default function Response({ iaResponse, question, focusOnLocation }) {
 
       setShowMessage(true);
 
+      const handleAudioEnd = () => {
+        if (currentMessageIndex === iaResponse.length - 1) {
+          setShowProgress(true);
+          setTimeout(() => {
+            setShowProgress(false);
+            setShowMessage(false);
+            setIaReponse([]);
+          }, 5000); // Barra de progresso visível por 5 segundos
+        } else {
+          setShowMessage(false);
+          handleNextMessage();
+        }
+      };
+
       if (audioUrl) {
         const audio = new Audio(audioUrl);
         audio.play();
-        audio.onended = () => {
-          setTimeout(() => {
-            setShowMessage(false);
-            handleNextMessage();
-          }, 1000);
-        };
+        audio.onended = handleAudioEnd;
       } else {
-        setTimeout(() => {
-          setShowMessage(false);
-          handleNextMessage();
-        }, duration);
+        setTimeout(handleAudioEnd, duration);
       }
 
       if (fadeTarget) {
@@ -40,9 +46,6 @@ export default function Response({ iaResponse, question, focusOnLocation }) {
   }, [currentMessageIndex, iaResponse, focusOnLocation]);
 
   const handleNextMessage = () => {
-    if (currentMessageIndex === iaResponse.length - 1) {
-      setShowProgress(true);
-    }
     setCurrentMessageIndex((prevIndex) => prevIndex + 1);
   };
 
@@ -82,7 +85,7 @@ export default function Response({ iaResponse, question, focusOnLocation }) {
               </Button>
             </div>
           )}
-          {currentMessageIndex === iaResponse.length - 1 && (
+          {currentMessageIndex === iaResponse.length - 1 && showProgress && (
             <div className="response-progress-bar-container">
               <div className="response-progress-bar">
                 <div className="response-progress"></div>

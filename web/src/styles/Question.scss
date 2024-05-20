@@ -1,25 +1,48 @@
-.notification-container {
+.notification-wrapper {
   position: fixed;
   bottom: 20px;
   right: 20px;
+  display: flex;
+  align-items: center;
   z-index: 1000;
-  max-width: 300px;
-  padding: 20px;
-  background-color: #333;
-  color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   animation: slideIn 0.5s ease-in-out, fadeOut 5s ease-in-out;
-  z-index: 1500;
 
-  .notification-message {
-    margin-bottom: 10px;
+  .robot-icon {
+    margin-right: 10px;
   }
 
-  .notification-progress {
-    height: 5px;
-    background-color: #007bff;
-    animation: notificationProgressBar 5s linear;
+  .notification-container {
+    position: relative;
+    max-width: 300px;
+    padding: 20px;
+    background-color: #333;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+    .notification-message {
+      margin-bottom: 10px;
+    }
+
+    .loading-icon {
+      display: flex;
+      align-items: center;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -10px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border: 10px solid transparent;
+      border-right-color: #333;
+      border-left: 0;
+      margin-top: -10px;
+      margin-left: -10px;
+    }
   }
 }
 
@@ -41,14 +64,6 @@
   }
   100% {
     opacity: 0;
-  }
-}
-
-@keyframes notificationProgressBar {
-  from {
-    width: 100%;
-  }
-  to {
-    width: 0;
+    display: none;
   }
 }

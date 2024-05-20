@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { AiOutlineRobot } from "react-icons/ai";
+import { ClipLoader } from 'react-spinners';
 import '../styles/Question.scss';
 
 export default function Question({ question }) {
@@ -24,9 +26,14 @@ export default function Question({ question }) {
   return (
     <div>
       {showNotification && (
-        <div className="notification-container">
-          <div className="notification-message">{notificationMessage}</div>
-          <div className="notification-progress"></div>
+        <div className="notification-wrapper">
+          <AiOutlineRobot size={50} className="robot-icon" />
+          <div className="notification-container">
+            <div className="notification-message">{notificationMessage}</div>
+            <div className="loading-icon">
+              <ClipLoader color={"#ffffff"} size={24} />
+            </div>
+          </div>
         </div>
       )}
     </div>

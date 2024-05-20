@@ -195,11 +195,11 @@ export default function SceneScreen({ isKioskMode }) {
         .start();
     } else {
       console.error("Target mesh not found:", targetName);
+      resetCameraAndTransparency();
     }
   };
 
   const sendPostRequest = (text) => {
-    console.log("Sending POST request...");
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
       method: "POST",
       headers: {
@@ -246,14 +246,13 @@ export default function SceneScreen({ isKioskMode }) {
 
       {transcript !== "" ? <Question question={transcript}/> : null}
 
-      {response.length > 0 && <Response iaResponse={response} question={transcript} focusOnLocation={focusOnLocation} />}
+      {response.length > 0 && <Response iaResponse={response} setIaReponse={setResponse} question={transcript} focusOnLocation={focusOnLocation} />}
       <div className="button-container">
         <button onClick={resetCameraAndTransparency} className="home-button">
           <GoHomeFill color="white" size={20} />
         </button>
         <VoiceButton
           setTranscript={(newTranscript) => {
-            console.log("Transcript:", newTranscript);
             setTranscript(newTranscript);
             sendPostRequest(newTranscript);
           }}
