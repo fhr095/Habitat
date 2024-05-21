@@ -57,6 +57,9 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
         ratings: rating,
         timestamp: serverTimestamp(),
       });
+      setShowProgress(false);
+      setShowMessage(false);
+      setIaReponse([]);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
