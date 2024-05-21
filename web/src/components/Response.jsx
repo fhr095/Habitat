@@ -84,14 +84,15 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
           <div className="pagination">
             {currentMessageIndex + 1} / {iaResponse.length}
           </div>
-          <div className="navigation-buttons">
+          {/* CODIGO DE NAVEGACAO ENTRE BALOES DE RESPOSTAS */}
+          {/* <div className="navigation-buttons">
             <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
               <AiOutlineArrowLeft size={24} />
             </Button>
             <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
               <AiOutlineArrowRight size={24} />
             </Button>
-          </div>
+          </div> */}
           {currentMessageIndex === iaResponse.length - 1 && (
             <div className="feedback-buttons-container">
               <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
