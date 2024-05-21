@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "react-bootstrap";
-import { AiFillLike, AiFillDislike, AiOutlineRobot } from "react-icons/ai";
+import { AiFillLike, AiFillDislike, AiOutlineRobot, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/Response.scss';
 
@@ -49,6 +49,12 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
     setCurrentMessageIndex((prevIndex) => prevIndex + 1);
   };
 
+  const handlePreviousMessage = () => {
+    if (currentMessageIndex > 0) {
+      setCurrentMessageIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
   const saveFeedback = async (rating) => {
     try {
       await addDoc(collection(db, "feedback"), {
@@ -78,8 +84,16 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
           <div className="pagination">
             {currentMessageIndex + 1} / {iaResponse.length}
           </div>
+          <div className="navigation-buttons">
+            <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
+              <AiOutlineArrowLeft size={24} />
+            </Button>
+            <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
+              <AiOutlineArrowRight size={24} />
+            </Button>
+          </div>
           {currentMessageIndex === iaResponse.length - 1 && (
-            <div className="buttons-container">
+            <div className="feedback-buttons-container">
               <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
                 <AiFillDislike size={24} />
               </Button>

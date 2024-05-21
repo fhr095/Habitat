@@ -31,10 +31,35 @@
       font-size: 12px;
     }
 
-    .buttons-container {
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      padding: 0 20px;
+
+      button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .feedback-buttons-container {
       display: flex;
       justify-content: space-around;
       margin-top: 10px;
+
+      button {
+        margin: 0 5px;
+      }
     }
 
     .response-progress-bar-container {
@@ -42,6 +67,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
+
       .response-progress-bar {
         height: 10px;
         background-color: #e0e0e0;
