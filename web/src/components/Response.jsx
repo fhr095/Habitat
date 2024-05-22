@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "react-bootstrap";
@@ -10,6 +10,8 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const audioRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     if (iaResponse.length > 0 && currentMessageIndex < iaResponse.length) {
@@ -20,7 +22,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
       const handleAudioEnd = () => {
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
             setIaReponse([]);
@@ -33,25 +35,50 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
 
       if (audioUrl) {
         const audio = new Audio(audioUrl);
+        audioRef.current = audio;
         audio.play();
         audio.onended = handleAudioEnd;
       } else {
-        setTimeout(handleAudioEnd, duration);
+        timeoutRef.current = setTimeout(handleAudioEnd, duration);
       }
 
       if (fadeTarget) {
         focusOnLocation(fadeTarget);
       }
     }
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
   }, [currentMessageIndex, iaResponse, focusOnLocation]);
 
   const handleNextMessage = () => {
+    stopCurrentExecution();
     setCurrentMessageIndex((prevIndex) => prevIndex + 1);
   };
 
   const handlePreviousMessage = () => {
     if (currentMessageIndex > 0) {
+      stopCurrentExecution();
       setCurrentMessageIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
+  const stopCurrentExecution = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
   };
 
@@ -84,15 +111,14 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
           <div className="pagination">
             {currentMessageIndex + 1} / {iaResponse.length}
           </div>
-          {/* CODIGO DE NAVEGACAO ENTRE BALOES DE RESPOSTAS */}
-          {/* <div className="navigation-buttons">
+          <div className="navigation-buttons">
             <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
               <AiOutlineArrowLeft size={24} />
             </Button>
             <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
               <AiOutlineArrowRight size={24} />
             </Button>
-          </div> */}
+          </div>
           {currentMessageIndex === iaResponse.length - 1 && (
             <div className="feedback-buttons-container">
               <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
