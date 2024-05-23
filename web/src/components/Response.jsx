@@ -6,7 +6,7 @@ import { AiFillLike, AiFillDislike, AiOutlineRobot, AiOutlineArrowLeft, AiOutlin
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/Response.scss';
 
-export default function Response({ iaResponse, setIaReponse, question, focusOnLocation }) {
+export default function Response({ iaResponse, setIaReponse, question, focusOnLocation, onFinish }) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
@@ -26,6 +26,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
             setShowProgress(false);
             setShowMessage(false);
             setIaReponse([]);
+            if (onFinish) onFinish(); // Chama onFinish quando a resposta termina
           }, 5000); // Barra de progresso visível por 5 segundos
         } else {
           setShowMessage(false);
@@ -57,7 +58,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
         timeoutRef.current = null;
       }
     };
-  }, [currentMessageIndex, iaResponse, focusOnLocation]);
+  }, [currentMessageIndex, iaResponse, focusOnLocation, onFinish]);
 
   const handleNextMessage = () => {
     stopCurrentExecution();
@@ -93,6 +94,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
       setShowProgress(false);
       setShowMessage(false);
       setIaReponse([]);
+      if (onFinish) onFinish(); // Chama onFinish quando o feedback termina
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -101,41 +103,43 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
   return (
     <div className="response-container">
       {showMessage && (
-        <div className="message-container">
-          <div className="response">
-            <div className="bot-icon">
-              <AiOutlineRobot size={24} color="white" />
+        <div className="message-wrapper">
+          <div className="bot-icon">
+            <AiOutlineRobot size={24} color="black" />
+          </div>
+          <div className="message-container">
+            <div className="response">
+              <p>{iaResponse[currentMessageIndex].texto}</p>
             </div>
-            <p>{iaResponse[currentMessageIndex].texto}</p>
-          </div>
-          <div className="pagination">
-            {currentMessageIndex + 1} / {iaResponse.length}
-          </div>
-          <div className="navigation-buttons">
-            <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
-              <AiOutlineArrowLeft size={24} />
-            </Button>
-            <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
-              <AiOutlineArrowRight size={24} />
-            </Button>
-          </div>
-          {currentMessageIndex === iaResponse.length - 1 && (
-            <div className="feedback-buttons-container">
-              <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
-                <AiFillDislike size={24} />
+            <div className="pagination">
+              {currentMessageIndex + 1} / {iaResponse.length}
+            </div>
+            <div className="navigation-buttons">
+              <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
+                <AiOutlineArrowLeft size={24} />
               </Button>
-              <Button variant="success" onClick={() => saveFeedback("Gostei")}>
-                <AiFillLike size={24} />
+              <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
+                <AiOutlineArrowRight size={24} />
               </Button>
             </div>
-          )}
-          {currentMessageIndex === iaResponse.length - 1 && showProgress && (
-            <div className="response-progress-bar-container">
-              <div className="response-progress-bar">
-                <div className="response-progress"></div>
+            {currentMessageIndex === iaResponse.length - 1 && (
+              <div className="feedback-buttons-container">
+                <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
+                  <AiFillDislike size={24} />
+                </Button>
+                <Button variant="success" onClick={() => saveFeedback("Gostei")}>
+                  <AiFillLike size={24} />
+                </Button>
               </div>
-            </div>
-          )}
+            )}
+            {currentMessageIndex === iaResponse.length - 1 && showProgress && (
+              <div className="response-progress-bar-container">
+                <div className="response-progress-bar">
+                  <div className="response-progress"></div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

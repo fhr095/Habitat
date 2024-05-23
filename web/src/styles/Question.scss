@@ -1,44 +1,32 @@
 .notification-wrapper {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   z-index: 1000;
   animation: slideIn 0.5s ease-in-out, fadeOut 5s ease-in-out;
 
   .notification-container {
-    display: flex;
-    align-items: center;
-    background-color: #333;
+    background-color: #004736;
     color: white;
     padding: 10px 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
     position: relative;
-    gap: 10px;
 
     .notification-message {
       white-space: nowrap;
     }
 
-    .loading-icon {
-      display: flex;
-      align-items: center;
-    }
-
-    &::before {
+    &::after {
       content: '';
       position: absolute;
       top: 50%;
-      left: -7px; /* Adjusting position to better align with the icon */
+      right: -7px; /* Adjusting the position for better alignment */
       transform: translateY(-50%);
       width: 0;
       height: 0;
       border: 10px solid transparent;
-      border-right-color: #333;
-      border-left: 0;
+      border-left-color: #004736;
+      border-right: 0;
     }
   }
 }
@@ -64,3 +52,4 @@
     display: none;
   }
 }
+

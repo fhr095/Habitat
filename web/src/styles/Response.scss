@@ -1,85 +1,105 @@
 .response-container {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 500px;
+  width: 100%;
   z-index: 2000;
 
-  .message-container {
-    background-color: #333;
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.5s ease-in-out, slideUp 0.5s ease-in-out;
-    position: relative;
-
-    .response {
-      display: flex;
-      align-items: center;
-
-      .bot-icon {
-        margin-right: 10px;
-      }
+  .message-wrapper {
+    display: flex;
+    align-items: center;
+    
+    .bot-icon {
+      margin-right: 10px;
+      background-color: #d4d4d4;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      position: relative;
     }
 
-    .pagination {
-      margin-top: 10px;
-      text-align: right;
-      font-size: 12px;
-    }
+    .message-container {
+      width: 80%;
+      background-color: #d4d4d4;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.5s ease-in-out, slideUp 0.5s ease-in-out;
+      position: relative;
 
-    .navigation-buttons {
-      display: flex;
-      justify-content: space-between;
-      position: absolute;
-      bottom: 10px;
-      width: 100%;
-      padding: 0 20px;
-
-      button {
-        background: none;
-        border: none;
-        color: white;
-        cursor: pointer;
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
+      .response {
+        p {
+          margin: 0;
         }
       }
-    }
 
-    .feedback-buttons-container {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-
-      button {
-        margin: 0 5px;
+      .pagination {
+        margin-top: 10px;
+        text-align: right;
+        font-size: 12px;
       }
-    }
 
-    .response-progress-bar-container {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
+      .navigation-buttons {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        display: flex;
+        justify-content: space-between;
 
-      .response-progress-bar {
-        height: 10px;
-        background-color: #e0e0e0;
-        border-radius: 0 0 10px 10px;
-        overflow: hidden;
+        button {
+          background: none;
+          border: none;
+          color: black;
+          cursor: pointer;
 
-        .response-progress {
-          height: 100%;
-          width: 100%;
-          background-color: #007bff;
-          animation: responseProgressBar 5s linear;
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
         }
+      }
+
+      .feedback-buttons-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 10px;
+
+        button {
+          margin: 0 5px;
+        }
+      }
+
+      .response-progress-bar-container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+
+        .response-progress-bar {
+          height: 10px;
+          background-color: #e0e0e0;
+          border-radius: 0 0 10px 10px;
+          overflow: hidden;
+
+          .response-progress {
+            height: 100%;
+            width: 100%;
+            background-color: #007bff;
+            animation: responseProgressBar 5s linear;
+          }
+        }
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: -7px;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border: 10px solid transparent;
+        border-right-color: #d4d4d4;
+        border-left: 0;
       }
     }
   }

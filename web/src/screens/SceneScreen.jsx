@@ -9,14 +9,13 @@ import * as TWEEN from "@tweenjs/tween.js";
 import LoadingScreen from "../components/LoadingScreen";
 import Chat from "../components/Chat";
 import Question from "../components/Question";
-import Response from "../components/Response"; // Importando o componente correto
+import Response from "../components/Response";
 import VoiceButton from "../components/VoiceButton";
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
 
-// Funções IndexedDB
 const openDB = (name, version) => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name, version);
@@ -54,13 +53,23 @@ const saveToDB = (db, storeName, key, value) => {
 export default function SceneScreen({ isKioskMode }) {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
-  const camera = useRef(new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000));
+  const camera = useRef(
+    new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    )
+  );
   const renderer = useRef(new THREE.WebGLRenderer({ antialias: true }));
-  const controls = useRef(new OrbitControls(camera.current, renderer.current.domElement));
+  const controls = useRef(
+    new OrbitControls(camera.current, renderer.current.domElement)
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [response, setResponse] = useState([]); // Renomeando para response
+  const [response, setResponse] = useState([]);
   const [transcript, setTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
+  const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
 
   useEffect(() => {
     camera.current.position.set(0, 20, 50);
@@ -70,7 +79,10 @@ export default function SceneScreen({ isKioskMode }) {
     const animateLoop = requestAnimationFrame(animate);
 
     return () => {
-      if (mount.current && renderer.current.domElement.parentNode === mount.current) {
+      if (
+        mount.current &&
+        renderer.current.domElement.parentNode === mount.current
+      ) {
         mount.current.removeChild(renderer.current.domElement);
       }
       window.removeEventListener("resize", onWindowResize);
@@ -106,32 +118,34 @@ export default function SceneScreen({ isKioskMode }) {
     const loader = new GLTFLoader();
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
 
-    // Abrir IndexedDB
     const db = await openDB("ModelCache", 1);
 
-    // Verificar IndexedDB primeiro
     const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
     if (cachedModel) {
       console.log("Carregando modelo a partir do cache");
-      loader.parse(cachedModel, '', (gltf) => {
+      loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
         setIsLoading(false);
       });
     } else {
       console.log("Carregando modelo a partir do Firebase Storage");
-      getDownloadURL(modelRef).then((url) => {
-        fetch(url).then(response => response.arrayBuffer()).then(arrayBuffer => {
-          loader.parse(arrayBuffer, '', (gltf) => {
-            applyMaterialSettings(gltf);
-            scene.current.add(gltf.scene);
-            setIsLoading(false);
-            saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
-          });
+      getDownloadURL(modelRef)
+        .then((url) => {
+          fetch(url)
+            .then((response) => response.arrayBuffer())
+            .then((arrayBuffer) => {
+              loader.parse(arrayBuffer, "", (gltf) => {
+                applyMaterialSettings(gltf);
+                scene.current.add(gltf.scene);
+                setIsLoading(false);
+                saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
+              });
+            });
+        })
+        .catch((error) => {
+          console.error("Erro ao carregar modelo GLB:", error);
         });
-      }).catch((error) => {
-        console.error("Erro ao carregar modelo GLB:", error);
-      });
     }
   };
 
@@ -156,7 +170,7 @@ export default function SceneScreen({ isKioskMode }) {
       .onComplete(() => {
         scene.current.traverse((child) => {
           if (child.isMesh) {
-            child.material.opacity = 0.5; // Reset object opacity
+            child.material.opacity = 0.5;
           }
         });
       })
@@ -166,13 +180,16 @@ export default function SceneScreen({ isKioskMode }) {
   const focusOnLocation = (targetName) => {
     let targetMesh = null;
     scene.current.traverse((child) => {
-      if (child.isMesh && child.name.includes(targetName.replace(/\s+/g, "_"))) {
+      if (
+        child.isMesh &&
+        child.name.includes(targetName.replace(/\s+/g, "_"))
+      ) {
         targetMesh = child;
-        targetMesh.material = targetMesh.material.clone(); // Clone material to avoid conflicts
-        targetMesh.material.opacity = 1; // Make target object opaque
+        targetMesh.material = targetMesh.material.clone();
+        targetMesh.material.opacity = 1;
       } else if (child.isMesh) {
-        child.material = child.material.clone(); // Clone material to avoid conflicts
-        child.material.opacity = 0.05; // Make the rest of the scene transparent
+        child.material = child.material.clone();
+        child.material.opacity = 0.05;
       }
     });
 
@@ -180,17 +197,20 @@ export default function SceneScreen({ isKioskMode }) {
       const targetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(targetPosition);
       const tweenPosition = new TWEEN.Tween(camera.current.position)
-        .to({
-          x: targetPosition.x,
-          y: targetPosition.y + 10,
-          z: targetPosition.z + 30,
-        }, 2000)
+        .to(
+          {
+            x: targetPosition.x,
+            y: targetPosition.y + 5,
+            z: targetPosition.z + 10,
+          },
+          2000
+        )
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
         .onComplete(() => {
           setTimeout(() => {
             resetCameraAndTransparency();
-          }, 5000); // Reset after 5 seconds
+          }, 5000);
         })
         .start();
     } else {
@@ -207,13 +227,13 @@ export default function SceneScreen({ isKioskMode }) {
       },
       body: JSON.stringify({ msg: text }),
     })
-    .then(response => response.json())
-    .then(data => {
-      processServerCommands(data.comandos);
-    })
-    .catch(error => {
-      console.error("Erro ao enviar requisição POST:", error);
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        processServerCommands(data.comandos);
+      })
+      .catch((error) => {
+        console.error("Erro ao enviar requisição POST:", error);
+      });
   };
 
   const processServerCommands = (commands) => {
@@ -223,7 +243,7 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const disposeResources = () => {
-    scene.current.children.forEach(child => {
+    scene.current.children.forEach((child) => {
       if (child.geometry) {
         child.geometry.dispose();
       }
@@ -235,18 +255,33 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   return (
-    <div ref={mount} className={`scene ${isKioskMode ? 'kiosk-mode' : ''}`}>
+    <div ref={mount} className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}>
       {isLoading && <LoadingScreen />}
       {!isKioskMode && (
-        <button className='chat-button' style={chatOpen ? {right: "40%"} : {right:"0"}} onClick={() => setChatOpen(!chatOpen)}>
+        <button
+          className="chat-button"
+          style={chatOpen ? { right: "40%" } : { right: "0" }}
+          onClick={() => setChatOpen(!chatOpen)}
+        >
           <GoDiscussionClosed color="white" size={20} />
         </button>
       )}
       {chatOpen && <Chat isOpen={chatOpen} />}
 
-      {transcript !== "" ? <Question question={transcript}/> : null}
+      <div className="box-question-response">
+        {transcript !== "" ? <Question question={transcript} showNotification={showQuestionAndResponse} /> : null}
 
-      {response.length > 0 && <Response iaResponse={response} setIaReponse={setResponse} question={transcript} focusOnLocation={focusOnLocation} />}
+        {response.length > 0 && (
+          <Response
+            iaResponse={response}
+            setIaReponse={setResponse}
+            question={transcript}
+            focusOnLocation={focusOnLocation}
+            onFinish={() => setShowQuestionAndResponse(false)}
+          />
+        )}
+      </div>
+
       <div className="button-container">
         <button onClick={resetCameraAndTransparency} className="home-button">
           <GoHomeFill color="white" size={20} />
@@ -254,6 +289,7 @@ export default function SceneScreen({ isKioskMode }) {
         <VoiceButton
           setTranscript={(newTranscript) => {
             setTranscript(newTranscript);
+            setShowQuestionAndResponse(true);
             sendPostRequest(newTranscript);
           }}
         />
