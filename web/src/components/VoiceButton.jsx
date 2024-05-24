@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 
-export default function VoiceButton({ setTranscript }) {
+export default function VoiceButton({ setTranscript, isDisabled }) {
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState(null);
 
@@ -56,6 +56,7 @@ export default function VoiceButton({ setTranscript }) {
         transform: isRecording ? "scale(0.9)" : "scale(1)",
         transition: "transform 0.2s",
       }}
+      disabled={isDisabled} // Desabilitar botão quando isDisabled for true
     >
       <FaMicrophone color="white" size={20} />
     </button>

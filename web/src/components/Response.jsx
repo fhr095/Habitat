@@ -94,6 +94,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
       setShowProgress(false);
       setShowMessage(false);
       setIaReponse([]);
+      console.log("Feedback added successfully");
       if (onFinish) onFinish(); // Chama onFinish quando o feedback termina
     } catch (e) {
       console.error("Error adding document: ", e);

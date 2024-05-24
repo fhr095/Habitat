@@ -70,6 +70,7 @@ export default function SceneScreen({ isKioskMode }) {
   const [transcript, setTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desabilitar o botão
 
   useEffect(() => {
     camera.current.position.set(0, 20, 50);
@@ -112,6 +113,7 @@ export default function SceneScreen({ isKioskMode }) {
         object.material.opacity = 0.5;
       }
     });
+    gltf.scene.position.x -= 20;
   };
 
   const loadModel = async () => {
@@ -239,6 +241,7 @@ export default function SceneScreen({ isKioskMode }) {
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
       setResponse(commands);
+      setIsButtonDisabled(true); // Desabilitar botão ao iniciar resposta
     }
   };
 
@@ -277,7 +280,10 @@ export default function SceneScreen({ isKioskMode }) {
             setIaReponse={setResponse}
             question={transcript}
             focusOnLocation={focusOnLocation}
-            onFinish={() => setShowQuestionAndResponse(false)}
+            onFinish={() => {
+              setShowQuestionAndResponse(false);
+              setIsButtonDisabled(false); // Habilitar botão ao finalizar resposta
+            }}
           />
         )}
       </div>
@@ -292,6 +298,7 @@ export default function SceneScreen({ isKioskMode }) {
             setShowQuestionAndResponse(true);
             sendPostRequest(newTranscript);
           }}
+          isDisabled={isButtonDisabled} // Passar estado de desabilitação para VoiceButton
         />
       </div>
     </div>

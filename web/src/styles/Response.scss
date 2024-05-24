@@ -24,6 +24,7 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       animation: fadeIn 0.5s ease-in-out, slideUp 0.5s ease-in-out;
       position: relative;
+      z-index: 1; /* Adicionando z-index para garantir que a mensagem esteja no plano correto */
 
       .response {
         p {
@@ -44,6 +45,7 @@
         right: 10px;
         display: flex;
         justify-content: space-between;
+        z-index: 1; /* Adicionando z-index para garantir que os botões estejam na frente */
 
         button {
           background: none;
@@ -62,9 +64,11 @@
         display: flex;
         justify-content: space-around;
         margin-top: 10px;
+        z-index: 2; /* Adicionando z-index para garantir que os botões estejam na frente */
 
         button {
           margin: 0 5px;
+          cursor: pointer;
         }
       }
 
