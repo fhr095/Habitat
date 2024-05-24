@@ -213,6 +213,7 @@ export default function SceneScreen({ isKioskMode }) {
         targetMesh = child;
         targetMesh.material = targetMesh.material.clone();
         targetMesh.material.opacity = 1;
+        console.log("Target mesh found:", targetMesh);
       } else if (child.isMesh) {
         child.material = child.material.clone();
         child.material.opacity = 0.05;
@@ -267,6 +268,7 @@ export default function SceneScreen({ isKioskMode }) {
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
       setResponse(commands);
+      console.log("Resposta da ia:", commands);
       setIsButtonDisabled(true); // Desabilitar botão ao iniciar resposta
       setIsResponseLoading(false); // Desabilitar o carregamento
     }
