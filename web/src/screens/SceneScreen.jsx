@@ -10,6 +10,7 @@ import LoadingScreen from "../components/LoadingScreen";
 import Chat from "../components/Chat";
 import Question from "../components/Question";
 import Response from "../components/Response";
+import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
@@ -71,6 +72,7 @@ export default function SceneScreen({ isKioskMode }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desabilitar o botão
+  const [isResponseLoading, setIsResponseLoading] = useState(false); // Estado para indicar carregamento da resposta
 
   useEffect(() => {
     camera.current.position.set(0, 20, 50);
@@ -242,6 +244,7 @@ export default function SceneScreen({ isKioskMode }) {
     if (commands.length > 0) {
       setResponse(commands);
       setIsButtonDisabled(true); // Desabilitar botão ao iniciar resposta
+      setIsResponseLoading(false); // Desabilitar o carregamento
     }
   };
 
@@ -274,6 +277,7 @@ export default function SceneScreen({ isKioskMode }) {
       <div className="box-question-response">
         {transcript !== "" ? <Question question={transcript} showNotification={showQuestionAndResponse} /> : null}
 
+        {isResponseLoading && <LoadingResponse />} {/* Mostrar LoadingResponse enquanto carrega */}
         {response.length > 0 && (
           <Response
             iaResponse={response}
@@ -296,6 +300,7 @@ export default function SceneScreen({ isKioskMode }) {
           setTranscript={(newTranscript) => {
             setTranscript(newTranscript);
             setShowQuestionAndResponse(true);
+            setIsResponseLoading(true); // Ativar carregamento ao enviar a pergunta
             sendPostRequest(newTranscript);
           }}
           isDisabled={isButtonDisabled} // Passar estado de desabilitação para VoiceButton
