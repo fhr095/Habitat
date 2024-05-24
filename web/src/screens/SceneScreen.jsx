@@ -166,9 +166,9 @@ export default function SceneScreen({ isKioskMode }) {
     renderer.current.render(scene.current, camera.current);
   };
 
-  const resetCameraAndTransparency = () => {
+  const resetCameraAndTransparency = (duration = 2000) => {
     new TWEEN.Tween(camera.current.position)
-      .to({ x: 0, y: 20, z: 50 }, 2000)
+      .to({ x: 0, y: 20, z: 50 }, duration)
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .onComplete(() => {
@@ -181,7 +181,7 @@ export default function SceneScreen({ isKioskMode }) {
       .start();
   };
 
-  const focusOnLocation = (targetName) => {
+  const focusOnLocation = (targetName, duration) => {
     let targetMesh = null;
     scene.current.traverse((child) => {
       if (
@@ -207,19 +207,19 @@ export default function SceneScreen({ isKioskMode }) {
             y: targetPosition.y + 5,
             z: targetPosition.z + 10,
           },
-          2000
+          duration
         )
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
         .onComplete(() => {
           setTimeout(() => {
-            resetCameraAndTransparency();
+            resetCameraAndTransparency(duration);
           }, 5000);
         })
         .start();
     } else {
       console.error("Target mesh not found:", targetName);
-      resetCameraAndTransparency();
+      resetCameraAndTransparency(duration);
     }
   };
 
@@ -283,7 +283,7 @@ export default function SceneScreen({ isKioskMode }) {
             iaResponse={response}
             setIaReponse={setResponse}
             question={transcript}
-            focusOnLocation={focusOnLocation}
+            focusOnLocation={(targetName, duration) => focusOnLocation(targetName, duration)}
             onFinish={() => {
               setShowQuestionAndResponse(false);
               setIsButtonDisabled(false); // Habilitar botão ao finalizar resposta

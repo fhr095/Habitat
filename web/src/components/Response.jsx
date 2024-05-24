@@ -44,7 +44,7 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
       }
 
       if (fadeTarget) {
-        focusOnLocation(fadeTarget);
+        focusOnLocation(fadeTarget, duration);
       }
     }
 
