@@ -66,6 +66,8 @@ export default function SceneScreen({ isKioskMode }) {
   const controls = useRef(
     new OrbitControls(camera.current, renderer.current.domElement)
   );
+  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50)); // Armazenar a posição inicial da câmera
+  const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0)); // Armazenar o alvo inicial dos controles
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
   const [transcript, setTranscript] = useState("");
@@ -75,7 +77,8 @@ export default function SceneScreen({ isKioskMode }) {
   const [isResponseLoading, setIsResponseLoading] = useState(false); // Estado para indicar carregamento da resposta
 
   useEffect(() => {
-    camera.current.position.set(0, 20, 50);
+    camera.current.position.copy(initialCameraPosition.current);
+    controls.current.target.copy(initialControlsTarget.current);
     setupScene();
     loadModel();
     window.addEventListener("resize", onWindowResize);
@@ -99,7 +102,7 @@ export default function SceneScreen({ isKioskMode }) {
     renderer.current.setClearColor(new THREE.Color("#fff"));
     mount.current.appendChild(renderer.current.domElement);
 
-    controls.current.enableZoom = false;
+    controls.current.enableZoom = true;
     controls.current.autoRotate = true;
     controls.current.autoRotateSpeed = 0.5;
 
@@ -168,17 +171,36 @@ export default function SceneScreen({ isKioskMode }) {
 
   const resetCameraAndTransparency = (duration = 2000) => {
     new TWEEN.Tween(camera.current.position)
-      .to({ x: 0, y: 20, z: 50 }, duration)
+      .to(
+        {
+          x: initialCameraPosition.current.x,
+          y: initialCameraPosition.current.y,
+          z: initialCameraPosition.current.z,
+        },
+        duration
+      )
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
-      .onComplete(() => {
-        scene.current.traverse((child) => {
-          if (child.isMesh) {
-            child.material.opacity = 0.5;
-          }
-        });
-      })
       .start();
+
+    new TWEEN.Tween(controls.current.target)
+      .to(
+        {
+          x: initialControlsTarget.current.x,
+          y: initialControlsTarget.current.y,
+          z: initialControlsTarget.current.z,
+        },
+        duration
+      )
+      .easing(TWEEN.Easing.Cubic.Out)
+      .onUpdate(() => controls.current.update())
+      .start();
+
+    scene.current.traverse((child) => {
+      if (child.isMesh) {
+        child.material.opacity = 0.5;
+      }
+    });
   };
 
   const focusOnLocation = (targetName, duration) => {
@@ -203,8 +225,8 @@ export default function SceneScreen({ isKioskMode }) {
       const tweenPosition = new TWEEN.Tween(camera.current.position)
         .to(
           {
-            x: targetPosition.x,
-            y: targetPosition.y + 5,
+            x: targetPosition.x + 10,
+            y: targetPosition.y + 10,
             z: targetPosition.z + 10,
           },
           duration
@@ -212,6 +234,8 @@ export default function SceneScreen({ isKioskMode }) {
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => controls.current.update())
         .onComplete(() => {
+          controls.current.target.copy(targetPosition);
+          controls.current.update();
           setTimeout(() => {
             resetCameraAndTransparency(duration);
           }, 5000);
@@ -293,7 +317,7 @@ export default function SceneScreen({ isKioskMode }) {
       </div>
 
       <div className="button-container">
-        <button onClick={resetCameraAndTransparency} className="home-button">
+        <button onClick={() => resetCameraAndTransparency()} className="home-button">
           <GoHomeFill color="white" size={20} />
         </button>
         <VoiceButton
