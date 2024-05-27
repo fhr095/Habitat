@@ -2,26 +2,50 @@ import React, { useEffect, useState, useRef } from "react";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Button } from "react-bootstrap";
-import { AiFillLike, AiFillDislike, AiOutlineRobot, AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
+import {
+  AiFillLike,
+  AiFillDislike,
+  AiOutlineLike,
+  AiOutlineDislike,
+  AiOutlineRobot,
+  AiOutlineArrowLeft,
+  AiOutlineArrowRight,
+} from "react-icons/ai";
 import "bootstrap/dist/css/bootstrap.min.css";
-import '../styles/Response.scss';
+import "../styles/Response.scss";
 
-export default function Response({ iaResponse, setIaReponse, question, focusOnLocation, onFinish }) {
+export default function Response({
+  iaResponse,
+  setIaReponse,
+  question,
+  focusOnLocation,
+  onFinish,
+}) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false);
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
 
+  const [like, setLike] = useState(false);
+  const [dislike, setDislike] = useState(false);
+
   useEffect(() => {
     if (iaResponse.length > 0 && currentMessageIndex < iaResponse.length) {
-      const { texto: message, audio: audioUrl, fade: fadeTarget, duration = 3000 } = iaResponse[currentMessageIndex];
+      const {
+        texto: message,
+        audio: audioUrl,
+        fade: fadeTarget,
+        duration = 3000,
+      } = iaResponse[currentMessageIndex];
 
       setShowMessage(true);
 
       const handleAudioEnd = () => {
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
+          setShowFeedbackButtons(true);
           timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
@@ -94,7 +118,8 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
       setShowProgress(false);
       setShowMessage(false);
       setIaReponse([]);
-      console.log("Feedback added successfully");
+      setLike(false);
+      setDislike(false);
       if (onFinish) onFinish(); // Chama onFinish quando o feedback termina
     } catch (e) {
       console.error("Error adding document: ", e);
@@ -116,20 +141,50 @@ export default function Response({ iaResponse, setIaReponse, question, focusOnLo
               {currentMessageIndex + 1} / {iaResponse.length}
             </div>
             <div className="navigation-buttons">
-              <Button variant="secondary" onClick={handlePreviousMessage} disabled={currentMessageIndex === 0}>
+              <Button
+                variant="secondary"
+                onClick={handlePreviousMessage}
+                disabled={currentMessageIndex === 0}
+              >
                 <AiOutlineArrowLeft size={24} />
               </Button>
-              <Button variant="secondary" onClick={handleNextMessage} disabled={currentMessageIndex === iaResponse.length - 1}>
+              <Button
+                variant="secondary"
+                onClick={handleNextMessage}
+                disabled={currentMessageIndex === iaResponse.length - 1}
+              >
                 <AiOutlineArrowRight size={24} />
               </Button>
             </div>
-            {currentMessageIndex === iaResponse.length - 1 && (
+            {currentMessageIndex === iaResponse.length - 1 && showFeedbackButtons && (
               <div className="feedback-buttons-container">
-                <Button variant="danger" onClick={() => saveFeedback("Não gostei")}>
-                  <AiFillDislike size={24} />
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    saveFeedback("Dislike");
+                    setDislike(true);
+                    setLike(false);
+                  }}
+                >
+                  {dislike ? (
+                    <AiFillDislike size={24} color="red" />
+                  ) : (
+                    <AiOutlineDislike size={24} color="#222" />
+                  )}
                 </Button>
-                <Button variant="success" onClick={() => saveFeedback("Gostei")}>
-                  <AiFillLike size={24} />
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    saveFeedback("Like");
+                    setLike(true);
+                    setDislike(false);
+                  }}
+                >
+                  {like ? (
+                    <AiFillLike size={24} color="green" />
+                  ) : (
+                    <AiOutlineLike size={24} color="#222" />
+                  )}
                 </Button>
               </div>
             )}

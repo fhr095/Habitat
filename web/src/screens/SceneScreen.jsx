@@ -213,7 +213,6 @@ export default function SceneScreen({ isKioskMode }) {
         targetMesh = child;
         targetMesh.material = targetMesh.material.clone();
         targetMesh.material.opacity = 1;
-        console.log("Target mesh found:", targetMesh);
       } else if (child.isMesh) {
         child.material = child.material.clone();
         child.material.opacity = 0.05;
