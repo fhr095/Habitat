@@ -110,6 +110,7 @@ export default function SceneScreen({ isKioskMode }) {
     labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
     labelRenderer.current.domElement.style.position = 'absolute';
     labelRenderer.current.domElement.style.top = '0px';
+    labelRenderer.current.domElement.style.pointerEvents = 'none'; // Adicione esta linha
     mount.current.appendChild(renderer.current.domElement);
     mount.current.appendChild(labelRenderer.current.domElement);
 
