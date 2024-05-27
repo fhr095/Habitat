@@ -338,7 +338,7 @@ export default function SceneScreen({ isKioskMode }) {
             focusOnLocation={(targetName, duration) => focusOnLocation(targetName, duration)}
             onFinish={() => {
               setShowQuestionAndResponse(false);
-              setIsButtonDisabled(false); // Habilitar botão ao finalizar resposta
+              setIsButtonDisabled(false);
             }}
           />
         )}
