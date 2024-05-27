@@ -24,9 +24,9 @@ export default function Response({
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
-  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false);
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
+  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false); // Estado para controlar a exibição dos botões de feedback
 
   const [like, setLike] = useState(false);
   const [dislike, setDislike] = useState(false);
@@ -45,11 +45,11 @@ export default function Response({
       const handleAudioEnd = () => {
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
-          setShowFeedbackButtons(true);
           timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
             setIaReponse([]);
+            setShowFeedbackButtons(true); // Mostrar botões de feedback após o áudio terminar
             if (onFinish) onFinish(); // Chama onFinish quando a resposta termina
           }, 5000); // Barra de progresso visível por 5 segundos
         } else {
@@ -156,7 +156,14 @@ export default function Response({
                 <AiOutlineArrowRight size={24} />
               </Button>
             </div>
-            {currentMessageIndex === iaResponse.length - 1 && showFeedbackButtons && (
+            {currentMessageIndex === iaResponse.length - 1 && showProgress && (
+              <div className="response-progress-bar-container">
+                <div className="response-progress-bar">
+                  <div className="response-progress"></div>
+                </div>
+              </div>
+            )}
+            {showFeedbackButtons && (
               <div className="feedback-buttons-container">
                 <Button
                   variant="link"
@@ -186,13 +193,6 @@ export default function Response({
                     <AiOutlineLike size={24} color="#222" />
                   )}
                 </Button>
-              </div>
-            )}
-            {currentMessageIndex === iaResponse.length - 1 && showProgress && (
-              <div className="response-progress-bar-container">
-                <div className="response-progress-bar">
-                  <div className="response-progress"></div>
-                </div>
               </div>
             )}
           </div>

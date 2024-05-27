@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
@@ -62,10 +63,9 @@ export default function SceneScreen({ isKioskMode }) {
       1000
     )
   );
-  const renderer = useRef(new THREE.WebGLRenderer({ antialias: true }));
-  const controls = useRef(
-    new OrbitControls(camera.current, renderer.current.domElement)
-  );
+  const renderer = useRef(null); // Inicializar como null
+  const labelRenderer = useRef(null); // Inicializar como null
+  const controls = useRef(null); // Inicializar como null
   const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50)); // Armazenar a posição inicial da câmera
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0)); // Armazenar o alvo inicial dos controles
   const [isLoading, setIsLoading] = useState(true);
@@ -75,13 +75,19 @@ export default function SceneScreen({ isKioskMode }) {
   const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desabilitar o botão
   const [isResponseLoading, setIsResponseLoading] = useState(false); // Estado para indicar carregamento da resposta
+  const [labels, setLabels] = useState([]); // Estado para armazenar os rótulos
 
   useEffect(() => {
+    renderer.current = new THREE.WebGLRenderer({ antialias: true });
+    labelRenderer.current = new CSS2DRenderer();
+    controls.current = new OrbitControls(camera.current, renderer.current.domElement);
+
     camera.current.position.copy(initialCameraPosition.current);
     controls.current.target.copy(initialControlsTarget.current);
     setupScene();
     loadModel();
     window.addEventListener("resize", onWindowResize);
+
     const animateLoop = requestAnimationFrame(animate);
 
     return () => {
@@ -90,6 +96,7 @@ export default function SceneScreen({ isKioskMode }) {
         renderer.current.domElement.parentNode === mount.current
       ) {
         mount.current.removeChild(renderer.current.domElement);
+        mount.current.removeChild(labelRenderer.current.domElement);
       }
       window.removeEventListener("resize", onWindowResize);
       cancelAnimationFrame(animateLoop);
@@ -100,7 +107,11 @@ export default function SceneScreen({ isKioskMode }) {
   const setupScene = () => {
     renderer.current.setSize(window.innerWidth, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
+    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.current.domElement.style.position = 'absolute';
+    labelRenderer.current.domElement.style.top = '0px';
     mount.current.appendChild(renderer.current.domElement);
+    mount.current.appendChild(labelRenderer.current.domElement);
 
     controls.current.enableZoom = true;
     controls.current.autoRotate = true;
@@ -160,6 +171,7 @@ export default function SceneScreen({ isKioskMode }) {
     camera.current.aspect = window.innerWidth / window.innerHeight;
     camera.current.updateProjectionMatrix();
     renderer.current.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
   };
 
   const animate = () => {
@@ -167,6 +179,7 @@ export default function SceneScreen({ isKioskMode }) {
     TWEEN.update();
     controls.current.update();
     renderer.current.render(scene.current, camera.current);
+    labelRenderer.current.render(scene.current, camera.current);
   };
 
   const resetCameraAndTransparency = (duration = 2000) => {
@@ -201,6 +214,8 @@ export default function SceneScreen({ isKioskMode }) {
         child.material.opacity = 0.5;
       }
     });
+
+    setLabels([]); // Limpar rótulos
   };
 
   const focusOnLocation = (targetName, duration) => {
@@ -222,6 +237,15 @@ export default function SceneScreen({ isKioskMode }) {
     if (targetMesh) {
       const targetPosition = new THREE.Vector3();
       targetMesh.getWorldPosition(targetPosition);
+      const labelDiv = document.createElement('div');
+      labelDiv.className = 'label';
+      labelDiv.textContent = targetName;
+      labelDiv.style.marginTop = '-1em';
+      const label = new CSS2DObject(labelDiv);
+      label.position.set(targetPosition.x, targetPosition.y, targetPosition.z);
+      scene.current.add(label);
+      setLabels((prevLabels) => [...prevLabels, label]);
+
       const tweenPosition = new TWEEN.Tween(camera.current.position)
         .to(
           {
@@ -283,6 +307,7 @@ export default function SceneScreen({ isKioskMode }) {
       }
     });
     renderer.current.dispose();
+    labelRenderer.current.dispose();
   };
 
   return (
