@@ -352,7 +352,7 @@ export default function SceneScreen({ isKioskMode }) {
           setTranscript={(newTranscript) => {
             setTranscript(newTranscript);
             setShowQuestionAndResponse(true);
-            setIsResponseLoading(true); // Ativar carregamento ao enviar a pergunta
+            setIsResponseLoading(true); 
             sendPostRequest(newTranscript);
           }}
           isDisabled={isButtonDisabled}
