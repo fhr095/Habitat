@@ -262,8 +262,9 @@ export default function SceneScreen({ isKioskMode }) {
           controls.current.target.copy(targetPosition);
           controls.current.update();
           setTimeout(() => {
+            scene.current.remove(label);
             resetCameraAndTransparency(duration);
-          }, 5000);
+          }, 5000); // Remover o rótulo após 5 segundos
         })
         .start();
     } else {

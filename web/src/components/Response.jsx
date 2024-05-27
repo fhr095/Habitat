@@ -24,9 +24,9 @@ export default function Response({
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false); // Estado para controlar a exibição dos botões de feedback
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
-  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false); // Estado para controlar a exibição dos botões de feedback
 
   const [like, setLike] = useState(false);
   const [dislike, setDislike] = useState(false);
@@ -41,30 +41,42 @@ export default function Response({
       } = iaResponse[currentMessageIndex];
 
       setShowMessage(true);
+      setShowFeedbackButtons(false); // Ocultar botões de feedback enquanto o áudio está tocando
 
       const handleAudioEnd = () => {
+        setShowFeedbackButtons(true); // Mostrar botões de feedback após o término do áudio
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
           timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
-            setIaReponse([]);
-            setShowFeedbackButtons(true); // Mostrar botões de feedback após o áudio terminar
-            if (onFinish) onFinish(); // Chama onFinish quando a resposta termina
-          }, 5000); // Barra de progresso visível por 5 segundos
+            if (onFinish) onFinish(); 
+          }, 5000); 
         } else {
           setShowMessage(false);
           handleNextMessage();
         }
       };
 
-      if (audioUrl) {
+      if (!audioRef.current && audioUrl) { 
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
-        audio.play();
-        audio.onended = handleAudioEnd;
+        audio.play()
+          .then(() => {
+            audio.onended = handleAudioEnd;
+          })
+          .catch(error => {
+            console.error("Audio play interrupted: ", error);
+          });
+      } else if (audioRef.current && audioUrl !== audioRef.current.src) {
+        audioRef.current.pause();
+        audioRef.current = null;
+        handleNextMessage(); 
       } else {
-        timeoutRef.current = setTimeout(handleAudioEnd, duration);
+        audioRef.current.play()
+          .catch(error => {
+            console.error("Audio play interrupted: ", error);
+          });
       }
 
       if (fadeTarget) {
@@ -82,7 +94,7 @@ export default function Response({
         timeoutRef.current = null;
       }
     };
-  }, [currentMessageIndex, iaResponse, focusOnLocation, onFinish]);
+  }, [iaResponse, currentMessageIndex]);
 
   const handleNextMessage = () => {
     stopCurrentExecution();
@@ -117,10 +129,9 @@ export default function Response({
       });
       setShowProgress(false);
       setShowMessage(false);
-      setIaReponse([]);
       setLike(false);
       setDislike(false);
-      if (onFinish) onFinish(); // Chama onFinish quando o feedback termina
+      if (onFinish) onFinish(); 
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -156,44 +167,48 @@ export default function Response({
                 <AiOutlineArrowRight size={24} />
               </Button>
             </div>
-            {currentMessageIndex === iaResponse.length - 1 && showProgress && (
-              <div className="response-progress-bar-container">
-                <div className="response-progress-bar">
-                  <div className="response-progress"></div>
-                </div>
-              </div>
-            )}
-            {showFeedbackButtons && (
-              <div className="feedback-buttons-container">
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    saveFeedback("Dislike");
-                    setDislike(true);
-                    setLike(false);
-                  }}
-                >
-                  {dislike ? (
-                    <AiFillDislike size={24} color="red" />
-                  ) : (
-                    <AiOutlineDislike size={24} color="#222" />
-                  )}
-                </Button>
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    saveFeedback("Like");
-                    setLike(true);
-                    setDislike(false);
-                  }}
-                >
-                  {like ? (
-                    <AiFillLike size={24} color="green" />
-                  ) : (
-                    <AiOutlineLike size={24} color="#222" />
-                  )}
-                </Button>
-              </div>
+            {currentMessageIndex === iaResponse.length - 1 && (
+              <>
+                {showFeedbackButtons && (
+                  <div className="feedback-buttons-container">
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        saveFeedback("Dislike");
+                        setDislike(true);
+                        setLike(false);
+                      }}
+                    >
+                      {dislike ? (
+                        <AiFillDislike size={24} color="red" />
+                      ) : (
+                        <AiOutlineDislike size={24} color="#222" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        saveFeedback("Like");
+                        setLike(true);
+                        setDislike(false);
+                      }}
+                    >
+                      {like ? (
+                        <AiFillLike size={24} color="green" />
+                      ) : (
+                        <AiOutlineLike size={24} color="#222" />
+                      )}
+                    </Button>
+                  </div>
+                )}
+                {showProgress && (
+                  <div className="response-progress-bar-container">
+                    <div className="response-progress-bar">
+                      <div className="response-progress"></div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
