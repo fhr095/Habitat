@@ -66,7 +66,7 @@ export default function SceneScreen({ isKioskMode }) {
   const renderer = useRef(null);
   const labelRenderer = useRef(null);
   const controls = useRef(null);
-  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50));
+  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 70));
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
@@ -102,7 +102,7 @@ export default function SceneScreen({ isKioskMode }) {
   }, []);
 
   const setupScene = () => {
-    renderer.current.setSize(window.innerWidth * 0.9, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * 1, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
     labelRenderer.current.setSize(window.innerWidth * 1, window.innerHeight);
     labelRenderer.current.domElement.style.position = 'absolute';
@@ -127,7 +127,7 @@ export default function SceneScreen({ isKioskMode }) {
         object.material.opacity = 0.5;
       }
     });
-    gltf.scene.position.x -= 0;
+    gltf.scene.position.x -= 30;
   };
 
   const loadModel = async () => {
