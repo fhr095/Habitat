@@ -91,10 +91,7 @@ export default function SceneScreen({ isKioskMode }) {
     const animateLoop = requestAnimationFrame(animate);
 
     return () => {
-      if (
-        mount.current &&
-        renderer.current.domElement.parentNode === mount.current
-      ) {
+      if (mount.current && renderer.current.domElement.parentNode === mount.current) {
         mount.current.removeChild(renderer.current.domElement);
         mount.current.removeChild(labelRenderer.current.domElement);
       }
@@ -105,9 +102,9 @@ export default function SceneScreen({ isKioskMode }) {
   }, []);
 
   const setupScene = () => {
-    renderer.current.setSize(window.innerWidth * 0.8, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * 0.9, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
-    labelRenderer.current.setSize(window.innerWidth * 0.8, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth * 1, window.innerHeight);
     labelRenderer.current.domElement.style.position = 'absolute';
     labelRenderer.current.domElement.style.top = '0px';
     labelRenderer.current.domElement.style.pointerEvents = 'none';
@@ -169,10 +166,10 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const onWindowResize = () => {
-    camera.current.aspect = (window.innerWidth * 0.4) / window.innerHeight;
+    camera.current.aspect = (window.innerWidth * 1) / window.innerHeight;
     camera.current.updateProjectionMatrix();
-    renderer.current.setSize(window.innerWidth * 0.4, window.innerHeight);
-    labelRenderer.current.setSize(window.innerWidth * 0.4, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * 1, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth * 1, window.innerHeight);
   };
 
   const animate = () => {
