@@ -5,17 +5,23 @@
   .message-wrapper {
     display: flex;
     align-items: center;
+    gap: 10px;
     
     .bot-icon {
-      margin-right: 10px;
-      background-color: #d4d4d4;
-      border-radius: 50%;
-      padding: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       position: relative;
+      border-radius: 50%;
+      background-color: #d4d4d4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
     }
 
     .message-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       width: 80%;
       background-color: #d4d4d4;
       color: black;
@@ -34,7 +40,6 @@
 
       .pagination {
         margin-top: 10px;
-        text-align: right;
         font-size: 12px;
       }
 

@@ -1,15 +1,16 @@
 import React from "react";
-import { AiOutlineRobot } from "react-icons/ai";
 import ClipLoader from "react-spinners/ClipLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/LoadingResponse.scss';
+
+import Avatar from "../assets/images/Avatar.png"; // Importando a imagem
 
 export default function LoadingResponse() {
   return (
     <div className="loading-response-container">
       <div className="message-wrapper">
         <div className="bot-icon">
-          <AiOutlineRobot size={24} color="black" />
+          <img src={Avatar} alt="Avatar" style={{ width: '30px', height: '30px' }} /> {/* Substituindo o ícone pelo avatar */}
         </div>
         <div className="message-container">
           <p>Carregando...</p>

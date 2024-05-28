@@ -63,19 +63,19 @@ export default function SceneScreen({ isKioskMode }) {
       1000
     )
   );
-  const renderer = useRef(null); // Inicializar como null
-  const labelRenderer = useRef(null); // Inicializar como null
-  const controls = useRef(null); // Inicializar como null
-  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50)); // Armazenar a posição inicial da câmera
-  const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0)); // Armazenar o alvo inicial dos controles
+  const renderer = useRef(null);
+  const labelRenderer = useRef(null);
+  const controls = useRef(null);
+  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50));
+  const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
   const [transcript, setTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desabilitar o botão
-  const [isResponseLoading, setIsResponseLoading] = useState(false); // Estado para indicar carregamento da resposta
-  const [labels, setLabels] = useState([]); // Estado para armazenar os rótulos
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isResponseLoading, setIsResponseLoading] = useState(false);
+  const [labels, setLabels] = useState([]);
 
   useEffect(() => {
     renderer.current = new THREE.WebGLRenderer({ antialias: true });
@@ -105,12 +105,12 @@ export default function SceneScreen({ isKioskMode }) {
   }, []);
 
   const setupScene = () => {
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * 0.8, window.innerHeight);
     renderer.current.setClearColor(new THREE.Color("#fff"));
-    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth * 0.8, window.innerHeight);
     labelRenderer.current.domElement.style.position = 'absolute';
     labelRenderer.current.domElement.style.top = '0px';
-    labelRenderer.current.domElement.style.pointerEvents = 'none'; // Adicione esta linha
+    labelRenderer.current.domElement.style.pointerEvents = 'none';
     mount.current.appendChild(renderer.current.domElement);
     mount.current.appendChild(labelRenderer.current.domElement);
 
@@ -130,7 +130,7 @@ export default function SceneScreen({ isKioskMode }) {
         object.material.opacity = 0.5;
       }
     });
-    gltf.scene.position.x -= 20;
+    gltf.scene.position.x -= 0;
   };
 
   const loadModel = async () => {
@@ -169,10 +169,10 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const onWindowResize = () => {
-    camera.current.aspect = window.innerWidth / window.innerHeight;
+    camera.current.aspect = (window.innerWidth * 0.4) / window.innerHeight;
     camera.current.updateProjectionMatrix();
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
-    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * 0.4, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth * 0.4, window.innerHeight);
   };
 
   const animate = () => {
@@ -216,10 +216,15 @@ export default function SceneScreen({ isKioskMode }) {
       }
     });
 
-    setLabels([]); // Limpar rótulos
+    setLabels([]);
   };
 
   const focusOnLocation = (targetName, duration) => {
+    labels.forEach(label => {
+      scene.current.remove(label);
+    });
+    setLabels([]);
+
     let targetMesh = null;
     scene.current.traverse((child) => {
       if (
@@ -245,7 +250,7 @@ export default function SceneScreen({ isKioskMode }) {
       const label = new CSS2DObject(labelDiv);
       label.position.set(targetPosition.x, targetPosition.y, targetPosition.z);
       scene.current.add(label);
-      setLabels((prevLabels) => [...prevLabels, label]);
+      setLabels([label]);
 
       const tweenPosition = new TWEEN.Tween(camera.current.position)
         .to(
@@ -264,7 +269,7 @@ export default function SceneScreen({ isKioskMode }) {
           setTimeout(() => {
             scene.current.remove(label);
             resetCameraAndTransparency(duration);
-          }, 5000); // Remover o rótulo após 5 segundos
+          }, 5000);
         })
         .start();
     } else {
@@ -294,8 +299,8 @@ export default function SceneScreen({ isKioskMode }) {
     if (commands.length > 0) {
       setResponse(commands);
       console.log("Resposta da ia:", commands);
-      setIsButtonDisabled(true); // Desabilitar botão ao iniciar resposta
-      setIsResponseLoading(false); // Desabilitar o carregamento
+      setIsButtonDisabled(true);
+      setIsResponseLoading(false);
     }
   };
 
@@ -329,7 +334,7 @@ export default function SceneScreen({ isKioskMode }) {
       <div className="box-question-response">
         {transcript !== "" ? <Question question={transcript} showNotification={showQuestionAndResponse} /> : null}
 
-        {isResponseLoading && <LoadingResponse />} {/* Mostrar LoadingResponse enquanto carrega */}
+        {isResponseLoading && <LoadingResponse />}
         {response.length > 0 && (
           <Response
             iaResponse={response}
@@ -352,7 +357,7 @@ export default function SceneScreen({ isKioskMode }) {
           setTranscript={(newTranscript) => {
             setTranscript(newTranscript);
             setShowQuestionAndResponse(true);
-            setIsResponseLoading(true); 
+            setIsResponseLoading(true);
             sendPostRequest(newTranscript);
           }}
           isDisabled={isButtonDisabled}
