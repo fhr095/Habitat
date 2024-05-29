@@ -216,12 +216,12 @@ export default function SceneScreen({ isKioskMode }) {
     setLabels([]);
   };
 
-  const focusOnLocation = (targetName, duration) => {
+  const focusOnLocation = (targetName, duration = 2000) => {
     labels.forEach(label => {
       scene.current.remove(label);
     });
     setLabels([]);
-
+  
     let targetMesh = null;
     scene.current.traverse((child) => {
       if (
@@ -236,32 +236,43 @@ export default function SceneScreen({ isKioskMode }) {
         child.material.opacity = 0.05;
       }
     });
-
+  
     if (targetMesh) {
-      const targetPosition = new THREE.Vector3();
-      targetMesh.getWorldPosition(targetPosition);
+      const boundingBox = new THREE.Box3().setFromObject(targetMesh);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+      const size = boundingBox.getSize(new THREE.Vector3());
+  
+      const maxDim = Math.max(size.x, size.y, size.z);
+      const fov = camera.current.fov * (Math.PI / 180);
+      let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));
+  
+      cameraZ = 4; // Increase factor to ensure the object fits nicely in view
+  
+      const newCameraPosition = new THREE.Vector3(
+        center.x,
+        center.y + cameraZ * 0.5, // Adjust to be higher
+        center.z + cameraZ
+      );
+  
       const labelDiv = document.createElement('div');
       labelDiv.className = 'label';
       labelDiv.textContent = targetName;
       labelDiv.style.marginTop = '-1em';
       const label = new CSS2DObject(labelDiv);
-      label.position.set(targetPosition.x, targetPosition.y, targetPosition.z);
+      label.position.set(center.x, center.y, center.z);
       scene.current.add(label);
       setLabels([label]);
-
-      const tweenPosition = new TWEEN.Tween(camera.current.position)
-        .to(
-          {
-            x: targetPosition.x + 10,
-            y: targetPosition.y + 10,
-            z: targetPosition.z + 10,
-          },
-          duration
-        )
+  
+      new TWEEN.Tween(camera.current.position)
+        .to(newCameraPosition, duration)
         .easing(TWEEN.Easing.Cubic.InOut)
-        .onUpdate(() => controls.current.update())
+        .onUpdate(() => {
+          camera.current.lookAt(center);
+          controls.current.target.copy(center);
+          controls.current.update();
+        })
         .onComplete(() => {
-          controls.current.target.copy(targetPosition);
+          controls.current.target.copy(center);
           controls.current.update();
           setTimeout(() => {
             scene.current.remove(label);
@@ -274,6 +285,7 @@ export default function SceneScreen({ isKioskMode }) {
       resetCameraAndTransparency(duration);
     }
   };
+  
 
   const sendPostRequest = (text) => {
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
