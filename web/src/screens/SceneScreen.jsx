@@ -286,8 +286,8 @@ export default function SceneScreen({ isKioskMode }) {
     }
   };
   
-
   const sendPostRequest = (text) => {
+    setIsResponseLoading(true);
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
       method: "POST",
       headers: {
@@ -301,8 +301,10 @@ export default function SceneScreen({ isKioskMode }) {
       })
       .catch((error) => {
         console.error("Erro ao enviar requisição POST:", error);
+        setIsResponseLoading(false); // Parar o carregamento em caso de erro
       });
   };
+  
 
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
@@ -310,8 +312,11 @@ export default function SceneScreen({ isKioskMode }) {
       console.log("Resposta da ia:", commands);
       setIsButtonDisabled(true);
       setIsResponseLoading(false);
+    } else {
+      console.error("Nenhum comando recebido da IA.");
     }
   };
+  
 
   const disposeResources = () => {
     scene.current.children.forEach((child) => {

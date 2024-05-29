@@ -13,7 +13,7 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Response.scss";
 
-import Avatar from "../assets/images/Avatar.png"; // Importando a imagem
+import Avatar from "../assets/images/Avatar.png";
 
 export default function Response({
   iaResponse,
@@ -25,7 +25,7 @@ export default function Response({
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
-  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false); // Estado para controlar a exibição dos botões de feedback
+  const [showFeedbackButtons, setShowFeedbackButtons] = useState(false);
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
 
@@ -42,15 +42,16 @@ export default function Response({
       } = iaResponse[currentMessageIndex];
 
       setShowMessage(true);
-      setShowFeedbackButtons(false); // Ocultar botões de feedback enquanto o áudio está tocando
+      setShowFeedbackButtons(false);
 
       const handleAudioEnd = () => {
-        setShowFeedbackButtons(true); // Mostrar botões de feedback após o término do áudio
+        setShowFeedbackButtons(true);
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
           timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
+            setIaReponse([]);
             if (onFinish) onFinish(); 
           }, 5000); 
         } else {
@@ -143,7 +144,7 @@ export default function Response({
       {showMessage && (
         <div className="message-wrapper">
           <div className="bot-icon">
-            <img src={Avatar} alt="Avatar" style={{ width: '30px', height: '30px' }} /> {/* Substituindo o ícone pelo avatar */}
+            <img src={Avatar} alt="Avatar" style={{ width: '30px', height: '30px' }} />
           </div>
           <div className="message-container">
             <div className="response">
