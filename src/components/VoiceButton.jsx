@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
-
 import { FaMicrophone } from "react-icons/fa";
+import ScaleLoader from "react-spinners/ScaleLoader";
 
-export default function VoiceButton({ setTranscript }) {
+import "../styles/VoiceButton.scss";
+
+export default function VoiceButton({ setTranscript, isDisabled }) {
   const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState(null);
+  const [recognition, setRecognition] = useState(null);
 
   useEffect(() => {
-    if ("webkitSpeechRecognition" in window) {
-      const sepeechRecognition = new window.webkitSpeechRecognition();
-      sepeechRecognition.continuous = true;
-      sepeechRecognition.interimResults = true;
-      sepeechRecognition.lang = "pt-BR";
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = true;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = "pt-BR";
 
-      sepeechRecognition.onresult = (event) => {
+      recognitionInstance.onresult = (event) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           if (event.results[i].isFinal) {
             const transcript = event.results[i][0].transcript.trim();
@@ -22,26 +25,26 @@ export default function VoiceButton({ setTranscript }) {
         }
       };
 
-      sepeechRecognition.onerror = (event) => {
+      recognitionInstance.onerror = (event) => {
         console.error("Erro de reconhecimento de voz:", event.error);
       };
 
-      setRecording(sepeechRecognition);
+      setRecognition(recognitionInstance);
     } else {
       console.error("Este navegador não suporta reconhecimento de voz.");
     }
-  }, []);
+  }, [setTranscript]);
 
   const handleMouseDown = () => {
-    if (recording) {
-      recording.start();
+    if (recognition) {
+      recognition.start();
       setIsRecording(true);
     }
   };
 
   const handleMouseUp = () => {
-    if (recording) {
-      recording.stop();
+    if (recognition) {
+      recognition.stop();
       setIsRecording(false);
     }
   };
@@ -53,11 +56,16 @@ export default function VoiceButton({ setTranscript }) {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       style={{
-        transform: isRecording ? "scale(0.9)" : "scale(1)",
+        transform: isRecording ? "scale(1.2)" : "scale(1)",
         transition: "transform 0.2s",
       }}
+      disabled={isDisabled} // Desabilitar botão quando isDisabled for true
     >
-      <FaMicrophone color="white" size={20}/>
+      {isRecording ? (
+        <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
+      ) : (
+        <FaMicrophone color="white" size={20} />
+      )}
     </button>
   );
 }

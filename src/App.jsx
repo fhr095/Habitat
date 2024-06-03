@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
-import ChatContainer from "./components/ChatContainer";
 import "./App.css";
 
 export default function App() {
@@ -51,7 +50,6 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} />} />
-          <Route path="/chat" element={<ChatContainer />} />
         </Routes>
       </Router>
     </div>
