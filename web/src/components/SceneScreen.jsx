@@ -1,22 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase";
-import * as TWEEN from "@tweenjs/tween.js";
+import React, { useState, useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import { ref, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase';
+import * as TWEEN from '@tweenjs/tween.js';
 
-import LoadingScreen from "../components/LoadingScreen";
-import ChatContainer from "../components/ChatContainer";
-import Question from "../components/Question";
-import Response from "../components/Response";
+import LoadingScreen from '../components/LoadingScreen';
 import LoadingResponse from "../components/LoadingResponse";
-import VoiceButton from "../components/VoiceButton";
-
-import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
-
-import "../styles/SceneScreen.scss";
+import ChatContainer from '../components/ChatContainer';
+import Question from '../components/Question';
+import Response from '../components/Response';
+import VoiceButton from '../components/VoiceButton';
+import { GoHomeFill, GoDiscussionClosed } from 'react-icons/go';
+import '../styles/SceneScreen.scss';
 
 const openDB = (name, version) => {
   return new Promise((resolve, reject) => {
@@ -25,8 +23,8 @@ const openDB = (name, version) => {
     request.onerror = (event) => reject(event.target.error);
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
-      if (!db.objectStoreNames.contains("models")) {
-        db.createObjectStore("models");
+      if (!db.objectStoreNames.contains('models')) {
+        db.createObjectStore('models');
       }
     };
   });
@@ -34,7 +32,7 @@ const openDB = (name, version) => {
 
 const getFromDB = (db, storeName, key) => {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readonly");
+    const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
     const request = store.get(key);
     request.onsuccess = () => resolve(request.result);
@@ -44,7 +42,7 @@ const getFromDB = (db, storeName, key) => {
 
 const saveToDB = (db, storeName, key, value) => {
   return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, "readwrite");
+    const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
     const request = store.put(value, key);
     request.onsuccess = () => resolve();
@@ -52,35 +50,34 @@ const saveToDB = (db, storeName, key, value) => {
   });
 };
 
+// Variável global para armazenar o estado original dos materiais
+let originalMaterials = new Map();
+let focusQueue = [];
+let isFocusing = false;
+
 export default function SceneScreen({ isKioskMode }) {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
-  const camera = useRef(
-    new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    )
-  );
+  const camera = useRef(new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000));
   const renderer = useRef(null);
   const labelRenderer = useRef(null);
   const controls = useRef(null);
-
+  
   const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 70));
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
-  const [transcript, setTranscript] = useState("");
-  const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [isResponseLoading, setIsResponseLoading] = useState(false);
-  const [labels, setLabels] = useState([]);
-
+  const [transcript, setTranscript] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [feedbackFilter, setFeedbackFilter] = useState('');
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: '' });
+  const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isResponseLoading, setIsResponseLoading] = useState(false);
+  const [labels, setLabels] = useState([]);
+  const audioRef = useRef(null);
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     renderer.current = new THREE.WebGLRenderer({ antialias: true });
@@ -94,16 +91,6 @@ export default function SceneScreen({ isKioskMode }) {
     window.addEventListener("resize", onWindowResize);
 
     const animateLoop = requestAnimationFrame(animate);
-
-    // Reseta a posição da câmera para o centro do modelo a cada 5 minutos
-    setInterval(() => {
-      resetCameraAndTransparency();
-    }, 300000);
-
-    // Adiciona o zoom para um local aleatório a cada 3 minutos
-    setInterval(() => {
-      zoomToRandomLocation();
-    }, 180000);
 
     return () => {
       if (mount.current && renderer.current.domElement.parentNode === mount.current) {
@@ -157,7 +144,7 @@ export default function SceneScreen({ isKioskMode }) {
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
-        createInitialTag(); // Create initial tag after model is loaded
+        createInitialTag(gltf.scene); // Create initial tag after model is loaded
         setIsLoading(false);
       });
     } else {
@@ -170,7 +157,7 @@ export default function SceneScreen({ isKioskMode }) {
               loader.parse(arrayBuffer, "", (gltf) => {
                 applyMaterialSettings(gltf);
                 scene.current.add(gltf.scene);
-                createInitialTag(); // Create initial tag after model is loaded
+                createInitialTag(gltf.scene); // Create initial tag after model is loaded
                 setIsLoading(false);
                 saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
               });
@@ -180,25 +167,6 @@ export default function SceneScreen({ isKioskMode }) {
           console.error("Erro ao carregar modelo GLB:", error);
         });
     }
-  };
-
-  const createInitialTag = () => {
-    // Remove any existing initial tag before creating a new one
-    const existingLabel = labels.find(label => label.element.textContent === "Você está aqui");
-    if (existingLabel) {
-      scene.current.remove(existingLabel);
-      setLabels(labels.filter(label => label !== existingLabel));
-    }
-
-    const center = new THREE.Vector3(0, 0, 0);
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = "Você está aqui";
-    labelDiv.style.marginTop = '-1em';
-    const label = new CSS2DObject(labelDiv);
-    label.position.set(center.x, center.y, center.z);
-    scene.current.add(label);
-    setLabels([label]);
   };
 
   const onWindowResize = () => {
@@ -229,7 +197,7 @@ export default function SceneScreen({ isKioskMode }) {
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .start();
-
+  
     new TWEEN.Tween(controls.current.target)
       .to(
         {
@@ -242,61 +210,88 @@ export default function SceneScreen({ isKioskMode }) {
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .start();
-
-    scene.current.traverse((child) => {
+  
+    originalMaterials.forEach((originalState, child) => {
       if (child.isMesh) {
         child.material.opacity = originalState.opacity;
         child.material.depthWrite = originalState.depthWrite;
       }
     });
-
-    // Remove all labels before recreating the initial tag
-    labels.forEach(label => {
-      scene.current.remove(label);
-    });
+  
     setLabels([]);
-
-    createInitialTag(); // Recreate the initial tag after reset
   };
 
   const focusOnLocation = (targetName, duration = 2000) => {
+    focusQueue.push({ targetName, duration });
+    if (!isFocusing) {
+      processFocusQueue();
+    }
+  };
+
+  const processFocusQueue = () => {
+    if (focusQueue.length === 0) {
+      isFocusing = false;
+      return;
+    }
+
+    isFocusing = true;
+    const { targetName, duration } = focusQueue.shift();
+
     labels.forEach(label => {
       scene.current.remove(label);
     });
     setLabels([]);
-  
-    let targetMesh = null;
+
+    // Definir todos os objetos como transparentes e depthWrite como false inicialmente
     scene.current.traverse((child) => {
-      if (
-        child.isMesh &&
-        child.name.includes(targetName.replace(/\s+/g, "_"))
-      ) {
-        targetMesh = child;
-        targetMesh.material = targetMesh.material.clone();
-        targetMesh.material.opacity = 1;
-      } else if (child.isMesh) {
+      if (child.isMesh) {
+        if (!originalMaterials.has(child)) {
+          originalMaterials.set(child, {
+            opacity: child.material.opacity,
+            depthWrite: child.material.depthWrite,
+          });
+        }
         child.material = child.material.clone();
         child.material.opacity = 0.05;
+        child.material.depthWrite = false;
       }
     });
-  
+
+    let targetMesh = null;
+    scene.current.traverse((child) => {
+      // Normaliza o nome do child removendo espaços extras e convertendo espaços e underscores para um único underscore
+      const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
+
+      // Normaliza o targetName da mesma maneira
+      const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
+
+      if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
+        targetMesh = child;
+
+        if (child.isMesh) {
+          child.material.opacity = 1;          
+          child.material.depthWrite = true; // Definir depthWrite para true para o targetMesh
+        }
+      }
+    });
+
     if (targetMesh) {
       const boundingBox = new THREE.Box3().setFromObject(targetMesh);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
-  
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.current.fov * (Math.PI / 180);
       let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));
-  
+
       cameraZ = 4; // Increase factor to ensure the object fits nicely in view
-  
+
       const newCameraPosition = new THREE.Vector3(
         center.x,
         center.y + cameraZ * 0.5, // Adjust to be higher
         center.z + cameraZ
       );
-  
+
       const labelDiv = document.createElement('div');
       labelDiv.className = 'label';
       labelDiv.textContent = targetName;
@@ -305,7 +300,8 @@ export default function SceneScreen({ isKioskMode }) {
       label.position.set(center.x, center.y, center.z);
       scene.current.add(label);
       setLabels([label]);
-  
+
+      console.log(`Starting focus animation for ${targetName} at ${new Date().toISOString()}`);
       new TWEEN.Tween(camera.current.position)
         .to(newCameraPosition, duration)
         .easing(TWEEN.Easing.Cubic.InOut)
@@ -315,31 +311,20 @@ export default function SceneScreen({ isKioskMode }) {
           controls.current.update();
         })
         .onComplete(() => {
+          console.log(`Completed focus animation for ${targetName} at ${new Date().toISOString()}`);
           controls.current.target.copy(center);
           controls.current.update();
           setTimeout(() => {
             scene.current.remove(label);
             resetCameraAndTransparency(duration);
-          }, 5000);
+            processFocusQueue(); // Processar a próxima chamada na fila
+          }, Math.max(duration, 2000));
         })
         .start();
     } else {
       console.error("Target mesh not found:", targetName);
       resetCameraAndTransparency(duration);
-    }
-  };
-
-  const zoomToRandomLocation = () => {
-    const meshes = [];
-    scene.current.traverse((child) => {
-      if (child.isMesh) {
-        meshes.push(child);
-      }
-    });
-
-    if (meshes.length > 0) {
-      const randomMesh = meshes[Math.floor(Math.random() * meshes.length)];
-      focusOnLocation(randomMesh.name);
+      processFocusQueue(); // Processar a próxima chamada na fila
     }
   };
 
@@ -361,7 +346,7 @@ export default function SceneScreen({ isKioskMode }) {
         setIsResponseLoading(false); // Parar o carregamento em caso de erro
       });
   };
-  
+
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
       setResponse(commands);
@@ -372,7 +357,7 @@ export default function SceneScreen({ isKioskMode }) {
       console.error("Nenhum comando recebido da IA.");
     }
   };
-  
+
   const disposeResources = () => {
     scene.current.children.forEach((child) => {
       if (child.geometry) {
@@ -383,9 +368,20 @@ export default function SceneScreen({ isKioskMode }) {
       }
     });
     renderer.current.dispose();
-    if (labelRenderer.current.domElement && labelRenderer.current.domElement.parentNode) {
-      labelRenderer.current.domElement.parentNode.removeChild(labelRenderer.current.domElement);
-    }
+    labelRenderer.current.dispose();
+  };
+
+  const createInitialTag = (model) => {
+    const boundingBox = new THREE.Box3().setFromObject(model);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+
+    const tagDiv = document.createElement('div');
+    tagDiv.className = 'label';
+    tagDiv.textContent = 'Você está aqui';
+    tagDiv.style.marginTop = '-1em';
+    const tagLabel = new CSS2DObject(tagDiv);
+    tagLabel.position.set(center.x, center.y, center.z);
+    scene.current.add(tagLabel);
   };
 
   return (
@@ -400,10 +396,8 @@ export default function SceneScreen({ isKioskMode }) {
         setDateRangeFilter={setDateRangeFilter}
         setChatOpen={setChatOpen}
       />
-
       <div className="box-question-response">
         {transcript !== "" ? <Question question={transcript} showNotification={showQuestionAndResponse} /> : null}
-
         {isResponseLoading && <LoadingResponse />}
         {response.length > 0 && (
           <Response
@@ -418,7 +412,6 @@ export default function SceneScreen({ isKioskMode }) {
           />
         )}
       </div>
-
       <div className="button-container">
         <button onClick={() => resetCameraAndTransparency()} className="home-button">
           <GoHomeFill color="white" size={20} />
