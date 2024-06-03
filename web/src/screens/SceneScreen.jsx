@@ -53,6 +53,10 @@ const saveToDB = (db, storeName, key, value) => {
 };
 
 export default function SceneScreen({ isKioskMode }) {
+  let originalMaterials = new Map();
+  let focusQueue = [];
+  let isFocusing = false;
+
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
   const camera = useRef(
@@ -97,12 +101,16 @@ export default function SceneScreen({ isKioskMode }) {
 
     // Reseta a posição da câmera para o centro do modelo a cada 5 minutos
     setInterval(() => {
-      resetCameraAndTransparency();
+      if (!isFocusing) {
+        resetCameraAndTransparency();
+      }
     }, 300000);
 
     // Adiciona o zoom para um local aleatório a cada 3 minutos
     setInterval(() => {
-      zoomToRandomLocation();
+      if (!isFocusing) {
+        zoomToRandomLocation();
+      }
     }, 180000);
 
     return () => {
@@ -157,7 +165,7 @@ export default function SceneScreen({ isKioskMode }) {
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
-        createInitialTag(); // Create initial tag after model is loaded
+        createInitialTag();
         setIsLoading(false);
       });
     } else {
@@ -170,7 +178,7 @@ export default function SceneScreen({ isKioskMode }) {
               loader.parse(arrayBuffer, "", (gltf) => {
                 applyMaterialSettings(gltf);
                 scene.current.add(gltf.scene);
-                createInitialTag(); // Create initial tag after model is loaded
+                createInitialTag();
                 setIsLoading(false);
                 saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
               });
@@ -183,13 +191,7 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const createInitialTag = () => {
-    // Remove any existing initial tag before creating a new one
-    const existingLabel = labels.find(label => label.element.textContent === "Você está aqui");
-    if (existingLabel) {
-      scene.current.remove(existingLabel);
-      setLabels(labels.filter(label => label !== existingLabel));
-    }
-
+    removeExistingLabels();
     const center = new THREE.Vector3(0, 0, 0);
     const labelDiv = document.createElement('div');
     labelDiv.className = 'label';
@@ -199,6 +201,13 @@ export default function SceneScreen({ isKioskMode }) {
     label.position.set(center.x, center.y, center.z);
     scene.current.add(label);
     setLabels([label]);
+  };
+
+  const removeExistingLabels = () => {
+    labels.forEach(label => {
+      scene.current.remove(label);
+    });
+    setLabels([]);
   };
 
   const onWindowResize = () => {
@@ -243,60 +252,81 @@ export default function SceneScreen({ isKioskMode }) {
       .onUpdate(() => controls.current.update())
       .start();
 
-    scene.current.traverse((child) => {
+    originalMaterials.forEach((originalState, child) => {
       if (child.isMesh) {
         child.material.opacity = originalState.opacity;
         child.material.depthWrite = originalState.depthWrite;
       }
     });
 
-    // Remove all labels before recreating the initial tag
-    labels.forEach(label => {
-      scene.current.remove(label);
-    });
-    setLabels([]);
-
-    createInitialTag(); // Recreate the initial tag after reset
+    removeExistingLabels();
+    createInitialTag();
   };
 
   const focusOnLocation = (targetName, duration = 2000) => {
-    labels.forEach(label => {
-      scene.current.remove(label);
-    });
-    setLabels([]);
-  
-    let targetMesh = null;
+    focusQueue.push({ targetName, duration });
+    if (!isFocusing) {
+      processFocusQueue();
+    }
+  };
+
+  const processFocusQueue = () => {
+    if (focusQueue.length === 0) {
+      isFocusing = false;
+      return;
+    }
+
+    isFocusing = true;
+    const { targetName, duration } = focusQueue.shift();
+
+    removeExistingLabels();
+
     scene.current.traverse((child) => {
-      if (
-        child.isMesh &&
-        child.name.includes(targetName.replace(/\s+/g, "_"))
-      ) {
-        targetMesh = child;
-        targetMesh.material = targetMesh.material.clone();
-        targetMesh.material.opacity = 1;
-      } else if (child.isMesh) {
+      if (child.isMesh) {
+        if (!originalMaterials.has(child)) {
+          originalMaterials.set(child, {
+            opacity: child.material.opacity,
+            depthWrite: child.material.depthWrite,
+          });
+        }
         child.material = child.material.clone();
         child.material.opacity = 0.05;
+        child.material.depthWrite = false;
       }
     });
-  
+
+    let targetMesh = null;
+    scene.current.traverse((child) => {
+      const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
+      const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
+
+      if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
+        targetMesh = child;
+
+        if (child.isMesh) {
+          child.material.opacity = 1;
+          child.material.depthWrite = true;
+        }
+      }
+    });
+
     if (targetMesh) {
       const boundingBox = new THREE.Box3().setFromObject(targetMesh);
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
-  
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.current.fov * (Math.PI / 180);
       let cameraZ = Math.abs(maxDim / 2 * Math.tan(fov * 2));
-  
-      cameraZ = 4; // Increase factor to ensure the object fits nicely in view
-  
+
+      cameraZ = 4;
+
       const newCameraPosition = new THREE.Vector3(
         center.x,
-        center.y + cameraZ * 0.5, // Adjust to be higher
+        center.y + cameraZ * 0.5,
         center.z + cameraZ
       );
-  
+
       const labelDiv = document.createElement('div');
       labelDiv.className = 'label';
       labelDiv.textContent = targetName;
@@ -305,7 +335,7 @@ export default function SceneScreen({ isKioskMode }) {
       label.position.set(center.x, center.y, center.z);
       scene.current.add(label);
       setLabels([label]);
-  
+
       new TWEEN.Tween(camera.current.position)
         .to(newCameraPosition, duration)
         .easing(TWEEN.Easing.Cubic.InOut)
@@ -319,13 +349,15 @@ export default function SceneScreen({ isKioskMode }) {
           controls.current.update();
           setTimeout(() => {
             scene.current.remove(label);
-            resetCameraAndTransparency(duration);
-          }, 5000);
+            // Remove the resetCameraAndTransparency call
+            processFocusQueue();
+          }, Math.max(duration, 2000));
         })
         .start();
     } else {
       console.error("Target mesh not found:", targetName);
       resetCameraAndTransparency(duration);
+      processFocusQueue();
     }
   };
 
@@ -358,10 +390,10 @@ export default function SceneScreen({ isKioskMode }) {
       })
       .catch((error) => {
         console.error("Erro ao enviar requisição POST:", error);
-        setIsResponseLoading(false); // Parar o carregamento em caso de erro
+        setIsResponseLoading(false);
       });
   };
-  
+
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
       setResponse(commands);
@@ -372,7 +404,7 @@ export default function SceneScreen({ isKioskMode }) {
       console.error("Nenhum comando recebido da IA.");
     }
   };
-  
+
   const disposeResources = () => {
     scene.current.children.forEach((child) => {
       if (child.geometry) {
