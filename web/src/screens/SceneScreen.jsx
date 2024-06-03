@@ -90,6 +90,10 @@ export default function SceneScreen({ isKioskMode }) {
 
     const animateLoop = requestAnimationFrame(animate);
 
+    setInterval(() => {
+      resetCameraAndTransparency();
+    }, 300000);
+
     return () => {
       if (mount.current && renderer.current.domElement.parentNode === mount.current) {
         mount.current.removeChild(renderer.current.domElement);
@@ -142,6 +146,7 @@ export default function SceneScreen({ isKioskMode }) {
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
+        createInitialTag(gltf.scene); // Create initial tag after model is loaded
         setIsLoading(false);
       });
     } else {
@@ -154,6 +159,7 @@ export default function SceneScreen({ isKioskMode }) {
               loader.parse(arrayBuffer, "", (gltf) => {
                 applyMaterialSettings(gltf);
                 scene.current.add(gltf.scene);
+                createInitialTag(gltf.scene); // Create initial tag after model is loaded
                 setIsLoading(false);
                 saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
               });
@@ -329,6 +335,19 @@ export default function SceneScreen({ isKioskMode }) {
     });
     renderer.current.dispose();
     labelRenderer.current.dispose();
+  };
+
+  const createInitialTag = (model) => {
+    const boundingBox = new THREE.Box3().setFromObject(model);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+
+    const tagDiv = document.createElement('div');
+    tagDiv.className = 'label';
+    tagDiv.textContent = 'Você está aqui';
+    tagDiv.style.marginTop = '-1em';
+    const tagLabel = new CSS2DObject(tagDiv);
+    tagLabel.position.set(center.x, center.y, center.z);
+    scene.current.add(tagLabel);
   };
 
   return (
