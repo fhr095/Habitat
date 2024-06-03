@@ -1,0 +1,125 @@
+@charset "UTF-8";
+.response-container {
+  width: 100%;
+  z-index: 2000;
+}
+.response-container .message-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.response-container .message-wrapper .bot-icon {
+  position: relative;
+  border-radius: 50%;
+  background-color: #d4d4d4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.response-container .message-wrapper .message-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  background-color: #d4d4d4;
+  color: black;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in-out, slideUp 0.5s ease-in-out;
+  position: relative;
+  z-index: 1; /* Adicionando z-index para garantir que a mensagem esteja no plano correto */
+}
+.response-container .message-wrapper .message-container .response p {
+  margin: 0;
+}
+.response-container .message-wrapper .message-container .pagination {
+  margin-top: 10px;
+  font-size: 12px;
+}
+.response-container .message-wrapper .message-container .navigation-buttons {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 1; /* Adicionando z-index para garantir que os botões estejam na frente */
+}
+.response-container .message-wrapper .message-container .navigation-buttons button {
+  background: none;
+  border: none;
+  color: black;
+  cursor: pointer;
+}
+.response-container .message-wrapper .message-container .navigation-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.response-container .message-wrapper .message-container .feedback-buttons-container {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+  z-index: 2; /* Adicionando z-index para garantir que os botões estejam na frente */
+}
+.response-container .message-wrapper .message-container .feedback-buttons-container button {
+  margin: 0 5px;
+  cursor: pointer;
+}
+.response-container .message-wrapper .message-container .response-progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+.response-container .message-wrapper .message-container .response-progress-bar-container .response-progress-bar {
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+.response-container .message-wrapper .message-container .response-progress-bar-container .response-progress-bar .response-progress {
+  height: 100%;
+  width: 100%;
+  background-color: #007bff;
+  animation: responseProgressBar 5s linear;
+}
+.response-container .message-wrapper .message-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: #d4d4d4;
+  border-left: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes responseProgressBar {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}/*# sourceMappingURL=Response.css.map */

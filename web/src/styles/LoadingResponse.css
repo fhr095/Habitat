@@ -1,0 +1,69 @@
+@charset "UTF-8";
+.loading-response-container {
+  width: 100%;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loading-response-container .message-wrapper {
+  display: flex;
+  align-items: center;
+}
+.loading-response-container .message-wrapper .bot-icon {
+  margin-right: 10px;
+  background-color: #d4d4d4;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.loading-response-container .message-wrapper .bot-icon img {
+  width: 24px;
+  height: 24px;
+}
+.loading-response-container .message-wrapper .message-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espaçamento entre a mensagem e o ícone de carregamento */
+  width: 80%;
+  background-color: #d4d4d4;
+  color: black;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.5s ease-in-out, slideUp 0.5s ease-in-out;
+  position: relative;
+  z-index: 1; /* Adicionando z-index para garantir que a mensagem esteja no plano correto */
+}
+.loading-response-container .message-wrapper .message-container p {
+  margin: 0;
+}
+.loading-response-container .message-wrapper .message-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: #d4d4d4;
+  border-left: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}/*# sourceMappingURL=LoadingResponse.css.map */

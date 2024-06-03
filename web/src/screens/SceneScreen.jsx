@@ -90,9 +90,15 @@ export default function SceneScreen({ isKioskMode }) {
 
     const animateLoop = requestAnimationFrame(animate);
 
+    // Reseta a posição da câmera para o centro do modelo a cada 5 minutos
     setInterval(() => {
       resetCameraAndTransparency();
     }, 300000);
+
+    // Adiciona o zoom para um local aleatório a cada 3 minutos
+    setInterval(() => {
+      zoomToRandomLocation();
+    }, 180000);
 
     return () => {
       if (mount.current && renderer.current.domElement.parentNode === mount.current) {
@@ -146,7 +152,7 @@ export default function SceneScreen({ isKioskMode }) {
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
-        createInitialTag(gltf.scene); // Create initial tag after model is loaded
+        createInitialTag(); // Create initial tag after model is loaded
         setIsLoading(false);
       });
     } else {
@@ -159,7 +165,7 @@ export default function SceneScreen({ isKioskMode }) {
               loader.parse(arrayBuffer, "", (gltf) => {
                 applyMaterialSettings(gltf);
                 scene.current.add(gltf.scene);
-                createInitialTag(gltf.scene); // Create initial tag after model is loaded
+                createInitialTag(); // Create initial tag after model is loaded
                 setIsLoading(false);
                 saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
               });
@@ -169,6 +175,25 @@ export default function SceneScreen({ isKioskMode }) {
           console.error("Erro ao carregar modelo GLB:", error);
         });
     }
+  };
+
+  const createInitialTag = () => {
+    // Remove any existing initial tag before creating a new one
+    const existingLabel = labels.find(label => label.element.textContent === "Você está aqui");
+    if (existingLabel) {
+      scene.current.remove(existingLabel);
+      setLabels(labels.filter(label => label !== existingLabel));
+    }
+
+    const center = new THREE.Vector3(0, 0, 0);
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = "Você está aqui";
+    labelDiv.style.marginTop = '-1em';
+    const label = new CSS2DObject(labelDiv);
+    label.position.set(center.x, center.y, center.z);
+    scene.current.add(label);
+    setLabels([label]);
   };
 
   const onWindowResize = () => {
@@ -219,7 +244,13 @@ export default function SceneScreen({ isKioskMode }) {
       }
     });
 
+    // Remove all labels before recreating the initial tag
+    labels.forEach(label => {
+      scene.current.remove(label);
+    });
     setLabels([]);
+
+    createInitialTag(); // Recreate the initial tag after reset
   };
 
   const focusOnLocation = (targetName, duration = 2000) => {
@@ -291,7 +322,21 @@ export default function SceneScreen({ isKioskMode }) {
       resetCameraAndTransparency(duration);
     }
   };
-  
+
+  const zoomToRandomLocation = () => {
+    const meshes = [];
+    scene.current.traverse((child) => {
+      if (child.isMesh) {
+        meshes.push(child);
+      }
+    });
+
+    if (meshes.length > 0) {
+      const randomMesh = meshes[Math.floor(Math.random() * meshes.length)];
+      focusOnLocation(randomMesh.name);
+    }
+  };
+
   const sendPostRequest = (text) => {
     setIsResponseLoading(true);
     fetch("https://roko.flowfuse.cloud/talkwithifc", {
@@ -311,7 +356,6 @@ export default function SceneScreen({ isKioskMode }) {
       });
   };
   
-
   const processServerCommands = (commands) => {
     if (commands.length > 0) {
       setResponse(commands);
@@ -323,7 +367,6 @@ export default function SceneScreen({ isKioskMode }) {
     }
   };
   
-
   const disposeResources = () => {
     scene.current.children.forEach((child) => {
       if (child.geometry) {
@@ -334,20 +377,9 @@ export default function SceneScreen({ isKioskMode }) {
       }
     });
     renderer.current.dispose();
-    labelRenderer.current.dispose();
-  };
-
-  const createInitialTag = (model) => {
-    const boundingBox = new THREE.Box3().setFromObject(model);
-    const center = boundingBox.getCenter(new THREE.Vector3());
-
-    const tagDiv = document.createElement('div');
-    tagDiv.className = 'label';
-    tagDiv.textContent = 'Você está aqui';
-    tagDiv.style.marginTop = '-1em';
-    const tagLabel = new CSS2DObject(tagDiv);
-    tagLabel.position.set(center.x, center.y, center.z);
-    scene.current.add(tagLabel);
+    if (labelRenderer.current.domElement && labelRenderer.current.domElement.parentNode) {
+      labelRenderer.current.domElement.parentNode.removeChild(labelRenderer.current.domElement);
+    }
   };
 
   return (
