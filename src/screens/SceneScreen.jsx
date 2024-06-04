@@ -103,7 +103,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     // Configuração inicial dos controles
     controls.current.enableZoom = true;
     controls.current.autoRotate = true;
-    controls.current.autoRotateSpeed = 0.5;
+    controls.current.autoRotateSpeed = 1.5;
 
     // Adiciona luz à cena
     const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -142,7 +142,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
 
     controls.current.enableZoom = true;
     controls.current.autoRotate = true;
-    controls.current.autoRotateSpeed = 2.5;
+    controls.current.autoRotateSpeed = 1.5;
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 20, 10);
