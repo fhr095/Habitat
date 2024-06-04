@@ -10,4 +10,3 @@ const Header = ({ onFilterClick }) => (
 );
 
 export default Header;
-
