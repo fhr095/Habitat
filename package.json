@@ -12,6 +12,7 @@
   "dependencies": {
     "@tweenjs/tween.js": "^23.1.2",
     "annyang": "^2.6.1",
+    "antd": "^5.18.0",
     "bootstrap": "^5.3.3",
     "firebase": "^10.11.1",
     "react": "^18.2.0",
