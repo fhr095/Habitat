@@ -297,7 +297,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       }
     });
   
-    let targetMesh = null;
+    let targetMeshs = [];
     scene.current.traverse((child) => {
       // Normaliza o nome do child removendo espaços extras e convertendo espaços e underscores para um único underscore
       const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
@@ -306,17 +306,22 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
   
       if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
-        targetMesh = child;
+        targetMeshs.push(child);
   
         if (child.isMesh) {
           child.material.opacity = 1;
-          child.material.depthWrite = true; // Definir depthWrite para true para o targetMesh
+          child.material.depthWrite = true;
         }
       }
     });
   
-    if (targetMesh) {
-      const boundingBox = new THREE.Box3().setFromObject(targetMesh);
+    if (targetMeshs.length > 0) {
+      const boundingBox = new THREE.Box3();
+
+      targetMeshs.forEach((mesh) => {
+        boundingBox.expandByObject(mesh);
+      });
+
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
   
@@ -343,7 +348,6 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       scene.current.add(label);
       setLabels([label]);
   
-      console.log(`Starting focus animation for ${targetName} at ${new Date().toISOString()}`);
       new TWEEN.Tween(camera.current.position)
         .to(newCameraPosition, duration)
         .easing(TWEEN.Easing.Cubic.InOut)
@@ -353,7 +357,6 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
           controls.current.update();
         })
         .onComplete(() => {
-          console.log(`Completed focus animation for ${targetName} at ${new Date().toISOString()}`);
           controls.current.target.copy(center);
           controls.current.update();
           startRotatingAroundPoint(center); // Start rotating after focusing
