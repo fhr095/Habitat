@@ -445,16 +445,30 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   };
 
   const createInitialTag = (model) => {
-    const boundingBox = new THREE.Box3().setFromObject(model);
-    const center = boundingBox.getCenter(new THREE.Vector3());
+    // Encontrar o mesh do "Restaurante Meretíssimo"
+    let targetMesh = null;
+    model.traverse((child) => {
+      const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
+      const normalizedTargetName = "Restaurante_Meretíssimo".trim().replace(/[\s_]+/g, "_");
+      if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
+        targetMesh = child;
+      }
+    });
 
-    const tagDiv = document.createElement('div');
-    tagDiv.className = 'label';
-    tagDiv.textContent = 'Você está aqui';
-    tagDiv.style.marginTop = '-1em';
-    const tagLabel = new CSS2DObject(tagDiv);
-    tagLabel.position.set(center.x, center.y, center.z);
-    scene.current.add(tagLabel);
+    if (targetMesh) {
+      const boundingBox = new THREE.Box3().setFromObject(targetMesh);
+      const center = boundingBox.getCenter(new THREE.Vector3());
+
+      const tagDiv = document.createElement('div');
+      tagDiv.className = 'label';
+      tagDiv.textContent = 'Você está aqui';
+      tagDiv.style.marginTop = '-1em';
+      const tagLabel = new CSS2DObject(tagDiv);
+      tagLabel.position.set(center.x, center.y, center.z);
+      scene.current.add(tagLabel);
+    } else {
+      console.error("Restaurante Meretíssimo não encontrado.");
+    }
   };
 
 
@@ -554,20 +568,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
             sendPostRequest(newTranscript);
           }}
           isDisabled={isButtonDisabled}
-        />
-        <button 
-          onClick={() => {
-            const simulatedTranscript = "Onde ficam os estacionamentos";
-            //const simulatedTranscript = "Onde tem cafeteria";
-            console.log("Simulated Transcript:", simulatedTranscript);
-            setTranscript(simulatedTranscript);
-            setShowQuestionAndResponse(true);
-            setIsResponseLoading(true);
-            sendPostRequest(simulatedTranscript);
-          }} 
-          className="simulated-audio-button">
-          Simular Áudio
-        </button>
+        />        
       </div>
       <ControlPanel
         onCameraChange={handleCameraChange}
