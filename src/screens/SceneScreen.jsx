@@ -57,7 +57,7 @@ let originalMaterials = new Map();
 let focusQueue = [];
 let isFocusing = false;
 
-export default function SceneScreen({ isKioskMode }) {
+export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, sceneHeightPercent = 1.3 }) {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
   const camera = useRef(
@@ -72,7 +72,7 @@ export default function SceneScreen({ isKioskMode }) {
   const labelRenderer = useRef(null);
   const controls = useRef(null);
   
-  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 70));
+  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50));
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
@@ -96,6 +96,20 @@ export default function SceneScreen({ isKioskMode }) {
     labelRenderer.current = new CSS2DRenderer();
     controls.current = new OrbitControls(camera.current, renderer.current.domElement);
 
+    // Configuração inicial da cena
+    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
+    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
+
+    // Configuração inicial dos controles
+    controls.current.enableZoom = true;
+    controls.current.autoRotate = true;
+    controls.current.autoRotateSpeed = 0.5;
+
+    // Adiciona luz à cena
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(0, 20, 10);
+    scene.current.add(light);
+
     camera.current.position.copy(initialCameraPosition.current);
     controls.current.target.copy(initialControlsTarget.current);
     setupScene();
@@ -116,9 +130,10 @@ export default function SceneScreen({ isKioskMode }) {
   }, []);
 
   const setupScene = () => {
-    renderer.current.setSize(window.innerWidth * 1, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
+    renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
     renderer.current.setClearColor(new THREE.Color("#fff"));
-    labelRenderer.current.setSize(window.innerWidth * 1, window.innerHeight);
+    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
     labelRenderer.current.domElement.style.position = 'absolute';
     labelRenderer.current.domElement.style.top = '0px';
     labelRenderer.current.domElement.style.pointerEvents = 'none';
@@ -127,7 +142,7 @@ export default function SceneScreen({ isKioskMode }) {
 
     controls.current.enableZoom = true;
     controls.current.autoRotate = true;
-    controls.current.autoRotateSpeed = 0.5;
+    controls.current.autoRotateSpeed = 2.5;
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 20, 10);
@@ -141,7 +156,7 @@ export default function SceneScreen({ isKioskMode }) {
         object.material.opacity = 0.5;
       }
     });
-    gltf.scene.position.x -= 30;
+    //gltf.scene.position.x -= 30; // Ajustar ou remover conforme necessário
   };
 
   const loadModel = async () => {
@@ -182,10 +197,11 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   const onWindowResize = () => {
-    camera.current.aspect = (window.innerWidth * 1) / window.innerHeight;
+    camera.current.aspect = (window.innerWidth * sceneWidthPercent) / (window.innerHeight*sceneHeightPercent);
     camera.current.updateProjectionMatrix();
-    renderer.current.setSize(window.innerWidth * 1, window.innerHeight);
-    labelRenderer.current.setSize(window.innerWidth * 1, window.innerHeight);
+    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
+    renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
+    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
   };
 
   const animate = () => {
@@ -397,7 +413,10 @@ export default function SceneScreen({ isKioskMode }) {
   };
 
   return (
-    <div ref={mount} className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}>
+    <div className="screen-container"> {/* Adiciona um container para a tela */}
+      <div ref={mount} className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}>
+        
+      </div>
       {isLoading && <LoadingScreen />}
       <ChatContainer
         isOpen={chatOpen}

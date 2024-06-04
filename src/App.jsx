@@ -49,7 +49,7 @@ export default function App() {
     <div className="app-container">
       <Router>
         <Routes>
-          <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} />} />
+        <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} />} />
         </Routes>
       </Router>
     </div>
