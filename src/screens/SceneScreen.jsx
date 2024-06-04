@@ -288,29 +288,41 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       }
     });
   
-    let targetMesh = null;
+    let targetMeshes = [];
     scene.current.traverse((child) => {
       // Normaliza o nome do child removendo espaços extras e convertendo espaços e underscores para um único underscore
       const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
-  
+
       // Normaliza o targetName da mesma maneira
       const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
-  
+
       if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
-        targetMesh = child;
-  
+        targetMeshes.push(child);
+
         if (child.isMesh) {
           child.material.opacity = 1;
           child.material.depthWrite = true; // Definir depthWrite para true para o targetMesh
+        } else if (child.isGroup) {
+          child.traverse((groupChild) => {
+            if (groupChild.isMesh) {
+              groupChild.material.opacity = 1;
+              groupChild.material.depthWrite = true;
+            }
+          });
         }
       }
     });
   
-    if (targetMesh) {
-      const boundingBox = new THREE.Box3().setFromObject(targetMesh);
+    if (targetMeshes.length > 0) {
+      const boundingBox = new THREE.Box3();
+      targetMeshes.forEach(mesh => {
+        boundingBox.expandByObject(mesh);
+      });
+
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
-  
+
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.current.fov * (Math.PI / 180);
       const aspect = camera.current.aspect;
@@ -445,6 +457,8 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     scene.current.add(tagLabel);
   };
 
+
+  /////////////////////////////////////
   const handleCameraChange = (value) => {
     camera.current.fov = value;
     camera.current.updateProjectionMatrix();
@@ -541,6 +555,19 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
           }}
           isDisabled={isButtonDisabled}
         />
+        <button 
+          onClick={() => {
+            const simulatedTranscript = "Onde ficam os estacionamentos";
+            //const simulatedTranscript = "Onde tem cafeteria";
+            console.log("Simulated Transcript:", simulatedTranscript);
+            setTranscript(simulatedTranscript);
+            setShowQuestionAndResponse(true);
+            setIsResponseLoading(true);
+            sendPostRequest(simulatedTranscript);
+          }} 
+          className="simulated-audio-button">
+          Simular Áudio
+        </button>
       </div>
       <ControlPanel
         onCameraChange={handleCameraChange}
