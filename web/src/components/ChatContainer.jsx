@@ -7,7 +7,6 @@ import Header from './Header';
 import Filters from './Filters';
 import MessageInput from './MessageInput';
 import { GoDiscussionClosed } from 'react-icons/go';
-import { AiFillLike, AiFillDislike } from 'react-icons/ai';
 import '../styles/Chat.scss';
 
 export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackFilter, setFeedbackFilter, dateRangeFilter, setDateRangeFilter }) {
@@ -92,6 +91,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
   };
 
   const formatDateHeader = (timestamp) => {
+    if (!timestamp || !timestamp.toDate) return ''; // Adiciona verificação para timestamp nulo ou indefinido
     const date = timestamp.toDate();
     const today = new Date();
     const yesterday = new Date(today);
@@ -184,7 +184,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
                       position="right"
                       type="text"
                       text={message.highlightedQuestion}
-                      date={new Date(message.timestamp.seconds * 1000)}
+                      date={message.timestamp ? new Date(message.timestamp.seconds * 1000) : ''}
                       status="sent"
                       data={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' }}
                       focus={index === highlightIndex}
@@ -196,11 +196,11 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
                         position="left"
                         type="text"
                         text={response}
-                        date={new Date(message.timestamp.seconds * 1000)}
+                        date={message.timestamp ? new Date(message.timestamp.seconds * 1000) : ''}
                         focus={index === highlightIndex}
                       />
                       <div className="message-meta">
-                        {message.ratings === 'Like' ? <AiFillLike size="20" color="#333"/> : <AiFillDislike size="20" color="#333"/>}
+                        <span>{message.ratings}</span>
                       </div>
                     </div>
                   ))}

@@ -463,8 +463,11 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       }
     });
     renderer.current.dispose();
-    labelRenderer.current.dispose();
+    if (labelRenderer.current.dispose) {
+      labelRenderer.current.dispose();
+    }
   };
+  
 
   const createInitialTag = (model) => {
     // Encontrar o mesh do "Restaurante Meretíssimo"
