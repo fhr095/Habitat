@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaPaperPlane, FaMicrophone } from 'react-icons/fa';
 import '../styles/Chat.scss';
 
-const MessageInput = ({ onSend }) => {
+export default function MessageInput({ onSend }){
   const [message, setMessage] = useState('');
 
   const handleSend = () => {
@@ -34,5 +34,3 @@ const MessageInput = ({ onSend }) => {
     </div>
   );
 };
-
-export default MessageInput;
