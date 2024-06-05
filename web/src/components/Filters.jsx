@@ -6,14 +6,14 @@ const Filters = ({ searchTerm, onSearch, feedbackFilter, setFeedbackFilter, date
   <div className="filters">
     <div className="like-dislike-counter">
       <button
-        className={`counter-item ${feedbackFilter === 'Gostei' ? 'active' : ''}`}
-        onClick={() => setFeedbackFilter(feedbackFilter === 'Gostei' ? '' : 'Gostei')}
+        className={`counter-item ${feedbackFilter === 'Like' ? 'active' : ''}`}
+        onClick={() => setFeedbackFilter(feedbackFilter === 'Like' ? '' : 'Like')}
       >
         <AiFillLike size={20} />
       </button>
       <button
-        className={`counter-item ${feedbackFilter === 'Não gostei' ? 'active' : ''}`}
-        onClick={() => setFeedbackFilter(feedbackFilter === 'Não gostei' ? '' : 'Não gostei')}
+        className={`counter-item ${feedbackFilter === 'Dislike' ? 'active' : ''}`}
+        onClick={() => setFeedbackFilter(feedbackFilter === 'Dislike' ? '' : 'Dislike')}
       >
         <AiFillDislike size={20} />
       </button>
@@ -24,7 +24,7 @@ const Filters = ({ searchTerm, onSearch, feedbackFilter, setFeedbackFilter, date
         className="search-bar" 
         placeholder="Search messages..." 
         value={searchTerm} 
-        onChange={onSearch} 
+        onChange={(e) => onSearch(e.target.value)} 
       />
       <div className="navigation-buttons">
         <button onClick={() => navigateHighlights(-1)} disabled={highlightedMessages.length === 0}>

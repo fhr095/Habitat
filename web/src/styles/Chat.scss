@@ -20,6 +20,8 @@
 }
 
 .chat-container {
+  width: 30vw; /* Define a largura como 30% da largura da tela */
+  min-width: 450px; /* Define o tamanho mínimo como 450px */
   height: 100vh;
   padding: 20px;
   background-color: #e5ddd5;
@@ -33,9 +35,6 @@
   position: relative;
   border: 1px solid #ccc;
   border-radius: 8px;
-  width: 100%; /* Definir a largura como 100% */
-  min-width: 200px;
-  max-width: 600px;
 }
 
 .resizer {

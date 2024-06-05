@@ -42,9 +42,8 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
     }
   }, [isOpen, messages]);
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    onSearch(e.target.value);
+  const handleSearch = (searchTerm) => {
+    setSearchTerm(searchTerm);
   };
 
   const matchesSearchTerm = (text) => text.toLowerCase().includes(searchTerm.toLowerCase());
