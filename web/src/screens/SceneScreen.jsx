@@ -306,18 +306,11 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
   
       if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
-        targetMeshes.push(child);
-
+        targetMeshs.push(child);
+  
         if (child.isMesh) {
           child.material.opacity = 1;
-          child.material.depthWrite = true; // Definir depthWrite para true para o targetMesh
-        } else if (child.isGroup) {
-          child.traverse((groupChild) => {
-            if (groupChild.isMesh) {
-              groupChild.material.opacity = 1;
-              groupChild.material.depthWrite = true;
-            }
-          });
+          child.material.depthWrite = true;
         }
       }
     });
