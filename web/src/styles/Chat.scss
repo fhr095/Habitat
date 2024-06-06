@@ -7,11 +7,10 @@
   align-items: center;
   z-index: 1000;
   transition: transform 0.3s ease-in-out;
-  overflow: hidden;
   background: transparent;
 
   &.hide {
-    transform: translateX(calc(100% - 50px));
+    transform: translateX(100%);
   }
 
   &.show {
@@ -23,18 +22,14 @@
   width: 30vw; /* Define a largura como 30% da largura da tela */
   min-width: 450px; /* Define o tamanho mínimo como 450px */
   height: 100vh;
-  padding: 20px;
   background-color: #e5ddd5;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-  display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out;
-  overflow-y: auto;
-  z-index: 1000;
-  left: 50px;
-  position: relative;
+  overflow-y: auto; /* Mantém a rolagem vertical */
+  z-index: 999; /* Ajuste o z-index para garantir que o chat fique atrás do botão */
+  left: 0; /* Remove left: 50px para ajustar a posição corretamente */
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 8px 0 0 8px;
 }
 
 .resizer {
@@ -134,7 +129,7 @@
 
 .chat-inner {
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Garante que a rolagem vertical está ativada */
   padding: 10px;
 
   &::-webkit-scrollbar {
@@ -258,7 +253,7 @@
 
 .chat-button {
   position: absolute;
-  left: 10px;
+  left: -40px; /* Ajuste a posição para fora da borda do chat */
   top: 20px;
   padding: 10px;
   background-color: #004736;

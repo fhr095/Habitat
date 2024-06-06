@@ -69,9 +69,32 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
     };
   };
 
+  const isWithinDateRange = (timestamp) => {
+    if (!timestamp || !dateRangeFilter.type) return true;
+
+    const date = timestamp.toDate();
+    const now = new Date();
+
+    switch (dateRangeFilter.type) {
+      case 'lastDay':
+        return date >= new Date(now.setDate(now.getDate() - 1));
+      case 'lastWeek':
+        return date >= new Date(now.setDate(now.getDate() - 7));
+      case 'last3Months':
+        return date >= new Date(now.setMonth(now.getMonth() - 3));
+      case 'thisYear':
+        return date.getFullYear() === now.getFullYear();
+      case 'custom':
+        const [startDate, endDate] = dateRangeFilter.custom || [];
+        return (!startDate || date >= new Date(startDate)) && (!endDate || date <= new Date(endDate));
+      default:
+        return true;
+    }
+  };
+
   const filteredMessages = messages.filter((message) => {
     const matchesFeedback = feedbackFilter === '' || message.ratings === feedbackFilter;
-    const matchesDate = true; // Implement date filtering logic if needed
+    const matchesDate = isWithinDateRange(message.timestamp);
 
     return (matchesSearchTerm(message.question) || message.responses.some(matchesSearchTerm)) && matchesFeedback && matchesDate;
   });
@@ -148,16 +171,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
 
   return (
     <div className={`container-chat-container ${isOpen ? 'show' : 'hide'}`}>
-      <button
-        className="chat-button"
-        onClick={() => setChatOpen(!isOpen)}
-      >
-        <GoDiscussionClosed color="white" size={20} />
-      </button>
-      <div
-        className="chat-container"
-        ref={chatContainerRef}
-      >
+      <div className="chat-container" ref={chatContainerRef}>
         <div className="resizer" onMouseDown={startResizing}></div>
         <Header onFilterClick={() => setShowFilters(!showFilters)} />
         {showFilters && (
@@ -210,6 +224,12 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
         </div>
         <MessageInput onSend={handleSendMessage} />
       </div>
+      <button
+        className="chat-button"
+        onClick={() => setChatOpen(!isOpen)}
+      >
+        <GoDiscussionClosed color="white" size={20} />
+      </button>
     </div>
   );
 }
