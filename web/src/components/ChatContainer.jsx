@@ -7,6 +7,7 @@ import Header from './Header';
 import Filters from './Filters';
 import MessageInput from './MessageInput';
 import { GoDiscussionClosed } from 'react-icons/go';
+import {AiFillLike, AiFillDislike} from 'react-icons/ai';
 import '../styles/Chat.scss';
 
 export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackFilter, setFeedbackFilter, dateRangeFilter, setDateRangeFilter }) {
@@ -213,7 +214,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
                         focus={index === highlightIndex}
                       />
                       <div className="message-meta">
-                        <span>{message.ratings}</span>
+                        {message.ratings === 'Like' ? <AiFillLike color="green" size={20} /> : <AiFillDislike color="red" size={20} />}
                       </div>
                     </div>
                   ))}

@@ -9,13 +9,13 @@ const Filters = ({ searchTerm, onSearch, feedbackFilter, setFeedbackFilter, date
         className={`counter-item ${feedbackFilter === 'Like' ? 'active' : ''}`}
         onClick={() => setFeedbackFilter(feedbackFilter === 'Like' ? '' : 'Like')}
       >
-        <AiFillLike size={20} />
+        <AiFillLike size={20} color={feedbackFilter === 'Like' ? 'green' : 'inherit'} />
       </button>
       <button
         className={`counter-item ${feedbackFilter === 'Dislike' ? 'active' : ''}`}
         onClick={() => setFeedbackFilter(feedbackFilter === 'Dislike' ? '' : 'Dislike')}
       >
-        <AiFillDislike size={20} />
+        <AiFillDislike size={20} color={feedbackFilter === 'Dislike' ? 'red' : 'inherit'} />
       </button>
     </div>
     <div className="search-bar-container">
@@ -26,14 +26,14 @@ const Filters = ({ searchTerm, onSearch, feedbackFilter, setFeedbackFilter, date
         value={searchTerm} 
         onChange={(e) => onSearch(e.target.value)} 
       />
-      <div className="navigation-buttons">
+      {/* <div className="navigation-buttons">
         <button onClick={() => navigateHighlights(-1)} disabled={highlightedMessages.length === 0}>
           <AiOutlineUp size={20} />
         </button>
         <button onClick={() => navigateHighlights(1)} disabled={highlightedMessages.length === 0}>
           <AiOutlineDown size={20} />
         </button>
-      </div>
+      </div> */}
     </div>
     <div className="date-range-filter">
       <select onChange={(e) => setDateRangeFilter({ type: e.target.value })} value={dateRangeFilter.type}>
