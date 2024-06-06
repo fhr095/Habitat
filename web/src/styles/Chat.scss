@@ -137,11 +137,11 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: #075e54; /* Cor padrão do projeto */
     border-radius: 10px;
 
     &:hover {
-      background-color: #999;
+      background-color: #064c44; /* Cor mais escura para hover */
     }
   }
 }
