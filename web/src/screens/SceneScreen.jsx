@@ -173,20 +173,21 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   const loadModel = async () => {
     const loader = new GLTFLoader();
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-
+  
     const db = await openDB("ModelCache", 1);
-
+  
     const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
     if (cachedModel) {
       console.log("Carregando modelo a partir do cache");
-
+  
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
-        setProgress(progress);
+        setProgress(Math.floor(progress));
       }, 100);
-
+  
       loader.parse(cachedModel, "", (gltf) => {
+        clearInterval(interval);
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
         createInitialTag(gltf.scene); // Create initial tag after model is loaded
@@ -194,25 +195,38 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       });
     } else {
       console.log("Carregando modelo a partir do Firebase Storage");
-      getDownloadURL(modelRef)
-        .then((url) => {
-          fetch(url)
-            .then((response) => response.arrayBuffer())
-            .then((arrayBuffer) => {
-              loader.parse(arrayBuffer, "", (gltf) => {
-                applyMaterialSettings(gltf);
-                scene.current.add(gltf.scene);
-                createInitialTag(gltf.scene); // Create initial tag after model is loaded
-                setIsLoading(false);
-                saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
-              });
-            });
-        })
-        .catch((error) => {
-          console.error("Erro ao carregar modelo GLB:", error);
-        });
+      
+      const xhr = new XMLHttpRequest();
+      xhr.responseType = 'arraybuffer';
+      
+      xhr.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setProgress(Math.floor(percentComplete));
+        }
+      };
+  
+      xhr.onload = (event) => {
+        if (xhr.status === 200) {
+          const arrayBuffer = xhr.response;
+          loader.parse(arrayBuffer, "", (gltf) => {
+            applyMaterialSettings(gltf);
+            scene.current.add(gltf.scene);
+            createInitialTag(gltf.scene); // Create initial tag after model is loaded
+            setIsLoading(false);
+            saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
+          });
+        } else {
+          console.error("Erro ao carregar modelo GLB:", xhr.statusText);
+        }
+      };
+  
+      xhr.open('GET', await getDownloadURL(modelRef), true);
+      xhr.send();
     }
   };
+  
+  
 
   const onWindowResize = () => {
     camera.current.aspect = (window.innerWidth * sceneWidthPercent) / (window.innerHeight*sceneHeightPercent);
