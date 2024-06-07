@@ -84,6 +84,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   const [labels, setLabels] = useState([]);
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
+  const [progress, setProgress] = useState(0);
 
   /////////
   const [searchTerm, setSearchTerm] = useState('');
@@ -178,6 +179,13 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
     if (cachedModel) {
       console.log("Carregando modelo a partir do cache");
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+        setProgress(progress);
+      }, 100);
+
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
         scene.current.add(gltf.scene);
@@ -501,7 +509,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       <div ref={mount} className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}>
         
       </div>
-      {isLoading && <LoadingScreen />}
+      {isLoading && <LoadingScreen progress={progress} />}
       <ChatContainer
         isOpen={chatOpen}
         onSearch={setSearchTerm}

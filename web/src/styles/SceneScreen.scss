@@ -94,19 +94,6 @@
   }
 }
 
-.loading {
-  position: fixed;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100vh;
-  background-color: #0047368a;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5000;
-}
-
 .message-container {
   display: flex;
   flex-direction: column;
