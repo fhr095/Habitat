@@ -2,19 +2,25 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import {
+  CSS2DRenderer,
+  CSS2DObject,
+} from "three/examples/jsm/renderers/CSS2DRenderer";
 import { ref, getDownloadURL } from "firebase/storage";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { storage } from "../firebase";
+import { useNavigate } from "react-router-dom";
 import * as TWEEN from "@tweenjs/tween.js";
 
 import LoadingScreen from "../components/LoadingScreen";
-import ChatContainer from '../components/ChatContainer';
+import ChatContainer from "../components/ChatContainer";
 import Question from "../components/Question";
 import Response from "../components/Response";
 import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
 
-import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
+import { GoHomeFill } from "react-icons/go";
+import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
 import "../styles/SceneScreen.scss";
 
@@ -57,7 +63,12 @@ let originalMaterials = new Map();
 let focusQueue = [];
 let isFocusing = false;
 
-export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, sceneHeightPercent = 1.3 }) {
+export default function SceneScreen({
+  isKioskMode,
+  sceneWidthPercent = 1.3,
+  sceneHeightPercent = 1.3,
+  user,
+}) {
   const mount = useRef(null);
   const scene = useRef(new THREE.Scene());
   const camera = useRef(
@@ -71,7 +82,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   const renderer = useRef(null);
   const labelRenderer = useRef(null);
   const controls = useRef(null);
-  
+
   const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50));
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
   const [isLoading, setIsLoading] = useState(true);
@@ -86,20 +97,44 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   const timeoutRef = useRef(null);
   const [progress, setProgress] = useState(0);
 
+  const navigate = useNavigate(); // Hook de navegação
+
   /////////
-  const [searchTerm, setSearchTerm] = useState('');
-  const [feedbackFilter, setFeedbackFilter] = useState('');
-  const [dateRangeFilter, setDateRangeFilter] = useState({ type: '' });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [feedbackFilter, setFeedbackFilter] = useState("");
+  const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
   /////////
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     renderer.current = new THREE.WebGLRenderer({ antialias: true });
     labelRenderer.current = new CSS2DRenderer();
-    controls.current = new OrbitControls(camera.current, renderer.current.domElement);
+    controls.current = new OrbitControls(
+      camera.current,
+      renderer.current.domElement
+    );
 
     // Configuração inicial da cena
-    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
-    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
+    renderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
+    labelRenderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
 
     // Configuração inicial dos controles
     controls.current.enableZoom = true;
@@ -130,7 +165,10 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     }, 300000);
 
     return () => {
-      if (mount.current && renderer.current.domElement.parentNode === mount.current) {
+      if (
+        mount.current &&
+        renderer.current.domElement.parentNode === mount.current
+      ) {
         mount.current.removeChild(renderer.current.domElement);
         mount.current.removeChild(labelRenderer.current.domElement);
       }
@@ -141,13 +179,19 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   }, []);
 
   const setupScene = () => {
-    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
+    renderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
     renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
     renderer.current.setClearColor(new THREE.Color("#fff"));
-    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
-    labelRenderer.current.domElement.style.position = 'absolute';
-    labelRenderer.current.domElement.style.top = '0px';
-    labelRenderer.current.domElement.style.pointerEvents = 'none';
+    labelRenderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
+    labelRenderer.current.domElement.style.position = "absolute";
+    labelRenderer.current.domElement.style.top = "0px";
+    labelRenderer.current.domElement.style.pointerEvents = "none";
     mount.current.appendChild(renderer.current.domElement);
     mount.current.appendChild(labelRenderer.current.domElement);
 
@@ -167,25 +211,24 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
         object.material.opacity = 0.5;
       }
     });
-    //gltf.scene.position.x -= 30; // Ajustar ou remover conforme necessário
   };
 
   const loadModel = async () => {
     const loader = new GLTFLoader();
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-  
+
     const db = await openDB("ModelCache", 1);
-  
+
     const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
     if (cachedModel) {
       console.log("Carregando modelo a partir do cache");
-  
+
       let progress = 0;
       const interval = setInterval(() => {
         progress += 10;
         setProgress(Math.floor(progress));
       }, 100);
-  
+
       loader.parse(cachedModel, "", (gltf) => {
         clearInterval(interval);
         applyMaterialSettings(gltf);
@@ -195,17 +238,17 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       });
     } else {
       console.log("Carregando modelo a partir do Firebase Storage");
-      
+
       const xhr = new XMLHttpRequest();
-      xhr.responseType = 'arraybuffer';
-      
+      xhr.responseType = "arraybuffer";
+
       xhr.onprogress = (event) => {
         if (event.lengthComputable) {
           const percentComplete = (event.loaded / event.total) * 100;
           setProgress(Math.floor(percentComplete));
         }
       };
-  
+
       xhr.onload = (event) => {
         if (xhr.status === 200) {
           const arrayBuffer = xhr.response;
@@ -220,20 +263,26 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
           console.error("Erro ao carregar modelo GLB:", xhr.statusText);
         }
       };
-  
-      xhr.open('GET', await getDownloadURL(modelRef), true);
+
+      xhr.open("GET", await getDownloadURL(modelRef), true);
       xhr.send();
     }
   };
-  
-  
 
   const onWindowResize = () => {
-    camera.current.aspect = (window.innerWidth * sceneWidthPercent) / (window.innerHeight*sceneHeightPercent);
+    camera.current.aspect =
+      (window.innerWidth * sceneWidthPercent) /
+      (window.innerHeight * sceneHeightPercent);
     camera.current.updateProjectionMatrix();
-    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
+    renderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
     renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
-    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
+    labelRenderer.current.setSize(
+      window.innerWidth * sceneWidthPercent,
+      window.innerHeight * sceneHeightPercent
+    );
   };
 
   const animate = () => {
@@ -258,7 +307,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .start();
-  
+
     new TWEEN.Tween(controls.current.target)
       .to(
         {
@@ -271,14 +320,14 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       .easing(TWEEN.Easing.Cubic.Out)
       .onUpdate(() => controls.current.update())
       .start();
-  
+
     originalMaterials.forEach((originalState, child) => {
       if (child.isMesh) {
         child.material.opacity = originalState.opacity;
         child.material.depthWrite = originalState.depthWrite;
       }
     });
-  
+
     setLabels([]);
   };
 
@@ -289,21 +338,21 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       processFocusQueue();
     }
   };
-  
+
   const processFocusQueue = () => {
     if (focusQueue.length === 0) {
       isFocusing = false;
       return;
     }
-  
+
     isFocusing = true;
     const { targetName, duration } = focusQueue.shift();
-  
-    labels.forEach(label => {
+
+    labels.forEach((label) => {
       scene.current.remove(label);
     });
     setLabels([]);
-  
+
     // Definir todos os objetos como transparentes e depthWrite como false inicialmente
     scene.current.traverse((child) => {
       if (child.isMesh) {
@@ -318,18 +367,21 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
         child.material.depthWrite = false;
       }
     });
-  
+
     let targetMeshs = [];
     scene.current.traverse((child) => {
       // Normaliza o nome do child removendo espaços extras e convertendo espaços e underscores para um único underscore
       const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
-  
+
       // Normaliza o targetName da mesma maneira
       const normalizedTargetName = targetName.trim().replace(/[\s_]+/g, "_");
-  
-      if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
+
+      if (
+        (child.isMesh || child.isGroup) &&
+        normalizedChildName.includes(normalizedTargetName)
+      ) {
         targetMeshs.push(child);
-  
+
         if (child.isMesh) {
           child.material.opacity = 1;
           child.material.depthWrite = true; // Definir depthWrite para true para o targetMesh
@@ -339,12 +391,11 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
               groupChild.material.opacity = 1;
               groupChild.material.depthWrite = true;
             }
-          }
-          );
+          });
         }
       }
     });
-  
+
     if (targetMeshs.length > 0) {
       const boundingBox = new THREE.Box3();
 
@@ -354,30 +405,30 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
 
       const center = boundingBox.getCenter(new THREE.Vector3());
       const size = boundingBox.getSize(new THREE.Vector3());
-  
+
       const maxDim = Math.max(size.x, size.y, size.z);
       const fov = camera.current.fov * (Math.PI / 180);
       const aspect = camera.current.aspect;
       let cameraZ = maxDim / (2 * Math.tan(fov / 2));
-  
+
       // Adjust the cameraZ to ensure the entire object fits within the view, considering aspect ratio
       cameraZ = cameraZ / Math.min(1, aspect);
-  
+
       const newCameraPosition = new THREE.Vector3(
         center.x,
         center.y + cameraZ * 0.5, // Adjust to be higher
         center.z + cameraZ
       );
-  
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'label';
+
+      const labelDiv = document.createElement("div");
+      labelDiv.className = "label";
       labelDiv.textContent = targetName;
-      labelDiv.style.marginTop = '-1em';
+      labelDiv.style.marginTop = "-1em";
       const label = new CSS2DObject(labelDiv);
       label.position.set(center.x, center.y, center.z);
       scene.current.add(label);
       setLabels([label]);
-  
+
       new TWEEN.Tween(camera.current.position)
         .to(newCameraPosition, duration)
         .easing(TWEEN.Easing.Cubic.InOut)
@@ -417,7 +468,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       focusOnLocation(randomMesh.name);
     }
   };
-  
+
   let isRotating = false; // Variável para controlar a rotação
 
   const startRotatingAroundPoint = (point) => {
@@ -489,15 +540,19 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       labelRenderer.current.dispose();
     }
   };
-  
 
   const createInitialTag = (model) => {
     // Encontrar o mesh do "Restaurante Meretíssimo"
     let targetMesh = null;
     model.traverse((child) => {
       const normalizedChildName = child.name.trim().replace(/[\s_]+/g, "_");
-      const normalizedTargetName = "Restaurante_Meretíssimo".trim().replace(/[\s_]+/g, "_");
-      if ((child.isMesh || child.isGroup) && normalizedChildName.includes(normalizedTargetName)) {
+      const normalizedTargetName = "Restaurante_Meretíssimo"
+        .trim()
+        .replace(/[\s_]+/g, "_");
+      if (
+        (child.isMesh || child.isGroup) &&
+        normalizedChildName.includes(normalizedTargetName)
+      ) {
         targetMesh = child;
       }
     });
@@ -506,10 +561,10 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
       const boundingBox = new THREE.Box3().setFromObject(targetMesh);
       const center = boundingBox.getCenter(new THREE.Vector3());
 
-      const tagDiv = document.createElement('div');
-      tagDiv.className = 'label';
-      tagDiv.textContent = 'Você está aqui';
-      tagDiv.style.marginTop = '-1em';
+      const tagDiv = document.createElement("div");
+      tagDiv.className = "label";
+      tagDiv.textContent = "Você está aqui";
+      tagDiv.style.marginTop = "-1em";
       const tagLabel = new CSS2DObject(tagDiv);
       tagLabel.position.set(center.x, center.y, center.z);
       scene.current.add(tagLabel);
@@ -518,24 +573,49 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     }
   };
 
+  const handleLogin = () => {
+    navigate("/login"); // Redireciona para a página de login
+  };
+
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        console.log("Usuário deslogado com sucesso");
+        setUser(null);
+      })
+      .catch((error) => {
+        console.error("Erro ao deslogar:", error);
+      });
+  };
+
   return (
-    <div className="screen-container"> {/* Adiciona um container para a tela */}
-      <div ref={mount} className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}>
-        
-      </div>
+    <div className="screen-container">
+      {" "}
+      {/* Adiciona um container para a tela */}
+      <div
+        ref={mount}
+        className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}
+      ></div>
       {isLoading && <LoadingScreen progress={progress} />}
-      <ChatContainer
-        isOpen={chatOpen}
-        onSearch={setSearchTerm}
-        feedbackFilter={feedbackFilter}
-        setFeedbackFilter={setFeedbackFilter}
-        dateRangeFilter={dateRangeFilter}
-        setDateRangeFilter={setDateRangeFilter}
-        setChatOpen={setChatOpen}
-      />
-      
+      {user && (
+        <ChatContainer
+          isOpen={chatOpen}
+          onSearch={setSearchTerm}
+          feedbackFilter={feedbackFilter}
+          setFeedbackFilter={setFeedbackFilter}
+          dateRangeFilter={dateRangeFilter}
+          setDateRangeFilter={setDateRangeFilter}
+          setChatOpen={setChatOpen}
+        />
+      )}
       <div className="box-question-response">
-        {transcript !== "" ? <Question question={transcript} showNotification={showQuestionAndResponse} /> : null}
+        {transcript !== "" ? (
+          <Question
+            question={transcript}
+            showNotification={showQuestionAndResponse}
+          />
+        ) : null}
 
         {isResponseLoading && <LoadingResponse />}
         {response.length > 0 && (
@@ -543,7 +623,9 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
             iaResponse={response}
             setIaReponse={setResponse}
             question={transcript}
-            focusOnLocation={(targetName, duration) => focusOnLocation(targetName, duration)}
+            focusOnLocation={(targetName, duration) =>
+              focusOnLocation(targetName, duration)
+            }
             onFinish={() => {
               setShowQuestionAndResponse(false);
               setIsButtonDisabled(false);
@@ -551,9 +633,11 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
           />
         )}
       </div>
-
       <div className="button-container">
-        <button onClick={() => resetCameraAndTransparency()} className="home-button">
+        <button
+          onClick={() => resetCameraAndTransparency()}
+          className="home-button"
+        >
           <GoHomeFill color="white" size={20} />
         </button>
         <VoiceButton
@@ -565,6 +649,17 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
           }}
           isDisabled={isButtonDisabled}
         />
+      </div>
+      <div className="login-container">
+        {!user ? (
+          <button onClick={handleLogin} className="login-button">
+            <FaSignInAlt color="white" size={20} />
+          </button>
+        ) : (
+          <button onClick={handleLogout} className="login-button">
+            <FaSignOutAlt color="white" size={20} />
+          </button>
+        )}
       </div>
     </div>
   );
