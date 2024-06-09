@@ -20,7 +20,7 @@ import VoiceButton from "../components/VoiceButton";
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
-import "../styles/TrainingContainer.scss";
+//import "../styles/TrainingContainer.scss";
 
 const openDB = (name, version) => {
   return new Promise((resolve, reject) => {
