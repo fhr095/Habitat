@@ -15,7 +15,7 @@ import Question from "../components/Question";
 import Response from "../components/Response";
 import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
-import TrainingContainer from '../components/TrainingContainer';
+//import TrainingContainer from '../components/TrainingContainer';
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
