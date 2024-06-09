@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { ref, getDownloadURL } from "firebase/storage";
@@ -14,10 +15,12 @@ import Question from "../components/Question";
 import Response from "../components/Response";
 import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
+import TrainingContainer from '../components/TrainingContainer';
 
 import { GoHomeFill, GoDiscussionClosed } from "react-icons/go";
 
 import "../styles/SceneScreen.scss";
+import "../styles/TrainingContainer.scss";
 
 const openDB = (name, version) => {
   return new Promise((resolve, reject) => {
@@ -86,6 +89,8 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
 
+  const [trainingOpen, setTrainingOpen] = useState(false);
+
   /////////
   const [searchTerm, setSearchTerm] = useState('');
   const [feedbackFilter, setFeedbackFilter] = useState('');
@@ -131,6 +136,9 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
   }, []);
 
   const setupScene = () => {
+    
+    adjustResolution(); // Ajustar a resolução durante a configuração inicial
+
     renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight*sceneHeightPercent);
     renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
     renderer.current.setClearColor(new THREE.Color("#fff"));
@@ -150,6 +158,35 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
     scene.current.add(light);
   };
 
+  const adjustResolution = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+  
+    if (width <= 768) {
+      sceneWidthPercent = 1.0;
+      sceneHeightPercent = 1.0;
+    } else if (width <= 1024) {
+      sceneWidthPercent = 1.2;
+      sceneHeightPercent = 1.2;
+    } else {
+      sceneWidthPercent = 1.3;
+      sceneHeightPercent = 1.3;
+    }
+  
+    renderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
+    labelRenderer.current.setSize(window.innerWidth * sceneWidthPercent, window.innerHeight * sceneHeightPercent);
+    camera.current.aspect = (window.innerWidth * sceneWidthPercent) / (window.innerHeight * sceneHeightPercent);
+    camera.current.updateProjectionMatrix();
+  };
+  
+  useEffect(() => {
+    window.addEventListener("resize", adjustResolution);
+    adjustResolution();
+    return () => {
+      window.removeEventListener("resize", adjustResolution);
+    };
+  }, []);
+
   const applyMaterialSettings = (gltf) => {
     gltf.scene.traverse((object) => {
       if (object.isMesh) {
@@ -157,22 +194,24 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
         object.material.opacity = 0.5;
       }
     });
-    //gltf.scene.position.x -= 30; // Ajustar ou remover conforme necessário
+    scene.current.add(gltf.scene);
   };
 
   const loadModel = async () => {
     const loader = new GLTFLoader();
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.0/'); // Caminho correto para o decoder Draco
+    loader.setDRACOLoader(dracoLoader);
+  
     const modelRef = ref(storage, "model/cidade_completa_mg.glb");
-
     const db = await openDB("ModelCache", 1);
-
+  
     const cachedModel = await getFromDB(db, "models", "cidade_completa_mg");
     if (cachedModel) {
       console.log("Carregando modelo a partir do cache");
       loader.parse(cachedModel, "", (gltf) => {
         applyMaterialSettings(gltf);
-        scene.current.add(gltf.scene);
-        createInitialTag(gltf.scene); // Create initial tag after model is loaded
+        createInitialTag(gltf.scene);
         setIsLoading(false);
       });
     } else {
@@ -184,8 +223,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
             .then((arrayBuffer) => {
               loader.parse(arrayBuffer, "", (gltf) => {
                 applyMaterialSettings(gltf);
-                scene.current.add(gltf.scene);
-                createInitialTag(gltf.scene); // Create initial tag after model is loaded
+                createInitialTag(gltf.scene);
                 setIsLoading(false);
                 saveToDB(db, "models", "cidade_completa_mg", arrayBuffer);
               });
@@ -576,6 +614,7 @@ export default function SceneScreen({ isKioskMode, sceneWidthPercent = 1.3, scen
         onRotateSpeedChange={handleRotateSpeedChange}
         onScreenPositionChange={handleScreenPositionChange}
       />
+      
     </div>
   );
 }
