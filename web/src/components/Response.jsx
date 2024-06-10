@@ -7,12 +7,13 @@ import {
   AiFillDislike,
   AiOutlineLike,
   AiOutlineDislike,
-  AiOutlineRobot,
   AiOutlineArrowLeft,
   AiOutlineArrowRight,
 } from "react-icons/ai";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Response.scss";
+
+import Avatar from "../assets/images/Avatar.png";
 
 export default function Response({
   iaResponse,
@@ -41,15 +42,26 @@ export default function Response({
       } = iaResponse[currentMessageIndex];
 
       setShowMessage(true);
+<<<<<<< HEAD
       setShowFeedbackButtons(false); // Ocultar botões de feedback enquanto o áudio está tocando
 
       const handleAudioEnd = () => {
         setShowFeedbackButtons(true); // Mostrar botões de feedback após o término do áudio
+=======
+      setShowFeedbackButtons(false);
+
+      const handleAudioEnd = () => {
+        setShowFeedbackButtons(true);
+>>>>>>> main
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
           timeoutRef.current = setTimeout(() => {
             setShowProgress(false);
             setShowMessage(false);
+<<<<<<< HEAD
+=======
+            setIaReponse([]);
+>>>>>>> main
             if (onFinish) onFinish(); 
           }, 5000); 
         } else {
@@ -142,7 +154,7 @@ export default function Response({
       {showMessage && (
         <div className="message-wrapper">
           <div className="bot-icon">
-            <AiOutlineRobot size={24} color="black" />
+            <img src={Avatar} alt="Avatar" style={{ width: '30px', height: '30px' }} />
           </div>
           <div className="message-container">
             <div className="response">

@@ -1,10 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
+import LoginScreen from "./screens/LoginScreen";
+import RegisterScreen from "./screens/RegisterScreen";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./App.css";
 
 export default function App() {
   const [isKioskMode, setIsKioskMode] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -49,7 +66,9 @@ export default function App() {
     <div className="app-container">
       <Router>
         <Routes>
-          <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} />} />
+          <Route path="/login" element={<LoginScreen />} />
+          <Route path="/register" element={<RegisterScreen />} />
+          <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
         </Routes>
       </Router>
     </div>

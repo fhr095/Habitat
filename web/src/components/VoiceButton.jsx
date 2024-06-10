@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
+import ScaleLoader from "react-spinners/ScaleLoader";
+
+import "../styles/VoiceButton.scss";
 
 export default function VoiceButton({ setTranscript, isDisabled }) {
   const [isRecording, setIsRecording] = useState(false);
@@ -53,12 +56,16 @@ export default function VoiceButton({ setTranscript, isDisabled }) {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       style={{
-        transform: isRecording ? "scale(0.9)" : "scale(1)",
+        transform: isRecording ? "scale(1.2)" : "scale(1)",
         transition: "transform 0.2s",
       }}
       disabled={isDisabled} // Desabilitar botão quando isDisabled for true
     >
-      <FaMicrophone color="white" size={20} />
+      {isRecording ? (
+        <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
+      ) : (
+        <FaMicrophone color="white" size={20} />
+      )}
     </button>
   );
 }
