@@ -43,29 +43,22 @@ export default function RegisterScreen() {
         profileImageUrl,
       });
 
-      navigate('/');
+      navigate('/home');
     } catch (err) {
-      handleFirebaseError(err.code);
-    }
-  };
-
-  const handleFirebaseError = (errorCode) => {
-    switch (errorCode) {
-      case 'auth/email-already-in-use':
-        setError('Este e-mail já está em uso.');
-        break;
-      case 'auth/invalid-email':
-        setError('O endereço de e-mail não é válido.');
-        break;
-      case 'auth/operation-not-allowed':
-        setError('Operação não permitida. Entre em contato com o suporte.');
-        break;
-      case 'auth/weak-password':
-        setError('A senha deve ter pelo menos 6 caracteres.');
-        break;
-      default:
-        setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
-        break;
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          setError('Este email já está em uso.');
+          break;
+        case 'auth/invalid-email':
+          setError('Email inválido.');
+          break;
+        case 'auth/weak-password':
+          setError('A senha deve ter pelo menos 6 caracteres.');
+          break;
+        default:
+          setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+          break;
+      }
     }
   };
 
@@ -129,4 +122,3 @@ export default function RegisterScreen() {
     </div>
   );
 }
-

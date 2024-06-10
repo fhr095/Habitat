@@ -2,14 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-<<<<<<< HEAD
-import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-=======
 import {
   CSS2DRenderer,
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer";
->>>>>>> main
 import { ref, getDownloadURL } from "firebase/storage";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { storage } from "../firebase";
@@ -83,35 +79,17 @@ export default function SceneScreen({
       1000
     )
   );
-<<<<<<< HEAD
-  const renderer = useRef(null); // Inicializar como null
-  const labelRenderer = useRef(null); // Inicializar como null
-  const controls = useRef(null); // Inicializar como null
-  const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50)); // Armazenar a posição inicial da câmera
-  const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0)); // Armazenar o alvo inicial dos controles
-=======
   const renderer = useRef(null);
   const labelRenderer = useRef(null);
   const controls = useRef(null);
 
   const initialCameraPosition = useRef(new THREE.Vector3(0, 20, 50));
   const initialControlsTarget = useRef(new THREE.Vector3(0, 0, 0));
->>>>>>> main
   const [isLoading, setIsLoading] = useState(true);
   const [response, setResponse] = useState([]);
   const [transcript, setTranscript] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const [showQuestionAndResponse, setShowQuestionAndResponse] = useState(true);
-<<<<<<< HEAD
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false); // Estado para desabilitar o botão
-  const [isResponseLoading, setIsResponseLoading] = useState(false); // Estado para indicar carregamento da resposta
-  const [labels, setLabels] = useState([]); // Estado para armazenar os rótulos
-
-  useEffect(() => {
-    renderer.current = new THREE.WebGLRenderer({ antialias: true });
-    labelRenderer.current = new CSS2DRenderer();
-    controls.current = new OrbitControls(camera.current, renderer.current.domElement);
-=======
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [isResponseLoading, setIsResponseLoading] = useState(false);
   const [labels, setLabels] = useState([]);
@@ -168,7 +146,6 @@ export default function SceneScreen({
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 20, 10);
     scene.current.add(light);
->>>>>>> main
 
     camera.current.position.copy(initialCameraPosition.current);
     controls.current.target.copy(initialControlsTarget.current);
@@ -209,12 +186,6 @@ export default function SceneScreen({
     );
     renderer.current.setPixelRatio(window.devicePixelRatio * 1.5); // Aumenta a resolução
     renderer.current.setClearColor(new THREE.Color("#fff"));
-<<<<<<< HEAD
-    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
-    labelRenderer.current.domElement.style.position = 'absolute';
-    labelRenderer.current.domElement.style.top = '0px';
-    labelRenderer.current.domElement.style.pointerEvents = 'none'; // Adicione esta linha
-=======
     labelRenderer.current.setSize(
       window.innerWidth * sceneWidthPercent,
       window.innerHeight * sceneHeightPercent
@@ -222,7 +193,6 @@ export default function SceneScreen({
     labelRenderer.current.domElement.style.position = "absolute";
     labelRenderer.current.domElement.style.top = "0px";
     labelRenderer.current.domElement.style.pointerEvents = "none";
->>>>>>> main
     mount.current.appendChild(renderer.current.domElement);
     mount.current.appendChild(labelRenderer.current.domElement);
 
@@ -305,10 +275,6 @@ export default function SceneScreen({
       (window.innerWidth * sceneWidthPercent) /
       (window.innerHeight * sceneHeightPercent);
     camera.current.updateProjectionMatrix();
-<<<<<<< HEAD
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
-    labelRenderer.current.setSize(window.innerWidth, window.innerHeight);
-=======
     renderer.current.setSize(
       window.innerWidth * sceneWidthPercent,
       window.innerHeight * sceneHeightPercent
@@ -318,7 +284,6 @@ export default function SceneScreen({
       window.innerWidth * sceneWidthPercent,
       window.innerHeight * sceneHeightPercent
     );
->>>>>>> main
   };
 
   const animate = () => {
@@ -364,11 +329,7 @@ export default function SceneScreen({
       }
     });
 
-<<<<<<< HEAD
-    setLabels([]); // Limpar rótulos
-=======
     setLabels([]);
->>>>>>> main
   };
 
   const focusOnLocation = (targetName, duration = 2000) => {
@@ -408,29 +369,6 @@ export default function SceneScreen({
       }
     });
 
-<<<<<<< HEAD
-    if (targetMesh) {
-      const targetPosition = new THREE.Vector3();
-      targetMesh.getWorldPosition(targetPosition);
-      const labelDiv = document.createElement('div');
-      labelDiv.className = 'label';
-      labelDiv.textContent = targetName;
-      labelDiv.style.marginTop = '-1em';
-      const label = new CSS2DObject(labelDiv);
-      label.position.set(targetPosition.x, targetPosition.y, targetPosition.z);
-      scene.current.add(label);
-      setLabels((prevLabels) => [...prevLabels, label]);
-
-      const tweenPosition = new TWEEN.Tween(camera.current.position)
-        .to(
-          {
-            x: targetPosition.x + 10,
-            y: targetPosition.y + 10,
-            z: targetPosition.z + 10,
-          },
-          duration
-        )
-=======
     let targetMeshs = [];
     scene.current.traverse((child) => {
       // Normaliza o nome do child removendo espaços extras e convertendo espaços e underscores para um único underscore
@@ -494,7 +432,6 @@ export default function SceneScreen({
 
       new TWEEN.Tween(camera.current.position)
         .to(newCameraPosition, duration)
->>>>>>> main
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate(() => {
           camera.current.lookAt(center);
@@ -508,12 +445,8 @@ export default function SceneScreen({
           setTimeout(() => {
             scene.current.remove(label);
             resetCameraAndTransparency(duration);
-<<<<<<< HEAD
-          }, 5000); // Remover o rótulo após 5 segundos
-=======
             processFocusQueue(); // Processar a próxima chamada na fila
           }, Math.max(duration, 2000));
->>>>>>> main
         })
         .start();
     } else {
@@ -604,9 +537,6 @@ export default function SceneScreen({
       }
     });
     renderer.current.dispose();
-<<<<<<< HEAD
-    labelRenderer.current.dispose();
-=======
     if (labelRenderer.current.dispose) {
       labelRenderer.current.dispose();
     }
@@ -658,7 +588,6 @@ export default function SceneScreen({
       .catch((error) => {
         console.error("Erro ao deslogar:", error);
       });
->>>>>>> main
   };
 
   return (
@@ -716,11 +645,7 @@ export default function SceneScreen({
           setTranscript={(newTranscript) => {
             setTranscript(newTranscript);
             setShowQuestionAndResponse(true);
-<<<<<<< HEAD
-            setIsResponseLoading(true); 
-=======
             setIsResponseLoading(true);
->>>>>>> main
             sendPostRequest(newTranscript);
           }}
           isDisabled={isButtonDisabled}

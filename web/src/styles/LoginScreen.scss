@@ -1,50 +1,64 @@
 .loginScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+
+  form {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
-  
-    form {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    h1 {
+      margin-bottom: 20px;
+      color: #004736;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .remember-me {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  
-      h1 {
-        margin-bottom: 20px;
+      margin-bottom: 20px;
+
+      input {
+        margin-right: 5px;
+      }
+
+      label {
         color: #004736;
       }
-  
-      .error {
-        color: red;
-        margin-bottom: 20px;
-      }
-  
-      input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
-  
-      button {
-        width: 100%;
-        padding: 10px;
-        background-color: #004736;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-      }
-  
-      button:hover {
-        background-color: #003526;
-      }
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #004736;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #003526;
     }
   }
+}
