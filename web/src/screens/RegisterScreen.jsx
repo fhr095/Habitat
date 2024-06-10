@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase";
-import "../styles/RegisterScreen.scss";
+import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase';
+import '../styles/RegisterScreen.scss';
 
 export default function RegisterScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [profileImage, setProfileImage] = useState(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -25,15 +25,11 @@ export default function RegisterScreen() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Upload profile image to storage
-      let profileImageUrl = "";
+      let profileImageUrl = '';
       if (profileImage) {
         const imageRef = ref(storage, `profile_images/${user.uid}`);
         await uploadBytes(imageRef, profileImage);
@@ -41,13 +37,13 @@ export default function RegisterScreen() {
       }
 
       // Save user data to firestore
-      await setDoc(doc(db, "users", user.uid), {
+      await setDoc(doc(db, 'users', user.uid), {
         email,
         name,
         profileImageUrl,
       });
 
-      navigate("/");
+      navigate('/');
     } catch (err) {
       handleFirebaseError(err.code);
     }
@@ -55,20 +51,20 @@ export default function RegisterScreen() {
 
   const handleFirebaseError = (errorCode) => {
     switch (errorCode) {
-      case "auth/email-already-in-use":
-        setError("Este e-mail já está em uso.");
+      case 'auth/email-already-in-use':
+        setError('Este e-mail já está em uso.');
         break;
-      case "auth/invalid-email":
-        setError("O endereço de e-mail não é válido.");
+      case 'auth/invalid-email':
+        setError('O endereço de e-mail não é válido.');
         break;
-      case "auth/operation-not-allowed":
-        setError("Operação não permitida. Entre em contato com o suporte.");
+      case 'auth/operation-not-allowed':
+        setError('Operação não permitida. Entre em contato com o suporte.');
         break;
-      case "auth/weak-password":
-        setError("A senha deve ter pelo menos 6 caracteres.");
+      case 'auth/weak-password':
+        setError('A senha deve ter pelo menos 6 caracteres.');
         break;
       default:
-        setError("Ocorreu um erro inesperado. Tente novamente mais tarde.");
+        setError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
         break;
     }
   };
@@ -121,7 +117,11 @@ export default function RegisterScreen() {
         </div>
         <div className="form-group">
           <label>Imagem de Perfil:</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
         </div>
         {error && <p className="error-message">{error}</p>}
         <button type="submit">Registrar</button>
@@ -129,3 +129,4 @@ export default function RegisterScreen() {
     </div>
   );
 }
+
