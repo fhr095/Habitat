@@ -7,10 +7,18 @@ import Header from './Header';
 import Filters from './Filters';
 import MessageInput from './MessageInput';
 import { GoDiscussionClosed } from 'react-icons/go';
-import {AiFillLike, AiFillDislike} from 'react-icons/ai';
+import { AiFillLike, AiFillDislike } from 'react-icons/ai';
 import '../styles/Chat.scss';
 
-export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackFilter, setFeedbackFilter, dateRangeFilter, setDateRangeFilter }) {
+export default function ChatContainer({
+  isOpen,
+  setChatOpen,
+  onSearch,
+  feedbackFilter,
+  setFeedbackFilter,
+  dateRangeFilter,
+  setDateRangeFilter,
+}) {
   const [messages, setMessages] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -34,6 +42,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
       });
       setMessages(updatedMessages);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -185,6 +194,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
             setDateRangeFilter={setDateRangeFilter}
             highlightedMessages={highlightedMessagesList}
             navigateHighlights={navigateHighlights}
+            messages={messages} // Passa a lista de mensagens para o componente Filters
           />
         )}
         <div className="chat-inner" ref={chatInnerRef}>
