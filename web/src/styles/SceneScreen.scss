@@ -69,12 +69,12 @@
 .login-container {
   position: absolute;
   top: 10px;
-  left: 10px; // Mudar para o canto superior esquerdo
+  left: 10px;
   z-index: 10;
 
   .login-button {
     padding: 10px;
-    background-color: #004736; // Ajustar para a cor de fundo do projeto
+    background-color: #004736;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -86,7 +86,7 @@
   }
 
   .login-button:hover {
-    background-color: #003526; // Ajustar para a cor de fundo do projeto ao passar o mouse
+    background-color: #003526;
   }
 }
 

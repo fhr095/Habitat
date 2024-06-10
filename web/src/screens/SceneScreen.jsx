@@ -98,6 +98,7 @@ export default function SceneScreen({
   const [progress, setProgress] = useState(0);
 
   const navigate = useNavigate(); // Hook de navegação
+  let setUser = (user) => {}; // Função para atualizar o estado do usuário
 
   /////////
   const [searchTerm, setSearchTerm] = useState("");
