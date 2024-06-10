@@ -24,6 +24,7 @@
   height: 100vh;
   background-color: #e5ddd5;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
   flex-direction: column;
   overflow-y: auto; /* Mantém a rolagem vertical */
   z-index: 999; /* Ajuste o z-index para garantir que o chat fique atrás do botão */
