@@ -98,7 +98,7 @@ export default function SceneScreen({
   const [progress, setProgress] = useState(0);
 
   const navigate = useNavigate(); // Hook de navegação
-  let setUser = (user) => {}; // Função para atualizar o estado do usuário
+  const [currentUser, setUser] = useState(null); // Estado do usuário
 
   /////////
   const [searchTerm, setSearchTerm] = useState("");
@@ -575,7 +575,7 @@ export default function SceneScreen({
   };
 
   const handleLogin = () => {
-    navigate("/login"); // Redireciona para a página de login
+    window.location.href = "/login"; // Recarregar a página de login
   };
 
   const handleLogout = () => {
@@ -599,7 +599,7 @@ export default function SceneScreen({
         className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}
       ></div>
       {isLoading && <LoadingScreen progress={progress} />}
-      {user && (
+      {currentUser && (
         <ChatContainer
           isOpen={chatOpen}
           onSearch={setSearchTerm}
@@ -652,7 +652,7 @@ export default function SceneScreen({
         />
       </div>
       <div className="login-container">
-        {!user ? (
+        {!currentUser ? (
           <button onClick={handleLogin} className="login-button">
             <FaSignInAlt color="white" size={20} />
           </button>
