@@ -84,6 +84,7 @@
       border: none;
       cursor: pointer;
       transition: color 0.3s;
+      color: inherit; /* Define a cor inicial */
 
       &.active {
         color: inherit;
@@ -91,6 +92,18 @@
 
       &:hover {
         color: #075e54; /* Cor ao passar o mouse */
+      }
+
+      &.active .like-icon {
+        color: green; /* Cor verde para o ícone de like quando ativo */
+      }
+
+      &.active .dislike-icon {
+        color: red; /* Cor vermelha para o ícone de dislike quando ativo */
+      }
+
+      span {
+        margin-left: 5px;
       }
     }
   }

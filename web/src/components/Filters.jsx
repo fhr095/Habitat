@@ -29,14 +29,14 @@ const Filters = ({
           className={`counter-item ${feedbackFilter === 'Like' ? 'active' : ''}`}
           onClick={() => setFeedbackFilter(feedbackFilter === 'Like' ? '' : 'Like')}
         >
-          <AiFillLike size={20} color={feedbackFilter === 'Like' ? 'green' : 'inherit'} />
+          <AiFillLike size={20} className="like-icon" />
           <span>{likeCount}</span>
         </button>
         <button
           className={`counter-item ${feedbackFilter === 'Dislike' ? 'active' : ''}`}
           onClick={() => setFeedbackFilter(feedbackFilter === 'Dislike' ? '' : 'Dislike')}
         >
-          <AiFillDislike size={20} color={feedbackFilter === 'Dislike' ? 'red' : 'inherit'} />
+          <AiFillDislike size={20} className="dislike-icon" />
           <span>{dislikeCount}</span>
         </button>
       </div>
