@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
-import LoginScreen from "./screens/LoginScreen";
-import RegisterScreen from "./screens/RegisterScreen";
 import HomeScreen from "./screens/HomeScreen"; // Importe a tela Home
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -77,8 +75,6 @@ export default function App() {
     <div className="app-container">
       <Router>
         <Routes>
-          <Route path="/login" element={<LoginScreen />} />
-          <Route path="/register" element={<RegisterScreen />} />
           <Route path="/scene" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
           <Route path="/" element={<HomeScreen />} />
         </Routes>
