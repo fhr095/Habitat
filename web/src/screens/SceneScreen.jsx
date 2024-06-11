@@ -1,3 +1,4 @@
+// src/screens/SceneScreen.jsx
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -18,11 +19,14 @@ import Question from "../components/Question";
 import Response from "../components/Response";
 import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
+import LoginRegisterModal from "../components/LoginRegisterModal";
 
 import { GoHomeFill } from "react-icons/go";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
 import "../styles/SceneScreen.scss";
+
+// Funções de IndexedDB
 
 const openDB = (name, version) => {
   return new Promise((resolve, reject) => {
@@ -96,15 +100,14 @@ export default function SceneScreen({
   const audioRef = useRef(null);
   const timeoutRef = useRef(null);
   const [progress, setProgress] = useState(0);
+  const [modalShow, setModalShow] = useState(false); // Estado para controle do modal
 
   const navigate = useNavigate(); // Hook de navegação
   const [currentUser, setUser] = useState(null); // Estado do usuário
 
-  /////////
   const [searchTerm, setSearchTerm] = useState("");
   const [feedbackFilter, setFeedbackFilter] = useState("");
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
-  /////////
 
   useEffect(() => {
     const auth = getAuth();
@@ -574,8 +577,8 @@ export default function SceneScreen({
     }
   };
 
-  const handleLogin = () => {
-    window.location.href = "/login"; // Recarregar a página de login
+  const handleLoginRegister = () => {
+    setModalShow(true);
   };
 
   const handleLogout = () => {
@@ -653,7 +656,7 @@ export default function SceneScreen({
       </div>
       <div className="login-container">
         {!currentUser ? (
-          <button onClick={handleLogin} className="login-button">
+          <button onClick={handleLoginRegister} className="login-button">
             <FaSignInAlt color="white" size={20} />
           </button>
         ) : (
@@ -662,6 +665,7 @@ export default function SceneScreen({
           </button>
         )}
       </div>
+      <LoginRegisterModal show={modalShow} handleClose={() => setModalShow(false)} />
     </div>
   );
 }

@@ -1,90 +1,68 @@
-.home-container {
+.home-screen {
   display: flex;
-  height: 100vh;
+  flex-direction: column;
+  align-items: center;
 
-  .sidebar {
-    width: 250px;
-    background-color: #f8f9fa;
-    border-right: 1px solid #dee2e6;
+  .header {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     padding: 20px;
+    background-color: #004736;
+    color: white;
+    width: 100%;
 
-    .profile-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-
-      .profile-image {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background-color: #ccc;
-        background-size: cover;
-        background-position: center;
-      }
-
-      .profile-name {
-        margin-top: 10px;
-        font-size: 1.2em;
-        color: #004736;
-      }
+    .logo {
+      font-size: 1.5em;
+      font-weight: bold;
     }
 
-    .create-habitat-button {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      background-color: #004736;
-      color: white;
+    .access-platform-button {
+      background-color: white;
+      color: #004736;
       border: none;
+      padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 20px;
+      font-size: 1em;
       transition: background-color 0.3s;
+    }
 
-      .create-icon {
-        margin-right: 10px;
-      }
-
-      &:hover {
-        background-color: #00362a;
-      }
+    .access-platform-button:hover {
+      background-color: #ccc;
     }
   }
 
-  .main-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: #e9ecef;
+  .content-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px;
+    width: 80%;
+    margin-top: 20px;
 
-    .search-bar {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-bottom: 20px;
-      box-sizing: border-box;
+    .text-container {
+      width: 50%;
+      padding-right: 20px;
+
+      h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+
+      p {
+        font-size: 1.2em;
+        line-height: 1.5;
+      }
     }
 
-    .habitat-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .video-container {
+      width: 50%;
 
-      .habitat-item {
-        padding: 15px;
-        background-color: #c8e6c9;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-
-        &:hover {
-          background-color: #a5d6a7;
-        }
+      video {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
     }
   }

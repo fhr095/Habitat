@@ -1,3 +1,5 @@
+// src/App.jsx
+
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
@@ -77,8 +79,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/register" element={<RegisterScreen />} />
-          <Route path="/home" element={<HomeScreen user={user} />} />
-          <Route path="/" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
+          <Route path="/scene" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
+          <Route path="/" element={<HomeScreen />} />
         </Routes>
       </Router>
     </div>
