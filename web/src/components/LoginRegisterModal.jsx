@@ -101,22 +101,23 @@ export default function LoginRegisterModal({ show, handleClose }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     const auth = getAuth();
-
+  
     if (registerPassword !== confirmPassword) {
       setRegisterError("As senhas não coincidem");
       return;
     }
-
+  
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, registerEmail, registerPassword);
       const user = userCredential.user;
-
-      // Enviar email de verificação
-      await sendEmailVerification(user);
-
-      // Deslogar o usuário após enviar o email de verificação
+  
+      await sendEmailVerification(user, {
+        url: 'https://habitatest.netlify.app/scene',
+        handleCodeInApp: true
+      });
+  
       await signOut(auth);
-
+  
       setUserUid(user.uid);
       setUserEmail(user.email);
       setEmailVerificationSent(true); // Indica que o email de verificação foi enviado
@@ -137,6 +138,7 @@ export default function LoginRegisterModal({ show, handleClose }) {
       }
     }
   };
+  
 
   return (
     <>

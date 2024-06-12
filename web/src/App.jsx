@@ -1,35 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
-import HomeScreen from "./screens/HomeScreen"; // Importe a tela Home
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from './firebase'; // Certifique-se de importar o db aqui
-import "./App.css";
+import HomeScreen from "./screens/HomeScreen";
+import './App.css';
 
 export default function App() {
   const [isKioskMode, setIsKioskMode] = useState(false);
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setUser({ uid: user.uid, ...userDoc.data() });
-        } else {
-          console.error("No such user document!");
-          setUser(null); // Ensure user is not set if document doesn't exist
-        }
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -72,12 +49,10 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Router>
-        <Routes>
-          <Route path="/scene" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
-          <Route path="/" element={<HomeScreen />} />
-        </Routes>
-      </Router>
+      <Routes>
+        <Route path="/scene" element={<SceneScreen isKioskMode={isKioskMode} sceneWidthPercent={1.3} sceneHeightPercent={1.3} user={user} />} />
+        <Route path="/" element={<HomeScreen />} />
+      </Routes>
     </div>
   );
 }
