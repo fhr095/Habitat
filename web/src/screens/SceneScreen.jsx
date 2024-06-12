@@ -657,10 +657,12 @@ export default function SceneScreen({
       <div className="login-container">
         {!currentUser ? (
           <button onClick={handleLoginRegister} className="login-button">
+            <p>Login/Cadastrar</p>
             <FaSignInAlt color="white" size={20} />
           </button>
         ) : (
           <button onClick={handleLogout} className="login-button">
+            <p>Sair</p>
             <FaSignOutAlt color="white" size={20} />
           </button>
         )}

@@ -1,5 +1,3 @@
-// src/App.jsx
-
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SceneScreen from "./screens/SceneScreen";
@@ -23,6 +21,7 @@ export default function App() {
           setUser({ uid: user.uid, ...userDoc.data() });
         } else {
           console.error("No such user document!");
+          setUser(null); // Ensure user is not set if document doesn't exist
         }
       } else {
         setUser(null);
