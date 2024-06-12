@@ -73,20 +73,20 @@
   z-index: 10;
 
   .login-button {
-    padding: 10px;
-    background-color: #004736;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 16px;
+    gap: 10px;
+    border: 2px solid #004736;
+    border-radius: 5px;
+    color: #004736;
+    background-color: white;
+    padding: 5px 10px;
+    font-weight: bold;
   }
 
   .login-button:hover {
-    background-color: #003526;
+    transform: scale(0.95);
   }
 }
 
