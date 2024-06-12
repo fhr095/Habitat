@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
 import { Modal, Button, Form } from 'react-bootstrap';
 import '../styles/LoginRegisterModal.scss';
 import { FcGoogle } from 'react-icons/fc';
-import FinalizeRegistrationModal from './FinalizeRegistrationModal'; // Importe o novo modal
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Certifique-se de importar corretamente o Firestore
+import FinalizeRegistrationModal from './FinalizeRegistrationModal';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function LoginRegisterModal({ show, handleClose }) {
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
@@ -31,6 +31,14 @@ export default function LoginRegisterModal({ show, handleClose }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
       const user = userCredential.user;
+
+      // Verificar se o email foi verificado
+      await user.reload();
+      if (!user.emailVerified) {
+        setLoginError('Por favor, verifique seu email antes de fazer login.');
+        await auth.signOut();
+        return;
+      }
 
       // Verificar se o usuário já tem um cadastro completo
       const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -65,6 +73,14 @@ export default function LoginRegisterModal({ show, handleClose }) {
       .then(async (result) => {
         if (result) {
           const user = result.user;
+
+          await user.reload();
+          if (!user.emailVerified) {
+            setLoginError('Por favor, verifique seu email antes de fazer login.');
+            await auth.signOut();
+            return;
+          }
+
           const userDoc = await getDoc(doc(db, 'users', user.uid));
           if (!userDoc.exists()) {
             setUserUid(user.uid);
@@ -99,7 +115,7 @@ export default function LoginRegisterModal({ show, handleClose }) {
       await sendEmailVerification(user);
 
       // Deslogar o usuário após enviar o email de verificação
-      await auth.signOut();
+      await signOut(auth);
 
       setUserUid(user.uid);
       setUserEmail(user.email);
