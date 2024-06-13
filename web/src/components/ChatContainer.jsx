@@ -80,7 +80,7 @@ export default function ChatContainer({
   };
 
   const isWithinDateRange = (timestamp) => {
-    if (!timestamp || !dateRangeFilter.type) return true;
+    if (!timestamp || !dateRangeFilter || !dateRangeFilter.type) return true;
 
     const date = timestamp.toDate();
     const now = new Date();
