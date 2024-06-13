@@ -11,6 +11,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [userUid, setUserUid] = useState(null);
   const [userEmail, setUserEmail] = useState('');
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false); // Adicionando a inicialização aqui
 
   // Estado do login
   const [loginEmail, setLoginEmail] = useState('');
