@@ -17,9 +17,9 @@ export default function ChatContainer({
   setFeedbackFilter,
   dateRangeFilter,
   setDateRangeFilter,
+  searchTerm,
 }) {
   const [messages, setMessages] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [showFilters, setShowFilters] = useState(false);
   const chatInnerRef = useRef(null);
@@ -50,10 +50,6 @@ export default function ChatContainer({
       chatInnerRef.current.scrollTop = chatInnerRef.current.scrollHeight;
     }
   }, [isOpen, messages]);
-
-  const handleSearch = (searchTerm) => {
-    setSearchTerm(searchTerm);
-  };
 
   const matchesSearchTerm = (text) => text.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -101,14 +97,18 @@ export default function ChatContainer({
     }
   };
 
-  const filteredMessages = messages.filter((message) => {
-    const matchesFeedback = feedbackFilter === '' || message.ratings === feedbackFilter;
-    const matchesDate = isWithinDateRange(message.timestamp);
+  const filteredMessages = useMemo(() => {
+    return messages.filter((message) => {
+      const matchesFeedback = feedbackFilter === '' || message.ratings === feedbackFilter;
+      const matchesDate = isWithinDateRange(message.timestamp);
 
-    return (matchesSearchTerm(message.question) || message.responses.some(matchesSearchTerm)) && matchesFeedback && matchesDate;
-  });
+      return (matchesSearchTerm(message.question) || message.responses.some(matchesSearchTerm)) && matchesFeedback && matchesDate;
+    });
+  }, [messages, feedbackFilter, dateRangeFilter, searchTerm]);
 
-  const highlightedMessagesList = filteredMessages.map(highlightMessage);
+  const highlightedMessagesList = useMemo(() => {
+    return filteredMessages.map(highlightMessage);
+  }, [filteredMessages, searchTerm]);
 
   const navigateHighlights = (direction) => {
     const newIndex = highlightIndex + direction;
@@ -151,7 +151,9 @@ export default function ChatContainer({
     return groupedMessages;
   };
 
-  const groupedMessages = groupMessagesByDate(highlightedMessagesList);
+  const groupedMessages = useMemo(() => {
+    return groupMessagesByDate(highlightedMessagesList);
+  }, [highlightedMessagesList]);
 
   const handleSendMessage = (message) => {
     // Implement the logic to send the message
@@ -178,6 +180,9 @@ export default function ChatContainer({
     window.removeEventListener('mouseup', stopResizing);
   };
 
+  const likeCount = useMemo(() => messages.filter((message) => message.ratings === 'Like').length, [messages]);
+  const dislikeCount = useMemo(() => messages.filter((message) => message.ratings === 'Dislike').length, [messages]);
+
   return (
     <div className={`container-chat-container ${isOpen ? 'show' : 'hide'}`}>
       <div className="chat-container" ref={chatContainerRef}>
@@ -195,14 +200,14 @@ export default function ChatContainer({
                 onClick={() => setFeedbackFilter(feedbackFilter === 'Like' ? '' : 'Like')}
               >
                 <AiFillLike size={20} className="like-icon" />
-                <span>{useMemo(() => messages.filter((message) => message.ratings === 'Like').length, [messages])}</span>
+                <span>{likeCount}</span>
               </button>
               <button
                 className={`counter-item ${feedbackFilter === 'Dislike' ? 'active' : ''}`}
                 onClick={() => setFeedbackFilter(feedbackFilter === 'Dislike' ? '' : 'Dislike')}
               >
                 <AiFillDislike size={20} className="dislike-icon" />
-                <span>{useMemo(() => messages.filter((message) => message.ratings === 'Dislike').length, [messages])}</span>
+                <span>{dislikeCount}</span>
               </button>
             </div>
             <div className="search-bar-container">
@@ -211,7 +216,7 @@ export default function ChatContainer({
                 className="search-bar"
                 placeholder="Search messages..."
                 value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
+                onChange={(e) => onSearch(e.target.value)}
               />
             </div>
             <div className="date-range-filter">
@@ -286,7 +291,7 @@ export default function ChatContainer({
             className="message-input"
             placeholder="Type a message"
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => onSearch(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') handleSendMessage(searchTerm);
             }}

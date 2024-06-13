@@ -11,6 +11,10 @@ export default function SceneScreen() {
   const [chatOpen, setChatOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [modalShow, setModalShow] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState('');
+  const [dateRangeFilter, setDateRangeFilter] = useState({ type: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,6 +52,12 @@ export default function SceneScreen() {
         <ChatContainer
           isOpen={chatOpen}
           setChatOpen={setChatOpen}
+          onSearch={setSearchTerm}
+          feedbackFilter={feedbackFilter}
+          setFeedbackFilter={setFeedbackFilter}
+          dateRangeFilter={dateRangeFilter}
+          setDateRangeFilter={setDateRangeFilter}
+          searchTerm={searchTerm} // Certifique-se de passar searchTerm
         />
       )}
       <div className="login-container">

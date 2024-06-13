@@ -4,12 +4,14 @@ import { getAuth, applyActionCode } from "firebase/auth";
 import SceneScreen from "./screens/SceneScreen";
 import HomeScreen from "./screens/HomeScreen";
 import VerificationModal from "./components/VerificationModal";
+import LoginRegisterModal from "./components/LoginRegisterModal";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false); // Novo estado para o modal de login
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,17 +33,22 @@ export default function App() {
   }, [location]);
 
   const handleCloseVerificationModal = () => setShowVerificationModal(false);
-  const handleLogin = () => {
+  const handleOpenLoginModal = () => {
     setShowVerificationModal(false);
-    navigate('/login'); // Redireciona para a tela de login ou outra apropriada
+    setShowLoginModal(true); // Abre o modal de login
   };
+  const handleCloseLoginModal = () => setShowLoginModal(false); // Fecha o modal de login
 
   return (
     <div className="app-container">
       <VerificationModal
         show={showVerificationModal}
         handleClose={handleCloseVerificationModal}
-        handleLogin={handleLogin}
+        handleLogin={handleOpenLoginModal} // Chama a função para abrir o modal de login
+      />
+      <LoginRegisterModal
+        show={showLoginModal}
+        handleClose={handleCloseLoginModal} // Chama a função para fechar o modal de login
       />
       <Routes>
         <Route path="/scene" element={<SceneScreen user={user} />} />
