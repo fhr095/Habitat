@@ -3,11 +3,13 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, applyActionCode } from "firebase/auth";
 import SceneScreen from "./screens/SceneScreen";
 import HomeScreen from "./screens/HomeScreen";
+import VerificationModal from "./components/VerificationModal";
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
-  const [verificationMessage, setVerificationMessage] = useState('');
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,18 +22,27 @@ export default function App() {
       const auth = getAuth();
       applyActionCode(auth, actionCode)
         .then(() => {
-          setVerificationMessage('Email verificado com sucesso! Redirecionando para a cena...');
-          navigate('/scene'); // Redireciona para a tela de SceneScreen
+          setShowVerificationModal(true);
         })
         .catch((error) => {
-          setVerificationMessage('Erro ao verificar email. O link pode ter expirado ou já ter sido usado.');
+          console.error('Erro ao verificar email:', error);
         });
     }
-  }, [location, navigate]);
+  }, [location]);
+
+  const handleCloseVerificationModal = () => setShowVerificationModal(false);
+  const handleLogin = () => {
+    setShowVerificationModal(false);
+    navigate('/login'); // Redireciona para a tela de login ou outra apropriada
+  };
 
   return (
     <div className="app-container">
-      {verificationMessage && <p>{verificationMessage}</p>}
+      <VerificationModal
+        show={showVerificationModal}
+        handleClose={handleCloseVerificationModal}
+        handleLogin={handleLogin}
+      />
       <Routes>
         <Route path="/scene" element={<SceneScreen user={user} />} />
         <Route path="/" element={<HomeScreen />} />
