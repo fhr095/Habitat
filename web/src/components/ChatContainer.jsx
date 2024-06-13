@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { MessageBox } from 'react-chat-elements';
 import 'react-chat-elements/dist/main.css';
-import Header from './Header';
-import Filters from './Filters';
-import MessageInput from './MessageInput';
 import { GoDiscussionClosed } from 'react-icons/go';
 import { AiFillLike, AiFillDislike } from 'react-icons/ai';
+import { FiMoreVertical } from 'react-icons/fi';
+import { FaPaperPlane, FaMicrophone } from 'react-icons/fa';
 import '../styles/Chat.scss';
 
 export default function ChatContainer({
@@ -183,19 +182,67 @@ export default function ChatContainer({
     <div className={`container-chat-container ${isOpen ? 'show' : 'hide'}`}>
       <div className="chat-container" ref={chatContainerRef}>
         <div className="resizer" onMouseDown={startResizing}></div>
-        <Header onFilterClick={() => setShowFilters(!showFilters)} />
+        <div className="chat-header">
+          <button className="filter-button" onClick={() => setShowFilters(!showFilters)}>
+            <FiMoreVertical size={20} />
+          </button>
+        </div>
         {showFilters && (
-          <Filters
-            searchTerm={searchTerm}
-            onSearch={handleSearch}
-            feedbackFilter={feedbackFilter}
-            setFeedbackFilter={setFeedbackFilter}
-            dateRangeFilter={dateRangeFilter}
-            setDateRangeFilter={setDateRangeFilter}
-            highlightedMessages={highlightedMessagesList}
-            navigateHighlights={navigateHighlights}
-            messages={messages} // Passa a lista de mensagens para o componente Filters
-          />
+          <div className="filters">
+            <div className="like-dislike-counter">
+              <button
+                className={`counter-item ${feedbackFilter === 'Like' ? 'active' : ''}`}
+                onClick={() => setFeedbackFilter(feedbackFilter === 'Like' ? '' : 'Like')}
+              >
+                <AiFillLike size={20} className="like-icon" />
+                <span>{useMemo(() => messages.filter((message) => message.ratings === 'Like').length, [messages])}</span>
+              </button>
+              <button
+                className={`counter-item ${feedbackFilter === 'Dislike' ? 'active' : ''}`}
+                onClick={() => setFeedbackFilter(feedbackFilter === 'Dislike' ? '' : 'Dislike')}
+              >
+                <AiFillDislike size={20} className="dislike-icon" />
+                <span>{useMemo(() => messages.filter((message) => message.ratings === 'Dislike').length, [messages])}</span>
+              </button>
+            </div>
+            <div className="search-bar-container">
+              <input
+                type="text"
+                className="search-bar"
+                placeholder="Search messages..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+            <div className="date-range-filter">
+              <select onChange={(e) => setDateRangeFilter({ type: e.target.value })} value={dateRangeFilter.type}>
+                <option value="">Any time</option>
+                <option value="lastDay">Last day</option>
+                <option value="lastWeek">Last week</option>
+                <option value="last3Months">Last 3 months</option>
+                <option value="thisYear">This year</option>
+                <option value="custom">Custom range</option>
+              </select>
+              {dateRangeFilter.type === 'custom' && (
+                <div className="custom-date-range">
+                  <input
+                    type="date"
+                    onChange={(e) =>
+                      setDateRangeFilter((prev) => ({ ...prev, custom: [e.target.value, prev.custom?.[1]] }))
+                    }
+                    value={dateRangeFilter.custom?.[0] || ''}
+                  />
+                  <input
+                    type="date"
+                    onChange={(e) =>
+                      setDateRangeFilter((prev) => ({ ...prev, custom: [prev.custom?.[0], e.target.value] }))
+                    }
+                    value={dateRangeFilter.custom?.[1] || ''}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         )}
         <div className="chat-inner" ref={chatInnerRef}>
           {Object.keys(groupedMessages).map((dateKey) => (
@@ -233,7 +280,21 @@ export default function ChatContainer({
             </React.Fragment>
           ))}
         </div>
-        <MessageInput onSend={handleSendMessage} />
+        <div className="message-input-container">
+          <input
+            type="text"
+            className="message-input"
+            placeholder="Type a message"
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') handleSendMessage(searchTerm);
+            }}
+          />
+          <button className="send-button" onClick={() => handleSendMessage(searchTerm)}>
+            {searchTerm.trim() ? <FaPaperPlane size={20} /> : <FaMicrophone size={20} />}
+          </button>
+        </div>
       </div>
       <button
         className="chat-button"
