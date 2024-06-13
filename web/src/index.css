@@ -4,25 +4,5 @@
   box-sizing: border-box;
   scrollbar-width: auto;
   scrollbar-color: #075e54 #f0f0f0; /* Cor da barra de rolagem e do fundo */
-}
-
-*::-webkit-scrollbar {
-  width: 12px; /* Largura da barra de rolagem */
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #075e54; /* Cor da barra de rolagem */
-  border-radius: 10px; /* Bordas arredondadas */
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3); /* Sombra interna */
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background-color: #064c44; /* Cor mais escura ao passar o mouse */
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5); /* Sombra interna mais forte */
-}
-
-*::-webkit-scrollbar-track {
-  background: #f0f0f0; /* Cor de fundo do trilho da barra de rolagem */
-  border-radius: 10px; /* Bordas arredondadas do trilho */
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1); /* Sombra interna leve */
+  font-family: sans-serif;
 }
