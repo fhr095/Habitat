@@ -35,7 +35,7 @@ export default function App() {
   const handleCloseVerificationModal = () => setShowVerificationModal(false);
   const handleOpenLoginModal = () => {
     setShowVerificationModal(false);
-    setShowLoginModal(true); // Abre o modal de login
+    setShowLoginModal(true);
   };
   const handleCloseLoginModal = () => setShowLoginModal(false); // Fecha o modal de login
 
