@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
-import { getAuth, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
 
 export default function FinalizeRegistrationModal({ show, handleClose, userUid, email }) {
   const [name, setName] = useState('');
@@ -41,8 +39,8 @@ export default function FinalizeRegistrationModal({ show, handleClose, userUid, 
   };
 
   return (
-    <Modal show={show} onHide={handleClose} centered>
-      <Modal.Header closeButton>
+    <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered>
+      <Modal.Header>
         <Modal.Title>Finalize seu Cadastro</Modal.Title>
       </Modal.Header>
       <Modal.Body>
