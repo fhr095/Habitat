@@ -7,11 +7,10 @@ import FinalizeRegistrationModal from './FinalizeRegistrationModal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export default function LoginRegisterModal({ show, handleClose }) {
+export default function LoginRegisterModal({ show, handleClose, handleShowCongrats }) {
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [userUid, setUserUid] = useState(null);
   const [userEmail, setUserEmail] = useState('');
-  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
 
   // Estado do login
   const [loginEmail, setLoginEmail] = useState('');
@@ -138,7 +137,6 @@ export default function LoginRegisterModal({ show, handleClose }) {
       }
     }
   };
-  
 
   return (
     <>
@@ -225,6 +223,7 @@ export default function LoginRegisterModal({ show, handleClose }) {
         handleClose={() => setShowFinalizeModal(false)} 
         userUid={userUid}
         email={userEmail}
+        handleShowCongrats={handleShowCongrats} // Passa a função para exibir o modal de parabéns
       />
     </>
   );

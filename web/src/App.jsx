@@ -5,13 +5,15 @@ import SceneScreen from "./screens/SceneScreen";
 import HomeScreen from "./screens/HomeScreen";
 import VerificationModal from "./components/VerificationModal";
 import LoginRegisterModal from "./components/LoginRegisterModal";
+import CongratsModal from "./components/CongratsModal";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); // Novo estado para o modal de login
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,18 +39,24 @@ export default function App() {
     setShowVerificationModal(false);
     setShowLoginModal(true);
   };
-  const handleCloseLoginModal = () => setShowLoginModal(false); // Fecha o modal de login
+  const handleCloseLoginModal = () => setShowLoginModal(false);
+  const handleShowCongratsModal = () => setShowCongratsModal(true);
+  const handleCloseCongratsModal = () => setShowCongratsModal(false);
 
   return (
     <div className="app-container">
       <VerificationModal
         show={showVerificationModal}
         handleClose={handleCloseVerificationModal}
-        handleLogin={handleOpenLoginModal} // Chama a função para abrir o modal de login
+        handleLogin={handleOpenLoginModal}
       />
       <LoginRegisterModal
         show={showLoginModal}
-        handleClose={handleCloseLoginModal} // Chama a função para fechar o modal de login
+        handleClose={handleCloseLoginModal}
+      />
+      <CongratsModal
+        show={showCongratsModal}
+        handleClose={handleCloseCongratsModal}
       />
       <Routes>
         <Route path="/scene" element={<SceneScreen user={user} />} />

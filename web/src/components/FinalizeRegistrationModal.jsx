@@ -4,7 +4,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase';
 
-export default function FinalizeRegistrationModal({ show, handleClose, userUid, email }) {
+export default function FinalizeRegistrationModal({ show, handleClose, userUid, email, handleShowCongrats }) {
   const [name, setName] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [finalizeError, setFinalizeError] = useState('');
@@ -27,6 +27,7 @@ export default function FinalizeRegistrationModal({ show, handleClose, userUid, 
       });
 
       handleClose();
+      handleShowCongrats(); // Exibe o modal de parabéns
     } catch (err) {
       setFinalizeError('Ocorreu um erro ao finalizar o cadastro. Tente novamente mais tarde.');
     }

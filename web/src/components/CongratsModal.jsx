@@ -1,17 +1,17 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 
-export default function VerificationModal({ show, handleClose, handleLogin }) {
+export default function CongratsModal({ show, handleClose }) {
   return (
     <Modal show={show} onHide={handleClose} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Verificação de Email</Modal.Title>
+        <Modal.Title>Parabéns!</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>Email verificado com sucesso! Agora você pode fazer login.</p>
+        <p>Parabéns por finalizar seu cadastro gratuito!</p>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="primary" onClick={handleLogin}>Fazer Login</Button>
+        <Button variant="primary" onClick={handleClose}>Fechar</Button>
       </Modal.Footer>
     </Modal>
   );
