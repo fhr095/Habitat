@@ -88,18 +88,22 @@ export default function SceneScreen() {
           </button>
         )}
       </div>
-      <Button
-        className="create-widget-button"
-        onClick={() => setShowCreateWidgetModal(true)}
-        icon={<FaPlus />}
-      >
-        Criar Widget
-      </Button>
-      <CreateWidgetModal
-        open={showCreateWidgetModal}
-        handleClose={() => setShowCreateWidgetModal(false)}
-        handleCreate={handleCreateWidget}
-      />
+      {currentUser && (
+        <Button
+          className="create-widget-button"
+          onClick={() => setShowCreateWidgetModal(true)}
+          icon={<FaPlus />}
+        >
+          Criar Widget
+        </Button>
+      )}
+      {showCreateWidgetModal && (
+        <CreateWidgetModal
+          open={showCreateWidgetModal}
+          handleClose={() => setShowCreateWidgetModal(false)}
+          handleCreate={handleCreateWidget}
+        />
+      )}
       {widgets.map(widget => (
         <MovableWidget key={widget.id} id={widget.id} content={widget.content} imageUrl={widget.imageUrl} onDelete={handleDeleteWidget} />
       ))}
