@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { FaTimes } from 'react-icons/fa';
+import '../styles/MovableWidget.scss';
 
 export default function MovableWidget({ id, content, onDelete }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [size, setSize] = useState({ width: 200, height: 100 });
   const [dragging, setDragging] = useState(false);
 
   const snapToGrid = (x, y) => {
@@ -12,10 +14,10 @@ export default function MovableWidget({ id, content, onDelete }) {
     const windowHeight = window.innerHeight;
 
     if (x < margin) x = 0;
-    else if (x > windowWidth - 200 - margin) x = windowWidth - 200; // 200 é a largura do widget
+    else if (x > windowWidth - size.width - margin) x = windowWidth - size.width;
 
     if (y < margin) y = 0;
-    else if (y > windowHeight - 100 - margin) y = windowHeight - 100; // 100 é a altura do widget
+    else if (y > windowHeight - size.height - margin) y = windowHeight - size.height;
 
     return { x, y };
   };
@@ -29,38 +31,35 @@ export default function MovableWidget({ id, content, onDelete }) {
   return (
     <Rnd
       position={position}
-      size={{ width: 200, height: 100 }}
+      size={size}
       bounds="window"
+      minWidth={200}
+      minHeight={100}
+      maxWidth={window.innerWidth - 40} // Ajuste conforme necessário
+      maxHeight={window.innerHeight - 40} // Ajuste conforme necessário
       onDragStart={() => setDragging(true)}
       onDragStop={handleDragStop}
       onDrag={(e, d) => {
         setPosition({ x: d.x, y: d.y });
       }}
-      style={{
-        border: '1px solid black',
-        backgroundColor: 'white',
-        padding: '10px',
-        boxShadow: dragging ? '0 4px 10px rgba(0, 0, 0, 0.3)' : '0 2px 5px rgba(0, 0, 0, 0.3)',
-        borderRadius: '4px',
-        position: 'absolute',
-        transition: dragging ? 'none' : 'box-shadow 0.2s',
+      onResize={(e, direction, ref, delta, position) => {
+        setSize({
+          width: ref.offsetWidth,
+          height: ref.offsetHeight,
+        });
+        setPosition(position);
       }}
+      className={`movable-widget ${dragging ? 'dragging' : ''} background-gradient`}
     >
       <button
         onClick={() => onDelete(id)}
-        style={{
-          position: 'absolute',
-          top: '5px',
-          right: '5px',
-          background: 'transparent',
-          border: 'none',
-          cursor: 'pointer',
-          color: 'red',
-        }}
+        className="delete-button"
       >
         <FaTimes />
       </button>
-      {content}
+      <div className="content">
+        {content}
+      </div>
     </Rnd>
   );
 }
