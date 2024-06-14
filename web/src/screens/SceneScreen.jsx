@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { Button } from "antd";
+import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
 import Scene from "../components/Scene";
 import CreateWidgetModal from "../components/CreateWidgetModal";
 import MovableWidget from "../components/MovableWidget";
-
-import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 import "../styles/SceneScreen.scss";
 
 export default function SceneScreen() {
@@ -51,8 +51,8 @@ export default function SceneScreen() {
       });
   };
 
-  const handleCreateWidget = (content) => {
-    setWidgets([...widgets, { content, id: widgets.length }]);
+  const handleCreateWidget = ({ content, imageUrl }) => {
+    setWidgets([...widgets, { content, imageUrl, id: widgets.length }]);
     setShowCreateWidgetModal(false);
   };
 
@@ -88,16 +88,20 @@ export default function SceneScreen() {
           </button>
         )}
       </div>
-      <button className="create-widget-button" onClick={() => setShowCreateWidgetModal(true)}>
-        <FaPlus size={20} />
-      </button>
+      <Button
+        className="create-widget-button"
+        onClick={() => setShowCreateWidgetModal(true)}
+        icon={<FaPlus />}
+      >
+        Criar Widget
+      </Button>
       <CreateWidgetModal
-        show={showCreateWidgetModal}
+        open={showCreateWidgetModal}
         handleClose={() => setShowCreateWidgetModal(false)}
         handleCreate={handleCreateWidget}
       />
       {widgets.map(widget => (
-        <MovableWidget key={widget.id} id={widget.id} content={widget.content} onDelete={handleDeleteWidget} />
+        <MovableWidget key={widget.id} id={widget.id} content={widget.content} imageUrl={widget.imageUrl} onDelete={handleDeleteWidget} />
       ))}
       <LoginRegisterModal show={modalShow} handleClose={() => setModalShow(false)} />
     </div>
