@@ -6,8 +6,8 @@ import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRe
 import { ref, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
-import LoadingScreen from "../components/LoadingScreen";
-import VoiceButton from "../components/VoiceButton";
+import LoadingScreen from "./LoadingScreen";
+import VoiceButton from "./VoiceButton";
 import { GoHomeFill } from "react-icons/go";
 import "../styles/Scene.scss";
 

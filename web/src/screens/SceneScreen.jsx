@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
-import Scene from "../components/Scece";
-import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
+import Scene from "../components/Scene";
+import CreateWidgetModal from "../components/CreateWidgetModal";
+import MovableWidget from "../components/MovableWidget";
+
+import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 import "../styles/SceneScreen.scss";
 
 export default function SceneScreen() {
@@ -14,6 +18,8 @@ export default function SceneScreen() {
   const [feedbackFilter, setFeedbackFilter] = useState('');
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [widgets, setWidgets] = useState([]);
+  const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -45,6 +51,15 @@ export default function SceneScreen() {
       });
   };
 
+  const handleCreateWidget = (content) => {
+    setWidgets([...widgets, { content, id: widgets.length }]);
+    setShowCreateWidgetModal(false);
+  };
+
+  const handleDeleteWidget = (id) => {
+    setWidgets(widgets.filter(widget => widget.id !== id));
+  };
+
   return (
     <div className="screen-container">
       <Scene />
@@ -57,7 +72,7 @@ export default function SceneScreen() {
           setFeedbackFilter={setFeedbackFilter}
           dateRangeFilter={dateRangeFilter}
           setDateRangeFilter={setDateRangeFilter}
-          searchTerm={searchTerm} // Certifique-se de passar searchTerm
+          searchTerm={searchTerm}
         />
       )}
       <div className="login-container">
@@ -73,6 +88,17 @@ export default function SceneScreen() {
           </button>
         )}
       </div>
+      <button className="create-widget-button" onClick={() => setShowCreateWidgetModal(true)}>
+        <FaPlus size={20} />
+      </button>
+      <CreateWidgetModal
+        show={showCreateWidgetModal}
+        handleClose={() => setShowCreateWidgetModal(false)}
+        handleCreate={handleCreateWidget}
+      />
+      {widgets.map(widget => (
+        <MovableWidget key={widget.id} id={widget.id} content={widget.content} onDelete={handleDeleteWidget} />
+      ))}
       <LoginRegisterModal show={modalShow} handleClose={() => setModalShow(false)} />
     </div>
   );
