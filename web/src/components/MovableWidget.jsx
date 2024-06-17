@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 import { FaTimes } from 'react-icons/fa';
 import { ref, deleteObject } from 'firebase/storage';
-import { storage } from '../firebase';
+import { doc, deleteDoc } from 'firebase/firestore';
+import { storage, db } from '../firebase';
 import '../styles/MovableWidget.scss';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function MovableWidget({ id, content, imageUrl, onDelete }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -39,6 +41,11 @@ export default function MovableWidget({ id, content, imageUrl, onDelete }) {
         console.error("Error deleting file:", error);
       }
     }
+    try {
+      await deleteDoc(doc(db, 'widgets', id));
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
     onDelete(id);
   };
 
@@ -67,13 +74,13 @@ export default function MovableWidget({ id, content, imageUrl, onDelete }) {
     >
       <button
         onClick={handleDelete}
-        className="delete-button"
+        className="btn btn-link p-0 delete-button"
       >
         <FaTimes />
       </button>
       <div className="content">
+        {imageUrl && <img src={imageUrl} alt="Widget Image" className="img-fluid" />}
         <div>{content}</div>
-        {imageUrl && <img src={imageUrl} alt="Widget Image" style={{ width: '30px', height: '30px' }} />}
       </div>
     </Rnd>
   );

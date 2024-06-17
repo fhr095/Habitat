@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { Modal, Button, Form, Input, Upload } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
+import { storage, db } from '../firebase';
+import { getAuth } from 'firebase/auth';
 
-const { TextArea } = Input;
-
-export default function CreateWidgetModal({ open, handleClose, handleCreate }) {
+export default function CreateWidgetModal({ show, handleClose }) {
   const [content, setContent] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [finalizeError, setFinalizeError] = useState('');
@@ -15,13 +14,16 @@ export default function CreateWidgetModal({ open, handleClose, handleCreate }) {
     setContent(e.target.value);
   };
 
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
   const handleUpload = async () => {
     let imageUrl = '';
     if (imageFile) {
       const imageRef = ref(storage, `widgets/${imageFile.name}`);
       await uploadBytes(imageRef, imageFile);
       imageUrl = await getDownloadURL(imageRef);
-      console.log('Image URL obtained:', imageUrl); // Verificar URL da imagem
     }
     return imageUrl;
   };
@@ -29,54 +31,56 @@ export default function CreateWidgetModal({ open, handleClose, handleCreate }) {
   const handleSubmit = async () => {
     try {
       const imageUrl = await handleUpload();
-      console.log('Image URL before creating widget:', imageUrl); // Verificar URL da imagem antes de criar o widget
-      handleCreate({ content, imageUrl });
-      setContent('');
-      setImageFile(null);
-      handleClose();
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (user) {
+        const email = user.email;
+        const widgetData = { content, imageUrl, email };
+        await addDoc(collection(db, 'widgets'), widgetData);
+        setContent('');
+        setImageFile(null);
+        handleClose();
+      } else {
+        setFinalizeError('Usuário não autenticado.');
+      }
     } catch (err) {
       setFinalizeError('Ocorreu um erro ao carregar a imagem. Tente novamente mais tarde.');
     }
   };
 
-  const handleImageChange = (e) => {
-    if (e.file) {
-      setImageFile(e.file.originFileObj);
-    }
-  };
-
   return (
-    <Modal
-      title="Criar Widget"
-      open={open}
-      onOk={handleSubmit}
-      onCancel={handleClose}
-      centered
-    >
-      <Form>
-        <Form.Item label="Conteúdo">
-          <TextArea
-            rows={4}
-            value={content}
-            onChange={handleContentChange}
-            placeholder="Enter text content"
-            required
-          />
-        </Form.Item>
-        <Form.Item label="Upload Imagem">
-          <Upload
-            name="file"
-            customRequest={({ file, onSuccess }) => {
-              handleImageChange({ file });
-              onSuccess("ok");
-            }}
-            listType="picture"
-          >
-            <Button icon={<UploadOutlined />}>Click to Upload</Button>
-          </Upload>
-        </Form.Item>
-        {finalizeError && <p className="text-danger">{finalizeError}</p>}
-      </Form>
+    <Modal show={show} onHide={handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Criar Widget</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form>
+          <Form.Group controlId="formContent">
+            <Form.Label>Conteúdo</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              value={content}
+              onChange={handleContentChange}
+              placeholder="Enter text content"
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="formImageUpload">
+            <Form.Label>Upload Imagem</Form.Label>
+            <Form.Control type="file" onChange={handleImageChange} />
+          </Form.Group>
+          {finalizeError && <p className="text-danger">{finalizeError}</p>}
+        </Form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose}>
+          Cancelar
+        </Button>
+        <Button variant="primary" onClick={handleSubmit}>
+          Criar Widget
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 }

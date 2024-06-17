@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { Button } from "antd";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { Button } from "react-bootstrap";
 import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
@@ -9,15 +10,16 @@ import LoginRegisterModal from "../components/LoginRegisterModal";
 import Scene from "../components/Scene";
 import CreateWidgetModal from "../components/CreateWidgetModal";
 import MovableWidget from "../components/MovableWidget";
+import { db } from "../firebase";
 import "../styles/SceneScreen.scss";
 
 export default function SceneScreen() {
   const [chatOpen, setChatOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [modalShow, setModalShow] = useState(false);
-  const [feedbackFilter, setFeedbackFilter] = useState('');
-  const [dateRangeFilter, setDateRangeFilter] = useState({ type: '' });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [feedbackFilter, setFeedbackFilter] = useState("");
+  const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
+  const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
   const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
 
@@ -28,12 +30,26 @@ export default function SceneScreen() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUser(user);
+        loadWidgets(user.email);
       } else {
         setCurrentUser(null);
       }
     });
     return () => unsubscribe();
   }, []);
+
+  const loadWidgets = (email) => {
+    const widgetsRef = collection(db, "widgets");
+    const q = query(widgetsRef, where("email", "==", email));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedWidgets = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setWidgets(loadedWidgets);
+    });
+    return unsubscribe;
+  };
 
   const handleLoginRegister = () => {
     setModalShow(true);
@@ -51,13 +67,8 @@ export default function SceneScreen() {
       });
   };
 
-  const handleCreateWidget = ({ content, imageUrl }) => {
-    setWidgets([...widgets, { content, imageUrl, id: widgets.length }]);
-    setShowCreateWidgetModal(false);
-  };
-
   const handleDeleteWidget = (id) => {
-    setWidgets(widgets.filter(widget => widget.id !== id));
+    setWidgets(widgets.filter((widget) => widget.id !== id));
   };
 
   return (
@@ -92,22 +103,27 @@ export default function SceneScreen() {
         <Button
           className="create-widget-button"
           onClick={() => setShowCreateWidgetModal(true)}
-          icon={<FaPlus />}
         >
-          Criar Widget
+          <FaPlus /> Criar Widget
         </Button>
       )}
-      {showCreateWidgetModal && (
-        <CreateWidgetModal
-          open={showCreateWidgetModal}
-          handleClose={() => setShowCreateWidgetModal(false)}
-          handleCreate={handleCreateWidget}
+      <CreateWidgetModal
+        show={showCreateWidgetModal}
+        handleClose={() => setShowCreateWidgetModal(false)}
+      />
+      {widgets.map((widget) => (
+        <MovableWidget
+          key={widget.id}
+          id={widget.id}
+          content={widget.content}
+          imageUrl={widget.imageUrl}
+          onDelete={handleDeleteWidget}
         />
-      )}
-      {widgets.map(widget => (
-        <MovableWidget key={widget.id} id={widget.id} content={widget.content} imageUrl={widget.imageUrl} onDelete={handleDeleteWidget} />
       ))}
-      <LoginRegisterModal show={modalShow} handleClose={() => setModalShow(false)} />
+      <LoginRegisterModal
+        show={modalShow}
+        handleClose={() => setModalShow(false)}
+      />
     </div>
   );
 }
