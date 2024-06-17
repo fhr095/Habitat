@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { Button } from "react-bootstrap";
-import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt, FaPlus, FaEye } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
@@ -22,6 +22,7 @@ export default function SceneScreen() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
+  const [hiddenWidgets, setHiddenWidgets] = useState([]);
   const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
 
   const navigate = useNavigate();
@@ -43,10 +44,21 @@ export default function SceneScreen() {
   }, []);
 
   const checkIfAdmin = async (uid) => {
-    const userDoc = await getDoc(doc(db, "users", uid));
-    if (userDoc.exists() && userDoc.data().role === "adm") {
-      setIsAdmin(true);
-    } else {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.role === "adm") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } else {
+        console.log("No such document!");
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error("Error getting document:", error);
       setIsAdmin(false);
     }
   };
@@ -84,6 +96,14 @@ export default function SceneScreen() {
     setWidgets(widgets.filter((widget) => widget.id !== id));
   };
 
+  const handleHideWidget = (id) => {
+    setHiddenWidgets([...hiddenWidgets, id]);
+  };
+
+  const handleShowHiddenWidgets = () => {
+    setHiddenWidgets([]);
+  };
+
   return (
     <div className="screen-container">
       <Scene />
@@ -112,28 +132,44 @@ export default function SceneScreen() {
           </button>
         )}
       </div>
-      {currentUser && isAdmin && (
-        <Button
-          className="create-widget-button"
-          onClick={() => setShowCreateWidgetModal(true)}
-        >
-          <FaPlus /> Criar Widget
-        </Button>
+      {currentUser && (
+        <>
+          <div className="widget-container">
+            {isAdmin ? (
+              <button
+                onClick={() => setShowCreateWidgetModal(true)}
+                className="widget-button"
+              >
+                <FaPlus /> Criar Widget
+              </button>
+            ) : (
+              <button
+                onClick={handleShowHiddenWidgets}
+                className="widget-button"
+              >
+                <FaEye /> Visualizar Widgets
+              </button>
+            )}
+          </div>
+          <CreateWidgetModal
+            show={showCreateWidgetModal}
+            handleClose={() => setShowCreateWidgetModal(false)}
+          />
+          {widgets
+            .filter((widget) => !hiddenWidgets.includes(widget.id))
+            .map((widget) => (
+              <MovableWidget
+                key={widget.id}
+                id={widget.id}
+                content={widget.content}
+                imageUrl={widget.imageUrl}
+                onDelete={handleDeleteWidget}
+                onHide={handleHideWidget}
+                isAdmin={isAdmin}
+              />
+            ))}
+        </>
       )}
-      <CreateWidgetModal
-        show={showCreateWidgetModal}
-        handleClose={() => setShowCreateWidgetModal(false)}
-      />
-      {currentUser && widgets.map((widget) => (
-        <MovableWidget
-          key={widget.id}
-          id={widget.id}
-          content={widget.content}
-          imageUrl={widget.imageUrl}
-          onDelete={handleDeleteWidget}
-          isAdmin={isAdmin}
-        />
-      ))}
       <LoginRegisterModal
         show={modalShow}
         handleClose={() => setModalShow(false)}

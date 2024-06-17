@@ -10,7 +10,8 @@
   right: 10px;
   z-index: 10;
 
-  .login-button {
+  .login-button,
+  .action-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -21,28 +22,39 @@
     background-color: white;
     padding: 5px 10px;
     font-weight: bold;
+    cursor: pointer;
   }
 
-  .login-button:hover {
+  .login-button:hover,
+  .action-button:hover {
     transform: scale(0.95);
   }
 }
 
-.create-widget-button {
-  position: fixed;
+.widget-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
   top: 10px;
   left: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #0047363c;
-  color: #004736;
-  
-  &:hover {
-    transform: scale(0.95);
+  z-index: 10;
+
+  .widget-button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 2px solid #004736;
+    border-radius: 5px;
+    color: #004736;
+    background-color: white;
+    padding: 5px 10px;
+    font-weight: bold;
+    cursor: pointer;
+
+    &:hover{
+      transform: scale(0.95);
+    }
   }
 }

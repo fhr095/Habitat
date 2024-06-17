@@ -7,9 +7,12 @@ import { storage, db } from '../firebase';
 import '../styles/MovableWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function MovableWidget({ id, content, imageUrl, onDelete, isAdmin }) {
+export default function MovableWidget({ id, content, imageUrl, onDelete, onHide, isAdmin }) {
+  const minWidth = 200;
+  const minHeight = 100;
+
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ width: 300, height: 200 });
+  const [size, setSize] = useState({ width: minWidth, height: minHeight });
   const [dragging, setDragging] = useState(false);
   const [hidden, setHidden] = useState(false);
 
@@ -51,6 +54,7 @@ export default function MovableWidget({ id, content, imageUrl, onDelete, isAdmin
       onDelete(id);
     } else {
       setHidden(true);
+      onHide(id);
     }
   };
 
@@ -63,8 +67,8 @@ export default function MovableWidget({ id, content, imageUrl, onDelete, isAdmin
       position={position}
       size={size}
       bounds="window"
-      minWidth={200}
-      minHeight={100}
+      minWidth={minWidth}
+      minHeight={minHeight}
       maxWidth={window.innerWidth - 40}
       maxHeight={window.innerHeight - 40}
       onDragStart={() => setDragging(true)}
@@ -88,7 +92,7 @@ export default function MovableWidget({ id, content, imageUrl, onDelete, isAdmin
         <FaTimes />
       </button>
       <div className="content">
-        {imageUrl && <img src={imageUrl} alt="Widget Image" className="img-fluid" />}
+        {imageUrl && <img src={imageUrl} alt="Widget Image" className="widget-image" />}
         <div>{content}</div>
       </div>
     </Rnd>

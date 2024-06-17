@@ -1,5 +1,4 @@
 .movable-widget {
-  border: 1px solid black;
   background-color: white;
   padding: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -30,8 +29,13 @@
   .content {
     width: 100%;
     height: 100%;
-    overflow: auto;
     word-wrap: break-word;
     padding: 10px;
+  }
+
+  .widget-image {
+    width: 100%;
+    height: auto;
+    max-height: 100%;
   }
 }
