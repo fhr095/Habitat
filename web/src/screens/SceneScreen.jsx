@@ -162,7 +162,7 @@ export default function SceneScreen() {
                 key={widget.id}
                 id={widget.id}
                 content={widget.content}
-                imageUrl={widget.imageUrl}
+                imageUrls={widget.imageUrls}
                 onDelete={handleDeleteWidget}
                 onHide={handleHideWidget}
                 isAdmin={isAdmin}

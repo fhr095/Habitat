@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { FaTimes } from 'react-icons/fa';
 import { ref, deleteObject } from 'firebase/storage';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { Carousel } from 'react-bootstrap';
 import { storage, db } from '../firebase';
 import '../styles/MovableWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function MovableWidget({ id, content, imageUrl, onDelete, onHide, isAdmin }) {
+export default function MovableWidget({ id, content, imageUrls, onDelete, onHide, isAdmin }) {
   const minWidth = 200;
   const minHeight = 100;
 
@@ -38,12 +39,14 @@ export default function MovableWidget({ id, content, imageUrl, onDelete, onHide,
 
   const handleDelete = async () => {
     if (isAdmin) {
-      if (imageUrl) {
-        const fileRef = ref(storage, imageUrl);
-        try {
-          await deleteObject(fileRef);
-        } catch (error) {
-          console.error("Error deleting file:", error);
+      if (imageUrls && imageUrls.length > 0) {
+        for (const imageUrl of imageUrls) {
+          const fileRef = ref(storage, imageUrl);
+          try {
+            await deleteObject(fileRef);
+          } catch (error) {
+            console.error("Error deleting file:", error);
+          }
         }
       }
       try {
@@ -92,7 +95,15 @@ export default function MovableWidget({ id, content, imageUrl, onDelete, onHide,
         <FaTimes />
       </button>
       <div className="content">
-        {imageUrl && <img src={imageUrl} alt="Widget Image" className="widget-image" />}
+        {imageUrls && imageUrls.length > 0 && (
+          <Carousel>
+            {imageUrls.map((imageUrl, index) => (
+              <Carousel.Item key={index}>
+                <img src={imageUrl} alt={`Widget Image ${index}`} className="widget-image" />
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        )}
         <div>{content}</div>
       </div>
     </Rnd>

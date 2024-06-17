@@ -3,11 +3,10 @@ import { Modal, Button, Form } from 'react-bootstrap';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc } from 'firebase/firestore';
 import { storage, db } from '../firebase';
-import { getAuth } from 'firebase/auth';
 
 export default function CreateWidgetModal({ show, handleClose }) {
   const [content, setContent] = useState('');
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [finalizeError, setFinalizeError] = useState('');
 
   const handleContentChange = (e) => {
@@ -15,29 +14,30 @@ export default function CreateWidgetModal({ show, handleClose }) {
   };
 
   const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]);
+    setImageFiles(Array.from(e.target.files));
   };
 
   const handleUpload = async () => {
-    let imageUrl = '';
-    if (imageFile) {
-      const imageRef = ref(storage, `widgets/${imageFile.name}`);
-      await uploadBytes(imageRef, imageFile);
-      imageUrl = await getDownloadURL(imageRef);
+    const imageUrls = [];
+    for (const file of imageFiles) {
+      const imageRef = ref(storage, `widgets/${file.name}`);
+      await uploadBytes(imageRef, file);
+      const imageUrl = await getDownloadURL(imageRef);
+      imageUrls.push(imageUrl);
     }
-    return imageUrl;
+    return imageUrls;
   };
 
   const handleSubmit = async () => {
     try {
-      const imageUrl = await handleUpload();
-      const widgetData = { content, imageUrl };
+      const imageUrls = await handleUpload();
+      const widgetData = { content, imageUrls };
       await addDoc(collection(db, 'widgets'), widgetData);
       setContent('');
-      setImageFile(null);
+      setImageFiles([]);
       handleClose();
     } catch (err) {
-      setFinalizeError('Ocorreu um erro ao carregar a imagem. Tente novamente mais tarde.');
+      setFinalizeError('Ocorreu um erro ao carregar as imagens. Tente novamente mais tarde.');
     }
   };
 
@@ -60,8 +60,8 @@ export default function CreateWidgetModal({ show, handleClose }) {
             />
           </Form.Group>
           <Form.Group controlId="formImageUpload">
-            <Form.Label>Upload Imagem</Form.Label>
-            <Form.Control type="file" onChange={handleImageChange} />
+            <Form.Label>Upload Imagens</Form.Label>
+            <Form.Control type="file" onChange={handleImageChange} multiple />
           </Form.Group>
           {finalizeError && <p className="text-danger">{finalizeError}</p>}
         </Form>
