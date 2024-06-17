@@ -48,6 +48,7 @@ export default function SceneScreen() {
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        console.log("Document data:", userData);
         if (userData.role === "adm") {
           setIsAdmin(true);
         } else {
