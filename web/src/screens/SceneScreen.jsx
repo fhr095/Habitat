@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { Button } from "react-bootstrap";
 import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 
@@ -16,6 +16,7 @@ import "../styles/SceneScreen.scss";
 export default function SceneScreen() {
   const [chatOpen, setChatOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [modalShow, setModalShow] = useState(false);
   const [feedbackFilter, setFeedbackFilter] = useState("");
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
@@ -27,21 +28,32 @@ export default function SceneScreen() {
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setCurrentUser(user);
-        loadWidgets(user.email);
+        await checkIfAdmin(user.uid);
+        loadWidgets();
       } else {
         setCurrentUser(null);
+        setIsAdmin(false);
+        setWidgets([]);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const loadWidgets = (email) => {
+  const checkIfAdmin = async (uid) => {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists() && userDoc.data().role === "adm") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  };
+
+  const loadWidgets = () => {
     const widgetsRef = collection(db, "widgets");
-    const q = query(widgetsRef, where("email", "==", email));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(widgetsRef, (snapshot) => {
       const loadedWidgets = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -61,6 +73,7 @@ export default function SceneScreen() {
       .then(() => {
         console.log("Usuário deslogado com sucesso");
         setCurrentUser(null);
+        setIsAdmin(false);
       })
       .catch((error) => {
         console.error("Erro ao deslogar:", error);
@@ -99,7 +112,7 @@ export default function SceneScreen() {
           </button>
         )}
       </div>
-      {currentUser && (
+      {currentUser && isAdmin && (
         <Button
           className="create-widget-button"
           onClick={() => setShowCreateWidgetModal(true)}
@@ -111,13 +124,14 @@ export default function SceneScreen() {
         show={showCreateWidgetModal}
         handleClose={() => setShowCreateWidgetModal(false)}
       />
-      {widgets.map((widget) => (
+      {currentUser && widgets.map((widget) => (
         <MovableWidget
           key={widget.id}
           id={widget.id}
           content={widget.content}
           imageUrl={widget.imageUrl}
           onDelete={handleDeleteWidget}
+          isAdmin={isAdmin}
         />
       ))}
       <LoginRegisterModal

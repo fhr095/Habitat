@@ -7,10 +7,11 @@ import { storage, db } from '../firebase';
 import '../styles/MovableWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function MovableWidget({ id, content, imageUrl, onDelete }) {
+export default function MovableWidget({ id, content, imageUrl, onDelete, isAdmin }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 300, height: 200 });
   const [dragging, setDragging] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
   const snapToGrid = (x, y) => {
     const margin = 20;
@@ -33,21 +34,29 @@ export default function MovableWidget({ id, content, imageUrl, onDelete }) {
   };
 
   const handleDelete = async () => {
-    if (imageUrl) {
-      const fileRef = ref(storage, imageUrl);
-      try {
-        await deleteObject(fileRef);
-      } catch (error) {
-        console.error("Error deleting file:", error);
+    if (isAdmin) {
+      if (imageUrl) {
+        const fileRef = ref(storage, imageUrl);
+        try {
+          await deleteObject(fileRef);
+        } catch (error) {
+          console.error("Error deleting file:", error);
+        }
       }
+      try {
+        await deleteDoc(doc(db, 'widgets', id));
+      } catch (error) {
+        console.error("Error deleting document:", error);
+      }
+      onDelete(id);
+    } else {
+      setHidden(true);
     }
-    try {
-      await deleteDoc(doc(db, 'widgets', id));
-    } catch (error) {
-      console.error("Error deleting document:", error);
-    }
-    onDelete(id);
   };
+
+  if (hidden) {
+    return null;
+  }
 
   return (
     <Rnd

@@ -8,6 +8,7 @@ export default function FinalizeRegistrationModal({ show, handleClose, userUid, 
   const [name, setName] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [finalizeError, setFinalizeError] = useState('');
+  const [tag, setTag] = useState('user');
 
   const handleFinalize = async (e) => {
     e.preventDefault();
@@ -24,6 +25,7 @@ export default function FinalizeRegistrationModal({ show, handleClose, userUid, 
         email,
         name,
         profileImageUrl,
+        tag,
       });
 
       handleClose();

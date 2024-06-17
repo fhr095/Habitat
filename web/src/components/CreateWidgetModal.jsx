@@ -31,18 +31,11 @@ export default function CreateWidgetModal({ show, handleClose }) {
   const handleSubmit = async () => {
     try {
       const imageUrl = await handleUpload();
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (user) {
-        const email = user.email;
-        const widgetData = { content, imageUrl, email };
-        await addDoc(collection(db, 'widgets'), widgetData);
-        setContent('');
-        setImageFile(null);
-        handleClose();
-      } else {
-        setFinalizeError('Usuário não autenticado.');
-      }
+      const widgetData = { content, imageUrl };
+      await addDoc(collection(db, 'widgets'), widgetData);
+      setContent('');
+      setImageFile(null);
+      handleClose();
     } catch (err) {
       setFinalizeError('Ocorreu um erro ao carregar a imagem. Tente novamente mais tarde.');
     }
