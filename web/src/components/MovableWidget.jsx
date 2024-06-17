@@ -95,14 +95,16 @@ export default function MovableWidget({ id, content, imageUrls, onDelete, onHide
         <FaTimes />
       </button>
       <div className="content">
-        {imageUrls && imageUrls.length > 0 && (
+        {imageUrls && imageUrls.length > 0 ? (
           <Carousel>
             {imageUrls.map((imageUrl, index) => (
               <Carousel.Item key={index}>
-                <img src={imageUrl} alt={`Widget Image ${index}`} className="widget-image" />
+                <img src={imageUrl} alt={`Widget Image ${index}`} className="widget-image" onError={(e) => e.target.src = 'https://via.placeholder.com/150'} />
               </Carousel.Item>
             ))}
           </Carousel>
+        ) : (
+          <p>No images to display</p>
         )}
         <div>{content}</div>
       </div>
