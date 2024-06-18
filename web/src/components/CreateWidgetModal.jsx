@@ -6,7 +6,7 @@ import { storage, db } from '../firebase';
 
 export default function CreateWidgetModal({ show, handleClose }) {
   const [content, setContent] = useState('');
-  const [imageFiles, setImageFiles] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
   const [finalizeError, setFinalizeError] = useState('');
 
   const handleContentChange = (e) => {
@@ -14,30 +14,27 @@ export default function CreateWidgetModal({ show, handleClose }) {
   };
 
   const handleImageChange = (e) => {
-    setImageFiles(Array.from(e.target.files));
+    setImageFile(e.target.files[0]);
   };
 
   const handleUpload = async () => {
-    const imageUrls = [];
-    for (const file of imageFiles) {
-      const imageRef = ref(storage, `widgets/${file.name}`);
-      await uploadBytes(imageRef, file);
-      const imageUrl = await getDownloadURL(imageRef);
-      imageUrls.push(imageUrl);
-    }
-    return imageUrls;
+    if (!imageFile) return '';
+
+    const imageRef = ref(storage, `widgets/${imageFile.name}`);
+    await uploadBytes(imageRef, imageFile);
+    return await getDownloadURL(imageRef);
   };
 
   const handleSubmit = async () => {
     try {
-      const imageUrls = await handleUpload();
-      const widgetData = { content, imageUrls };
+      const imageUrl = await handleUpload();
+      const widgetData = { content, imageUrl };
       await addDoc(collection(db, 'widgets'), widgetData);
       setContent('');
-      setImageFiles([]);
+      setImageFile(null);
       handleClose();
     } catch (err) {
-      setFinalizeError('Ocorreu um erro ao carregar as imagens. Tente novamente mais tarde.');
+      setFinalizeError('Ocorreu um erro ao carregar a imagem. Tente novamente mais tarde.');
     }
   };
 
@@ -60,8 +57,8 @@ export default function CreateWidgetModal({ show, handleClose }) {
             />
           </Form.Group>
           <Form.Group controlId="formImageUpload">
-            <Form.Label>Upload Imagens</Form.Label>
-            <Form.Control type="file" onChange={handleImageChange} multiple />
+            <Form.Label>Upload Imagem</Form.Label>
+            <Form.Control type="file" onChange={handleImageChange} />
           </Form.Group>
           {finalizeError && <p className="text-danger">{finalizeError}</p>}
         </Form>

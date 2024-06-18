@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
-import { FaSignInAlt, FaSignOutAlt, FaPlus, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
 import Scene from "../components/Scene";
 import CreateWidgetModal from "../components/CreateWidgetModal";
-import MovableWidget from "../components/MovableWidget";
+import WidgetCarousel from "../components/WidgetCarousel";
 import { db } from "../firebase";
 import "../styles/SceneScreen.scss";
 
@@ -22,7 +22,6 @@ export default function SceneScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
   const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
-  const [widgetsVisible, setWidgetsVisible] = useState(true);
 
   const navigate = useNavigate();
 
@@ -64,10 +63,9 @@ export default function SceneScreen() {
   const loadWidgets = () => {
     const widgetsRef = collection(db, "widgets");
     const unsubscribe = onSnapshot(widgetsRef, (snapshot) => {
-      const loadedWidgets = snapshot.docs.map((doc, index) => ({
+      const loadedWidgets = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        position: { x: 10, y: 80 + index * 220 }, // Adjust y position to place widgets below each other with margin
       }));
       setWidgets(loadedWidgets);
     });
@@ -88,14 +86,6 @@ export default function SceneScreen() {
       .catch((error) => {
         console.error("Erro ao deslogar:", error);
       });
-  };
-
-  const handleDeleteWidget = (id) => {
-    setWidgets(widgets.filter((widget) => widget.id !== id));
-  };
-
-  const handleToggleWidgetsVisibility = () => {
-    setWidgetsVisible(!widgetsVisible);
   };
 
   return (
@@ -134,31 +124,15 @@ export default function SceneScreen() {
                 onClick={() => setShowCreateWidgetModal(true)}
                 className="widget-button"
               >
-                <FaPlus /> Criar Widget
+                <FaPlus /> Adicionar Widget
               </button>
             )}
-            <button
-              onClick={handleToggleWidgetsVisibility}
-              className="widget-button"
-            >
-              {widgetsVisible ? <FaEyeSlash /> : <FaEye />} {widgetsVisible ? "Esconder Widgets" : "Visualizar Widgets"}
-            </button>
-            {widgetsVisible && widgets.map((widget, index) => (
-              <MovableWidget
-                key={widget.id}
-                id={widget.id}
-                content={widget.content}
-                imageUrls={widget.imageUrls}
-                onDelete={handleDeleteWidget}
-                isAdmin={isAdmin}
-                initialPosition={widget.position}
-              />
-            ))}
           </div>
           <CreateWidgetModal
             show={showCreateWidgetModal}
             handleClose={() => setShowCreateWidgetModal(false)}
           />
+          <WidgetCarousel widgets={widgets} />
         </>
       )}
       <LoginRegisterModal
