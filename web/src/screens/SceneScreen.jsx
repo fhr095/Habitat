@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
-import { Button } from "react-bootstrap";
-import { FaSignInAlt, FaSignOutAlt, FaPlus, FaEye } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt, FaPlus, FaEye, FaEyeSlash } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
@@ -22,8 +21,8 @@ export default function SceneScreen() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
-  const [hiddenWidgets, setHiddenWidgets] = useState([]);
   const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
+  const [widgetsVisible, setWidgetsVisible] = useState(true);
 
   const navigate = useNavigate();
 
@@ -48,14 +47,12 @@ export default function SceneScreen() {
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        console.log("Document data:", userData);
         if (userData.role === "adm") {
           setIsAdmin(true);
         } else {
           setIsAdmin(false);
         }
       } else {
-        console.log("No such document!");
         setIsAdmin(false);
       }
     } catch (error) {
@@ -67,9 +64,10 @@ export default function SceneScreen() {
   const loadWidgets = () => {
     const widgetsRef = collection(db, "widgets");
     const unsubscribe = onSnapshot(widgetsRef, (snapshot) => {
-      const loadedWidgets = snapshot.docs.map((doc) => ({
+      const loadedWidgets = snapshot.docs.map((doc, index) => ({
         id: doc.id,
         ...doc.data(),
+        position: { x: 10, y: 80 + index * 220 }, // Adjust y position to place widgets below each other with margin
       }));
       setWidgets(loadedWidgets);
     });
@@ -84,7 +82,6 @@ export default function SceneScreen() {
     const auth = getAuth();
     signOut(auth)
       .then(() => {
-        console.log("Usuário deslogado com sucesso");
         setCurrentUser(null);
         setIsAdmin(false);
       })
@@ -97,12 +94,8 @@ export default function SceneScreen() {
     setWidgets(widgets.filter((widget) => widget.id !== id));
   };
 
-  const handleHideWidget = (id) => {
-    setHiddenWidgets([...hiddenWidgets, id]);
-  };
-
-  const handleShowHiddenWidgets = () => {
-    setHiddenWidgets([]);
+  const handleToggleWidgetsVisibility = () => {
+    setWidgetsVisible(!widgetsVisible);
   };
 
   return (
@@ -136,39 +129,36 @@ export default function SceneScreen() {
       {currentUser && (
         <>
           <div className="widget-container">
-            {isAdmin ? (
+            {isAdmin && (
               <button
                 onClick={() => setShowCreateWidgetModal(true)}
                 className="widget-button"
               >
                 <FaPlus /> Criar Widget
               </button>
-            ) : (
-              <button
-                onClick={handleShowHiddenWidgets}
-                className="widget-button"
-              >
-                <FaEye /> Visualizar Widgets
-              </button>
             )}
-          </div>
-          <CreateWidgetModal
-            show={showCreateWidgetModal}
-            handleClose={() => setShowCreateWidgetModal(false)}
-          />
-          {widgets
-            .filter((widget) => !hiddenWidgets.includes(widget.id))
-            .map((widget) => (
+            <button
+              onClick={handleToggleWidgetsVisibility}
+              className="widget-button"
+            >
+              {widgetsVisible ? <FaEyeSlash /> : <FaEye />} {widgetsVisible ? "Esconder Widgets" : "Visualizar Widgets"}
+            </button>
+            {widgetsVisible && widgets.map((widget, index) => (
               <MovableWidget
                 key={widget.id}
                 id={widget.id}
                 content={widget.content}
                 imageUrls={widget.imageUrls}
                 onDelete={handleDeleteWidget}
-                onHide={handleHideWidget}
                 isAdmin={isAdmin}
+                initialPosition={widget.position}
               />
             ))}
+          </div>
+          <CreateWidgetModal
+            show={showCreateWidgetModal}
+            handleClose={() => setShowCreateWidgetModal(false)}
+          />
         </>
       )}
       <LoginRegisterModal

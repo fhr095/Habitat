@@ -10,8 +10,7 @@
   right: 10px;
   z-index: 10;
 
-  .login-button,
-  .action-button {
+  .login-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -22,39 +21,39 @@
     background-color: white;
     padding: 5px 10px;
     font-weight: bold;
-    cursor: pointer;
-  }
 
-  .login-button:hover,
-  .action-button:hover {
-    transform: scale(0.95);
-  }
-}
-
-.widget-container{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
-
-  .widget-button{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    border: 2px solid #004736;
-    border-radius: 5px;
-    color: #004736;
-    background-color: white;
-    padding: 5px 10px;
-    font-weight: bold;
-    cursor: pointer;
-
-    &:hover{
+    &:hover {
       transform: scale(0.95);
     }
   }
 }
+
+.widget-container {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  .widget-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 2px solid #004736;
+    border-radius: 5px;
+    color: #004736;
+    background-color: white;
+    padding: 5px 10px;
+    font-weight: bold;
+    cursor: pointer;
+  
+    &:hover {
+      transform: scale(0.95);
+    }
+  }
+}
+
+

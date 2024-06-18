@@ -8,14 +8,18 @@ import { storage, db } from '../firebase';
 import '../styles/MovableWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-export default function MovableWidget({ id, content, imageUrls, onDelete, onHide, isAdmin }) {
+export default function MovableWidget({ id, content, imageUrls, onDelete, onHide, isAdmin, initialPosition }) {
   const minWidth = 200;
   const minHeight = 100;
 
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState(initialPosition || { x: 0, y: 0 });
   const [size, setSize] = useState({ width: minWidth, height: minHeight });
   const [dragging, setDragging] = useState(false);
   const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    console.log(imageUrls);
+  }, [imageUrls]);
 
   const snapToGrid = (x, y) => {
     const margin = 20;
