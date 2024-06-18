@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, applyActionCode } from "firebase/auth";
 import SceneScreen from "./screens/SceneScreen";
 import HomeScreen from "./screens/HomeScreen";
+import ConfigScreen from "./screens/ConfigScreen";
 import VerificationModal from "./components/VerificationModal";
 import LoginRegisterModal from "./components/LoginRegisterModal";
 import CongratsModal from "./components/CongratsModal";
@@ -32,6 +33,17 @@ export default function App() {
           console.error('Erro ao verificar email:', error);
         });
     }
+
+    const auth = getAuth();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, [location]);
 
   const handleCloseVerificationModal = () => setShowVerificationModal(false);
@@ -61,6 +73,7 @@ export default function App() {
       <Routes>
         <Route path="/scene" element={<SceneScreen user={user} />} />
         <Route path="/" element={<HomeScreen />} />
+        <Route path="/config" element={<ConfigScreen />} />
       </Routes>
     </div>
   );
