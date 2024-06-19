@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db, storage } from '../../../firebase';
 
 export default function FinalizeRegistrationModal({ show, handleClose, userUid, email, handleShowCongrats }) {
   const [name, setName] = useState('');

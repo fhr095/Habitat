@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/HomeScreen.scss';
+import './styles/HomeScreen.scss';
 
 export default function HomeScreen() {
   const navigate = useNavigate();

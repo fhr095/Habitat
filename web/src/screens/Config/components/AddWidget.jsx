@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Table } from 'react-bootstrap';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
-import { storage, db } from '../firebase';
+import { storage, db } from '../../../firebase';
 import '../styles/AddWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 

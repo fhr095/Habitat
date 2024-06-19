@@ -5,7 +5,7 @@ import '../styles/LoginRegisterModal.scss';
 import { FcGoogle } from 'react-icons/fc';
 import FinalizeRegistrationModal from './FinalizeRegistrationModal';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../../../firebase';
 
 export default function LoginRegisterModal({ show, handleClose, handleShowCongrats }) {
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);

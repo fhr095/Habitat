@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, applyActionCode } from "firebase/auth";
-import SceneScreen from "./screens/SceneScreen";
-import HomeScreen from "./screens/HomeScreen";
-import ConfigScreen from "./screens/ConfigScreen";
-import VerificationModal from "./components/VerificationModal";
-import LoginRegisterModal from "./components/LoginRegisterModal";
-import CongratsModal from "./components/CongratsModal";
+
+import SceneScreen from "./screens/Scene/SceneScreen";
+import HomeScreen from "./screens/Home/HomeScreen";
+import ConfigScreen from "./screens/Config/ConfigScreen";
+
+import VerificationModal from "./screens/Scene/components/VerificationModal";
+import LoginRegisterModal from "./screens/Scene/components/LoginRegisterModal";
+import CongratsModal from "./screens/Scene/components/CongratsModal";
+
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { getAuth } from 'firebase/auth';
-import Sidebar from '../components/Sidebar';
+import Sidebar from './components/Sidebar';
 
-import ProfileSettings from '../components/ProfileSettings';
-import Habitat from '../components/Habitat';
-import AddWidget from '../components/AddWidget';
+import ProfileSettings from './components/ProfileSettings';
+import Habitat from './components/Habitat';
+import AddWidget from './components/AddWidget';
 
-import '../styles/ConfigScreen.scss';
+import './styles/ConfigScreen.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function ConfigScreen() {

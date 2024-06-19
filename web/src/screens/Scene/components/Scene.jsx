@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { ref, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase";
+import { storage } from "../../../firebase";
 import * as TWEEN from "@tweenjs/tween.js";
 import LoadingScreen from "./LoadingScreen";
 import VoiceButton from "./VoiceButton";

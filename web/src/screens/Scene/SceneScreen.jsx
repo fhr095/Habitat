@@ -4,12 +4,12 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
-import ChatContainer from "../components/ChatContainer";
-import LoginRegisterModal from "../components/LoginRegisterModal";
-import Scene from "../components/Scene";
-import WidgetCarousel from "../components/WidgetCarousel";
-import { db } from "../firebase";
-import "../styles/SceneScreen.scss";
+import ChatContainer from "./components/ChatContainer";
+import LoginRegisterModal from "./components/LoginRegisterModal";
+import Scene from "./components/Scene";
+import WidgetCarousel from "./components/WidgetCarousel";
+import { db } from "../../firebase";
+import "./styles/SceneScreen.scss";
 
 export default function SceneScreen() {
   const [chatOpen, setChatOpen] = useState(false);

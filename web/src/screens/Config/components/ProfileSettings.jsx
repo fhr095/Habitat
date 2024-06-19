@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAuth, updateProfile, deleteUser } from 'firebase/auth';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../firebase';
+import { db, storage } from '../../../firebase';
 import { Container, Form, Button, Row, Col, Image } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ProfileSettings.scss';
