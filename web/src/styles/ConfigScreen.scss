@@ -1,3 +1,4 @@
+/* ConfigScreen.scss */
 .config-screen {
   display: flex;
   height: 100vh;
@@ -65,11 +66,12 @@
   overflow-y: auto;
 }
 
-.profile-settings {
+.add-widget, .profile-settings {
   background: white;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 
   .profile-image {
     width: 150px;
@@ -94,5 +96,9 @@
       transform: scale(0.95);
       background-color: #00392f;
     }
+  }
+
+  .table {
+    margin-top: 20px;
   }
 }

@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
-import { FaSignInAlt, FaSignOutAlt, FaPlus } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
 import ChatContainer from "../components/ChatContainer";
 import LoginRegisterModal from "../components/LoginRegisterModal";
 import Scene from "../components/Scene";
-import CreateWidgetModal from "../components/CreateWidgetModal";
 import WidgetCarousel from "../components/WidgetCarousel";
 import { db } from "../firebase";
 import "../styles/SceneScreen.scss";
@@ -21,7 +20,6 @@ export default function SceneScreen() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
-  const [showCreateWidgetModal, setShowCreateWidgetModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -118,20 +116,6 @@ export default function SceneScreen() {
       </div>
       {currentUser && (
         <>
-          <div className="widget-container">
-            {isAdmin && (
-              <button
-                onClick={() => setShowCreateWidgetModal(true)}
-                className="widget-button"
-              >
-                <FaPlus /> Adicionar Widget
-              </button>
-            )}
-          </div>
-          <CreateWidgetModal
-            show={showCreateWidgetModal}
-            handleClose={() => setShowCreateWidgetModal(false)}
-          />
           <WidgetCarousel widgets={widgets} />
         </>
       )}

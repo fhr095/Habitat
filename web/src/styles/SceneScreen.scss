@@ -27,30 +27,3 @@
     }
   }
 }
-
-.widget-container {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  .widget-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    border: 2px solid #004736;
-    border-radius: 5px;
-    color: #004736;
-    background-color: white;
-    padding: 5px 10px;
-    font-weight: bold;
-    cursor: pointer;
-
-    &:hover {
-      transform: scale(0.95);
-    }
-  }
-}

@@ -3,6 +3,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import { getAuth } from 'firebase/auth';
 import Sidebar from '../components/Sidebar';
 import ProfileSettings from '../components/ProfileSettings';
+import AddWidget from '../components/AddWidget';
 import '../styles/ConfigScreen.scss';
 
 export default function ConfigScreen() {
@@ -21,6 +22,8 @@ export default function ConfigScreen() {
     switch (activeTab) {
       case 'profile':
         return <ProfileSettings />;
+      case 'add-widget':  // Aqui deve ser 'add-widget' para corresponder à Sidebar
+        return <AddWidget />;
       default:
         return <ProfileSettings />;
     }
@@ -28,9 +31,7 @@ export default function ConfigScreen() {
 
   return (
     <div className="config-screen">
-      <div className="sidebar">
-        <Sidebar setActiveTab={setActiveTab} profileImageUrl={profileImageUrl} />
-      </div>
+      <Sidebar setActiveTab={setActiveTab} profileImageUrl={profileImageUrl} />
       <div className="content">
         {renderActiveTab()}
       </div>
