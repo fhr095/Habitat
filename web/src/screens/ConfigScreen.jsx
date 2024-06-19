@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { getAuth } from 'firebase/auth';
 import Sidebar from '../components/Sidebar';
+
 import ProfileSettings from '../components/ProfileSettings';
+import Habitat from '../components/Habitat';
 import AddWidget from '../components/AddWidget';
+
 import '../styles/ConfigScreen.scss';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function ConfigScreen() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -22,19 +26,19 @@ export default function ConfigScreen() {
     switch (activeTab) {
       case 'profile':
         return <ProfileSettings />;
-      case 'add-widget':  // Aqui deve ser 'add-widget' para corresponder à Sidebar
+      case 'add-widget':
         return <AddWidget />;
+      case 'habitat':
+        return <Habitat />;
       default:
         return <ProfileSettings />;
     }
   };
 
   return (
-    <div className="config-screen">
-      <Sidebar setActiveTab={setActiveTab} profileImageUrl={profileImageUrl} />
-      <div className="content">
-        {renderActiveTab()}
-      </div>
-    </div>
+    <Container fluid className="config-screen">
+        <Sidebar className="sidebar" setActiveTab={setActiveTab} profileImageUrl={profileImageUrl} />
+          {renderActiveTab()}
+    </Container>
   );
 }

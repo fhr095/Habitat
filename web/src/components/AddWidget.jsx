@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Table } from 'react-bootstrap';
+import { Container, Form, Button, Table } from 'react-bootstrap';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { storage, db } from '../firebase';
+import '../styles/AddWidget.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function AddWidget() {
@@ -62,9 +63,9 @@ export default function AddWidget() {
   };
 
   return (
-    <div className="add-widget">
+    <Container fluid className="add-widget">
       <h2>Adicionar Widget</h2>
-      <Form>
+      <Form className="widget-form">
         <Form.Group controlId="formContent">
           <Form.Label>Conteúdo</Form.Label>
           <Form.Control
@@ -81,12 +82,12 @@ export default function AddWidget() {
           <Form.Control type="file" onChange={handleImageChange} />
         </Form.Group>
         {finalizeError && <p className="text-danger">{finalizeError}</p>}
-        <Button variant="primary" onClick={handleSubmit}>
+        <Button onClick={handleSubmit} className="add-button">
           Adicionar Widget
         </Button>
       </Form>
       <h3 className="mt-4">Widgets</h3>
-      <Table striped bordered hover>
+      <Table striped bordered hover className="widget-table">
         <thead>
           <tr>
             <th>#</th>
@@ -108,7 +109,7 @@ export default function AddWidget() {
                 )}
               </td>
               <td>
-                <Button variant="danger" onClick={() => handleDelete(widget.id)}>
+                <Button variant="danger" onClick={() => handleDelete(widget.id)} className="delete-button">
                   Deletar
                 </Button>
               </td>
@@ -116,6 +117,6 @@ export default function AddWidget() {
           ))}
         </tbody>
       </Table>
-    </div>
+    </Container>
   );
 }

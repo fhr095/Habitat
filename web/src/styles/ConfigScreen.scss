@@ -1,104 +1,33 @@
-/* ConfigScreen.scss */
-.config-screen {
-  display: flex;
+.config-screen{
+  width: 100%;
   height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.sidebar {
-  width: 250px;
-  background-color: #004736;
-  color: white;
-  height: 100%;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
+  padding: 0;
+  overflow: hidden;
 
-  .profile-thumbnail {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  }
-
-  .nav-link {
-    color: white;
-    font-weight: bold;
-    margin-bottom: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    padding: 10px;
-    width: 100%;
-    text-align: center;
-    border-radius: 5px;
-    transition: transform 0.2s, background-color 0.2s;
-
-    &:hover {
-      background-color: #00392f;
-      transform: scale(0.95);
-      text-decoration: none;
-    }
-
-    svg {
-      margin-right: 10px;
-    }
-  }
-
-  .nav-item {
-    width: 100%;
-
-    &:hover {
-      background-color: #00392f;
-      transform: scale(0.95);
-    }
-  }
-}
-
-.content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-.add-widget, .profile-settings {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-
-  .profile-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  }
-
-  .save-button, .delete-button {
-    width: 150px;
-    transition: transform 0.2s;
+  .sidebar{
+    height: 100%;
     background-color: #004736;
-    color: white;
-    border: none;
+    display: flex;
     padding: 10px;
-    border-radius: 5px;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 
-    &:hover {
-      transform: scale(0.95);
-      background-color: #00392f;
+    .nav-link{
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover{
+        transform: scale(1.2);
+      }
     }
   }
 
-  .table {
-    margin-top: 20px;
-  }
+  
 }

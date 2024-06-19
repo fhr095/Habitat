@@ -5,6 +5,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage
 import { db, storage } from '../firebase';
 import { Container, Form, Button, Row, Col, Image } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import '../styles/ProfileSettings.scss';
 
 export default function ProfileSettings() {
   const [name, setName] = useState('');
@@ -70,7 +71,7 @@ export default function ProfileSettings() {
   };
 
   return (
-    <Container className="profile-settings">
+    <Container fluid className="profile-settings">
       <h1 className="text-center mb-4">Configurações do Usuário</h1>
       <Form className="config-form">
         <Form.Group as={Row} className="mb-3" controlId="formPlaintextName">
@@ -92,12 +93,12 @@ export default function ProfileSettings() {
         )}
         <Row className="justify-content-center">
           <Col xs="auto">
-            <Button variant="primary" onClick={handleSave} className="save-button">
+            <Button onClick={handleSave} className="save-button">
               Salvar
             </Button>
           </Col>
           <Col xs="auto">
-            <Button variant="danger" onClick={handleDeleteAccount} className="delete-button">
+            <Button onClick={handleDeleteAccount} className="delete-button">
               Deletar Conta
             </Button>
           </Col>
