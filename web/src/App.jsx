@@ -4,7 +4,6 @@ import { getAuth, applyActionCode } from "firebase/auth";
 
 import SceneScreen from "./screens/Scene/SceneScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
-import ConfigScreen from "./screens/Config/ConfigScreen";
 
 import VerificationModal from "./screens/Scene/components/VerificationModal";
 import LoginRegisterModal from "./screens/Scene/components/LoginRegisterModal";
@@ -68,15 +67,15 @@ export default function App() {
       <LoginRegisterModal
         show={showLoginModal}
         handleClose={handleCloseLoginModal}
+        handleShowCongrats={handleShowCongratsModal}
       />
       <CongratsModal
         show={showCongratsModal}
         handleClose={handleCloseCongratsModal}
       />
       <Routes>
-        <Route path="/scene" element={<SceneScreen user={user} />} />
+        <Route path="/scene" element={<SceneScreen user={user} onLoginClick={handleOpenLoginModal} onLogoutClick={() => setUser(null)} />} />
         <Route path="/" element={<HomeScreen />} />
-        <Route path="/config" element={<ConfigScreen />} />
       </Routes>
     </div>
   );
