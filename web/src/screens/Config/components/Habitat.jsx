@@ -14,6 +14,7 @@ export default function Habitat() {
   const [habitatName, setHabitatName] = useState('');
   const [glbFile, setGlbFile] = useState(null);
   const [glbPath, setGlbPath] = useState('');
+  const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const auth = getAuth();
@@ -64,9 +65,13 @@ export default function Habitat() {
     }
   };
 
+  const handleAddressChange = (e) => {
+    setAddress(e.target.value);
+  };
+
   const handleCreateHabitat = async () => {
-    if (!habitatName || !glbFile) {
-      alert("Por favor, preencha o nome do habitat e selecione um arquivo GLB.");
+    if (!habitatName || !glbFile || !address) {
+      alert("Por favor, preencha todos os campos.");
       return;
     }
 
@@ -74,10 +79,12 @@ export default function Habitat() {
       name: habitatName,
       userEmail: user.email,
       glbPath,
+      address,
     });
 
     setHabitatName('');
     setGlbFile(null);
+    setAddress('');
     fetchHabitats(user.email);
     alert("Habitat criado com sucesso!");
   };
@@ -88,44 +95,54 @@ export default function Habitat() {
 
   return (
     <Container fluid className="habitat-container">
-        <div className="list-container">
-          <h2>Habitats</h2>
-          <div className="habitat-list">
-            {habitats.map((habitat) => (
-              <Card key={habitat.id} className="habitat-item mb-3" onClick={() => handleNavigateToScene(habitat.id)}>
-                <Card.Body>
-                  <Card.Title>{habitat.name}</Card.Title>
-                  {/* Add more habitat details here */}
-                </Card.Body>
-              </Card>
-            ))}
+      <div className="list-container">
+        <h2>Habitats</h2>
+        <div className="habitat-list">
+          {habitats.map((habitat) => (
+            <Card key={habitat.id} className="habitat-item mb-3" onClick={() => handleNavigateToScene(habitat.id)}>
+              <Card.Body>
+                <Card.Title>{habitat.name}</Card.Title>
+                {/* Add more habitat details here */}
+              </Card.Body>
+            </Card>
+          ))}
+        </div>
+      </div>
+      <div className="model-container">
+        <h2>Criar Habitat</h2>
+        <Form>
+          <Form.Group controlId="formHabitatName">
+            <Form.Label>Nome do Habitat</Form.Label>
+            <Form.Control
+              type="text"
+              value={habitatName}
+              onChange={handleHabitatNameChange}
+              placeholder="Digite o nome do habitat"
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="formGlbUpload" className="mt-3">
+            <Form.Label>Upload do modelo GLB</Form.Label>
+            <Form.Control type="file" onChange={handleGlbFileChange} />
+          </Form.Group>
+          <Form.Group controlId="formAddress" className="mt-3">
+            <Form.Label>Endereço</Form.Label>
+            <Form.Control
+              type="text"
+              value={address}
+              onChange={handleAddressChange}
+              placeholder="Digite o endereço"
+              required
+            />
+          </Form.Group>
+          <div className="large-div mt-4">
+            <Scene glbPath={glbPath} loading={loading} progress={progress} />
           </div>
-        </div>
-        <div className="model-container">
-          <h2>Criar Habitat</h2>
-          <Form>
-            <Form.Group controlId="formHabitatName">
-              <Form.Label>Nome do Habitat</Form.Label>
-              <Form.Control
-                type="text"
-                value={habitatName}
-                onChange={handleHabitatNameChange}
-                placeholder="Digite o nome do habitat"
-                required
-              />
-            </Form.Group>
-            <Form.Group controlId="formGlbUpload" className="mt-3">
-              <Form.Label>Upload do modelo GLB</Form.Label>
-              <Form.Control type="file" onChange={handleGlbFileChange} />
-            </Form.Group>
-            <div className="large-div mt-4">
-              <Scene glbPath={glbPath} loading={loading} progress={progress} />
-            </div>
-            <Button variant="primary" className="mt-3" onClick={handleCreateHabitat}>
-              Criar Habitat
-            </Button>
-          </Form>
-        </div>
+          <Button variant="primary" className="mt-3" onClick={handleCreateHabitat}>
+            Criar Habitat
+          </Button>
+        </Form>
+      </div>
     </Container>
   );
 }
