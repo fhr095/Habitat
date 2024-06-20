@@ -79,7 +79,7 @@ export default function Scene({ glbPath }) {
     <div ref={mountRef} className="scene-container">
       {loadingProgress < 100 && (
         <div className="loading-overlay">
-          <div className="loading-text">Loading: {loadingProgress}%</div>
+          <div className="loading-text">Carregando: {loadingProgress}%</div>
         </div>
       )}
     </div>
