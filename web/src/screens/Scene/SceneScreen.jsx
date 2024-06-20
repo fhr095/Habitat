@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, onSnapshot, getDoc, doc } from "firebase/firestore";
+import { collection, getDoc, doc, onSnapshot } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
 import ChatContainer from "./components/ChatContainer";
 import LoginRegisterModal from "./components/LoginRegisterModal";
 import Scene from "./components/Scene";
 import WidgetCarousel from "./components/WidgetCarousel";
-import { db } from "../../firebase";
+import { db, storage } from "../../firebase";
 import "./styles/SceneScreen.scss";
 
 export default function SceneScreen() {
@@ -20,8 +21,10 @@ export default function SceneScreen() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ type: "" });
   const [searchTerm, setSearchTerm] = useState("");
   const [widgets, setWidgets] = useState([]);
+  const [glbPath, setGlbPath] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const auth = getAuth();
@@ -30,6 +33,13 @@ export default function SceneScreen() {
         setCurrentUser(user);
         await checkIfAdmin(user.uid);
         loadWidgets();
+        const queryParams = new URLSearchParams(location.search);
+        const habitatId = queryParams.get("id");
+        if (habitatId) {
+          await loadHabitatModel(user.email, habitatId);
+        } else {
+          await loadDefaultModel();
+        }
       } else {
         setCurrentUser(null);
         setIsAdmin(false);
@@ -37,7 +47,7 @@ export default function SceneScreen() {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [location]);
 
   const checkIfAdmin = async (uid) => {
     try {
@@ -70,6 +80,31 @@ export default function SceneScreen() {
     return unsubscribe;
   };
 
+  const loadHabitatModel = async (email, habitatId) => {
+    try {
+      const habitatDoc = await getDoc(doc(db, "habitats", habitatId));
+      if (habitatDoc.exists() && habitatDoc.data().userEmail === email) {
+        setGlbPath(habitatDoc.data().glbPath);
+      } else {
+        console.error("Habitat not found or access denied");
+        await loadDefaultModel();
+      }
+    } catch (error) {
+      console.error("Error loading habitat model:", error);
+      await loadDefaultModel();
+    }
+  };
+
+  const loadDefaultModel = async () => {
+    try {
+      const defaultModelRef = ref(storage, "model/default_model.glb");
+      const downloadURL = await getDownloadURL(defaultModelRef);
+      setGlbPath(downloadURL);
+    } catch (error) {
+      console.error("Error loading default model:", error);
+    }
+  };
+
   const handleLoginRegister = () => {
     setModalShow(true);
   };
@@ -86,9 +121,13 @@ export default function SceneScreen() {
       });
   };
 
+  const handleGoToConfig = () => {
+    navigate("/config");
+  };
+
   return (
     <div className="screen-container">
-      <Scene />
+      <Scene glbPath={glbPath} />
       {currentUser && (
         <ChatContainer
           isOpen={chatOpen}
@@ -108,10 +147,15 @@ export default function SceneScreen() {
             <FaSignInAlt color="#004736" size={20} />
           </button>
         ) : (
-          <button onClick={handleLogout} className="login-button">
-            Sair
-            <FaSignOutAlt color="#004736" size={20} />
-          </button>
+          <>
+            <button onClick={handleLogout} className="login-button">
+              Sair
+              <FaSignOutAlt color="#004736" size={20} />
+            </button>
+            <button onClick={handleGoToConfig} className="config-button">
+              Config
+            </button>
+          </>
         )}
       </div>
       {currentUser && (

@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase";
 import { Container, Form, Button, Card } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "../styles/Habitat.scss";
 
 import Scene from "./Scene";
@@ -17,6 +18,7 @@ export default function Habitat() {
   const [progress, setProgress] = useState(0);
   const auth = getAuth();
   const user = auth.currentUser;
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     if (user) {
@@ -80,13 +82,17 @@ export default function Habitat() {
     alert("Habitat criado com sucesso!");
   };
 
+  const handleNavigateToScene = (habitatId) => {
+    navigate(`/scene?id=${habitatId}`); // Navigate to /scene with habitatId
+  };
+
   return (
     <Container fluid className="habitat-container">
         <div className="list-container">
           <h2>Habitats</h2>
           <div className="habitat-list">
             {habitats.map((habitat) => (
-              <Card key={habitat.id} className="habitat-item mb-3">
+              <Card key={habitat.id} className="habitat-item mb-3" onClick={() => handleNavigateToScene(habitat.id)}>
                 <Card.Body>
                   <Card.Title>{habitat.name}</Card.Title>
                   {/* Add more habitat details here */}

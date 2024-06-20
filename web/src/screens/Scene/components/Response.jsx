@@ -13,7 +13,7 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Response.scss";
 
-import Avatar from "../assets/images/Avatar.png";
+import Avatar from "../../../assets/images/Avatar.png";
 
 export default function Response({
   iaResponse,

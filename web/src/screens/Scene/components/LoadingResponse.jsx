@@ -3,7 +3,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/LoadingResponse.scss';
 
-import Avatar from "../assets/images/Avatar.png"; // Importando a imagem
+import Avatar from "../../../assets/images/Avatar.png";
 
 export default function LoadingResponse() {
   return (
