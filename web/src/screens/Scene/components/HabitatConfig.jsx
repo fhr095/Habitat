@@ -75,6 +75,7 @@ export default function HabitatConfig() {
             console.error("Erro ao fazer upload do arquivo:", error);
             setAlertMessage("Falha ao fazer upload do arquivo. Tente novamente.");
             setAlertVariant("danger");
+            setLoading(false);
           },
           async () => {
             glbPath = await getDownloadURL(uploadTask.snapshot.ref);
@@ -87,6 +88,7 @@ export default function HabitatConfig() {
             setAlertMessage("Habitat atualizado com sucesso.");
             setAlertVariant("success");
             setUploadProgress(0);
+            setLoading(false);
           }
         );
       } else {
@@ -98,12 +100,12 @@ export default function HabitatConfig() {
         });
         setAlertMessage("Habitat atualizado com sucesso.");
         setAlertVariant("success");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Erro ao atualizar habitat:", error);
       setAlertMessage("Falha ao atualizar o habitat. Tente novamente.");
       setAlertVariant("danger");
-    } finally {
       setLoading(false);
     }
   };
@@ -145,12 +147,12 @@ export default function HabitatConfig() {
             onChange={handleFileChange}
             className="form-control"
           />
+          {newGlbFile && (
+            <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} className="mb-3" />
+          )}
         </Form.Group>
-        {newGlbFile && (
-          <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} className="mb-3" />
-        )}
         <Button variant="primary" onClick={handleSaveChanges} disabled={loading} className="btn-primary">
-          {loading ? <div className="spinner-border spinner-border-sm" role="status"><span className="sr-only">Salvando...</span></div> : "Salvar Alterações"}
+          {loading ? <div className="spinner-border spinner-border-sm" role="status"></div> : "Salvar Alterações"}
         </Button>
       </Form>
     </div>

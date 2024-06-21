@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Button, ProgressBar } from "react-bootstrap";
+import { Form, Button, ProgressBar, Alert } from "react-bootstrap";
 import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase";
@@ -11,6 +11,8 @@ export default function AddHabitat({ user }) {
   const [glbFile, setGlbFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertVariant, setAlertVariant] = useState("");
 
   const handleFileChange = (e) => {
     setGlbFile(e.target.files[0]);
@@ -19,7 +21,8 @@ export default function AddHabitat({ user }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !address || !glbFile) {
-      alert("Por favor, preencha todos os campos e envie um arquivo .glb");
+      setAlertMessage("Por favor, preencha todos os campos e envie um arquivo .glb");
+      setAlertVariant("danger");
       return;
     }
 
@@ -37,7 +40,8 @@ export default function AddHabitat({ user }) {
         },
         (error) => {
           console.error("Erro ao enviar arquivo:", error);
-          alert("Falha ao enviar o arquivo. Tente novamente.");
+          setAlertMessage("Falha ao enviar o arquivo. Tente novamente.");
+          setAlertVariant("danger");
           setLoading(false);
         },
         async () => {
@@ -56,13 +60,15 @@ export default function AddHabitat({ user }) {
           setAddress("");
           setGlbFile(null);
           setUploadProgress(0);
-          alert("Habitat criado com sucesso");
+          setAlertMessage("Habitat criado com sucesso");
+          setAlertVariant("success");
           setLoading(false);
         }
       );
     } catch (error) {
       console.error("Erro ao criar habitat:", error);
-      alert("Falha ao criar o habitat. Tente novamente.");
+      setAlertMessage("Falha ao criar o habitat. Tente novamente.");
+      setAlertVariant("danger");
       setLoading(false);
     }
   };
@@ -70,6 +76,11 @@ export default function AddHabitat({ user }) {
   return (
     <div className="addHabitat-container">
       <h2>Criar Habitat</h2>
+      {alertMessage && (
+        <Alert variant={alertVariant} onClose={() => setAlertMessage("")} dismissible>
+          {alertMessage}
+        </Alert>
+      )}
       <Form onSubmit={handleSubmit}>
         <Form.Group className="mb-3">
           <Form.Label>Nome</Form.Label>
@@ -97,14 +108,12 @@ export default function AddHabitat({ user }) {
             onChange={handleFileChange}
             required
           />
-          {loading && (
-            <div className="upload-progress">
-              <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} />
-            </div>
+          {glbFile && (
+            <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} className="mb-3" />
           )}
         </Form.Group>
         <Button variant="primary" type="submit" disabled={loading}>
-          {loading ? "Criando..." : "Criar Habitat"}
+          {loading ? <div className="spinner-border spinner-border-sm" role="status"></div> : "Criar Habitat"}
         </Button>
       </Form>
     </div>
