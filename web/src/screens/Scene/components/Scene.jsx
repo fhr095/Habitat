@@ -10,7 +10,8 @@ export default function Scene({ glbPath, onLoadComplete }) {
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    let scene = new THREE.Scene();
+    let isMounted = true;  // Variável de controle para verificar se o componente está montado
+    const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -39,11 +40,13 @@ export default function Scene({ glbPath, onLoadComplete }) {
     loader.load(
       glbPath,
       (gltf) => {
+        if (!isMounted) return;
         scene.add(gltf.scene);
         gltf.scene.rotation.y = Math.PI;
         camera.position.set(0, 10, 50); // Ajusta a posição inicial da câmera para um zoom adequado e visualização de cima
         camera.lookAt(gltf.scene.position); // Faz a câmera olhar para o modelo
         const animate = function () {
+          if (!isMounted) return;
           requestAnimationFrame(animate);
           gltf.scene.rotation.y += 0.001; // Rotação lenta
           controls.update();
@@ -51,9 +54,10 @@ export default function Scene({ glbPath, onLoadComplete }) {
         };
         animate();
         setLoadingProgress(100); // Carregamento completo
-        onLoadComplete(); // Notificar que o carregamento está completo
+        if (onLoadComplete) onLoadComplete(); // Notificar que o carregamento está completo
       },
       (xhr) => {
+        if (!isMounted) return;
         if (xhr.lengthComputable) {
           const percentComplete = (xhr.loaded / xhr.total) * 100;
           setLoadingProgress(Math.round(percentComplete));
@@ -61,11 +65,12 @@ export default function Scene({ glbPath, onLoadComplete }) {
       },
       (error) => {
         console.error("Error loading GLB model:", error);
-        onLoadComplete(); // Notificar que o carregamento falhou
+        if (isMounted && onLoadComplete) onLoadComplete(); // Notificar que o carregamento falhou
       }
     );
 
     const handleResize = () => {
+      if (!isMounted) return;
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -73,11 +78,12 @@ export default function Scene({ glbPath, onLoadComplete }) {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      // Cancelar o carregamento e destruir a cena atual
-      renderer.dispose();
-      scene = null;
-      mountRef.current.removeChild(renderer.domElement);
+      isMounted = false;  // Desmontar o componente
       window.removeEventListener("resize", handleResize);
+      renderer.dispose();
+      if (mountRef.current) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
     };
   }, [glbPath, onLoadComplete]);
 

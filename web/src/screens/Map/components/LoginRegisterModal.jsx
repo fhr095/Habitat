@@ -112,7 +112,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
       const user = userCredential.user;
   
       await sendEmailVerification(user, {
-        url: 'https://habitatest.netlify.app/scene',
+        url: 'https://habitatest.netlify.app/map',
         handleCodeInApp: true
       });
   

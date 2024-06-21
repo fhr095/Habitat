@@ -6,7 +6,7 @@ export default function HomeScreen() {
   const navigate = useNavigate();
 
   const handleNavigate = () => {
-    navigate('/scene'); // Redirecionar para a plataforma
+    navigate('/map'); // Redirecionar para a plataforma
   };
 
   return (
