@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { getDownloadURL, ref } from "firebase/storage";
-import { storage } from "../../firebase.js";
+import { storage } from "../../firebase";
 
 import Sidebar from "./components/Sidebar";
-import Buttons from "./components/Buttons.jsx";
+import Buttons from "./components/Buttons";
 import Scene from "./components/Scene";
+
+import Profile from "./components/Profile";
+import AddHabitat from "./components/AddHabitat";
+import ListHabitats from "./components/ListHabitats";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/SceneScreen.scss";
 
 export default function SceneScreen({ user, onLoginClick, onLogoutClick }) {
   const [glbPath, setGlbPath] = useState("");
+  const [activeComponent, setActiveComponent] = useState(null); // Estado para gerenciar o componente ativo
 
   useEffect(() => {
     const fetchModelUrl = async () => {
@@ -26,13 +31,28 @@ export default function SceneScreen({ user, onLoginClick, onLogoutClick }) {
     fetchModelUrl();
   }, []);
 
+  // Função para renderizar o componente ativo
+  const renderActiveComponent = () => {
+    switch (activeComponent) {
+      case "Profile":
+        return <Profile />;
+      case "AddHabitat":
+        return <AddHabitat user={user} />;
+      case "ListHabitats":
+        return <ListHabitats user={user} />;
+      case "AIComponent":
+        return <AIComponent />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="sceneScreen-container">
-      <Sidebar />
+      <Sidebar setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
+        {renderActiveComponent()} {/* Renderiza o componente ativo */}
       <Buttons logged={!!user} onLoginClick={onLoginClick} onLogoutClick={onLogoutClick} />
-
       {glbPath && <Scene glbPath={glbPath} />}
-      
     </div>
   );
 }
