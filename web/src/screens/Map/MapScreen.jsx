@@ -10,7 +10,7 @@ import ListHabitats from './components/ListHabitats';
 
 import './styles/MapScreen.scss';
 
-export default function MapScreen({ user }) {
+export default function MapScreen({ user, onLoginClick, onLogoutClick }) {
   const [activeComponent, setActiveComponent] = useState(null);
 
   const renderActiveComponent = () => {
@@ -32,7 +32,11 @@ export default function MapScreen({ user }) {
       
       {renderActiveComponent()}
 
-      <Buttons />
+      <Buttons 
+        logged={!!user} 
+        onLoginClick={onLoginClick} 
+        onLogoutClick={onLogoutClick} 
+      />
       <Map />
     </div>
   );

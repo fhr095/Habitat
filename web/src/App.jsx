@@ -76,7 +76,7 @@ export default function App() {
       />
       <Routes>
         <Route path="/scene" element={<SceneScreen user={user} onLoginClick={handleOpenLoginModal} onLogoutClick={() => setUser(null)} />} />
-        <Route path="/map" element={<MapScreen user={user} />} />
+        <Route path="/map" element={<MapScreen user={user} onLoginClick={handleOpenLoginModal} onLogoutClick={() => setUser(null)} />} />
         <Route path="/" element={<HomeScreen />} />
       </Routes>
     </div>
