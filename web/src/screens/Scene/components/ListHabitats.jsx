@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase";
 import "../styles/ListHabitats.scss";
 
-export default function ListHabitats({ user }) {
+export default function ListHabitats({ user, onHabitatClick }) {
   const [habitats, setHabitats] = useState([]);
 
   useEffect(() => {
@@ -24,9 +24,8 @@ export default function ListHabitats({ user }) {
     fetchHabitats();
   }, [user.email]);
 
-  const handleCardClick = (id) => {
-    console.log("Habitat ID:", id);
-    // Futuramente, adicionar a lógica necessária para tratar o clique no card
+  const handleCardClick = (glbPath) => {
+    onHabitatClick(glbPath);
   };
 
   return (
@@ -34,7 +33,7 @@ export default function ListHabitats({ user }) {
       <h2>Meus Habitats</h2>
       <div className="habitats-list">
         {habitats.map((habitat) => (
-          <div key={habitat.id} className="habitat-card" onClick={() => handleCardClick(habitat.id)}>
+          <div key={habitat.id} className="habitat-card" onClick={() => handleCardClick(habitat.glbPath)}>
             {habitat.name}
           </div>
         ))}

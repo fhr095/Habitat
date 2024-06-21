@@ -5,12 +5,12 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import "../styles/Scene.scss";
 
-export default function Scene({ glbPath }) {
+export default function Scene({ glbPath, onLoadComplete }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    const scene = new THREE.Scene();
+    let scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -35,6 +35,7 @@ export default function Scene({ glbPath }) {
     scene.add(directionalLight);
 
     const loader = new GLTFLoader();
+
     loader.load(
       glbPath,
       (gltf) => {
@@ -50,6 +51,7 @@ export default function Scene({ glbPath }) {
         };
         animate();
         setLoadingProgress(100); // Carregamento completo
+        onLoadComplete(); // Notificar que o carregamento está completo
       },
       (xhr) => {
         if (xhr.lengthComputable) {
@@ -59,6 +61,7 @@ export default function Scene({ glbPath }) {
       },
       (error) => {
         console.error("Error loading GLB model:", error);
+        onLoadComplete(); // Notificar que o carregamento falhou
       }
     );
 
@@ -70,10 +73,13 @@ export default function Scene({ glbPath }) {
     window.addEventListener("resize", handleResize);
 
     return () => {
+      // Cancelar o carregamento e destruir a cena atual
+      renderer.dispose();
+      scene = null;
       mountRef.current.removeChild(renderer.domElement);
       window.removeEventListener("resize", handleResize);
     };
-  }, [glbPath]);
+  }, [glbPath, onLoadComplete]);
 
   return (
     <div ref={mountRef} className="scene-container">

@@ -16,6 +16,7 @@ import "./styles/SceneScreen.scss";
 export default function SceneScreen({ user, onLoginClick, onLogoutClick }) {
   const [glbPath, setGlbPath] = useState("");
   const [activeComponent, setActiveComponent] = useState(null); // Estado para gerenciar o componente ativo
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchModelUrl = async () => {
@@ -39,20 +40,31 @@ export default function SceneScreen({ user, onLoginClick, onLogoutClick }) {
       case "AddHabitat":
         return <AddHabitat user={user} />;
       case "ListHabitats":
-        return <ListHabitats user={user} />;
-      case "AIComponent":
-        return <AIComponent />;
+        return <ListHabitats user={user} onHabitatClick={handleHabitatClick} />;
       default:
         return null;
     }
   };
 
+  const handleHabitatClick = async (glbPath) => {
+    if (isLoading) {
+      alert("Por favor, aguarde o carregamento do modelo atual.");
+      return;
+    }
+    setGlbPath(glbPath);
+    setIsLoading(true);
+  };
+
+  const handleLoadComplete = () => {
+    setIsLoading(false);
+  };
+
   return (
     <div className="sceneScreen-container">
       <Sidebar setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
-        {renderActiveComponent()} {/* Renderiza o componente ativo */}
+      {renderActiveComponent()} {/* Renderiza o componente ativo */}
       <Buttons logged={!!user} onLoginClick={onLoginClick} onLogoutClick={onLogoutClick} />
-      {glbPath && <Scene glbPath={glbPath} />}
+      {glbPath && <Scene glbPath={glbPath} onLoadComplete={handleLoadComplete} />}
     </div>
   );
 }
