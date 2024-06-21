@@ -17,7 +17,6 @@ import "./styles/SceneScreen.scss";
 export default function SceneScreen({ user }) {
   const [glbPath, setGlbPath] = useState("");
   const [activeComponent, setActiveComponent] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export default function SceneScreen({ user }) {
 
       if (habitatId) {
         try {
-          setIsLoading(true);
           const habitatDocRef = doc(db, "habitats", habitatId);
           const habitatDoc = await getDoc(habitatDocRef);
           if (habitatDoc.exists()) {
@@ -37,11 +35,9 @@ export default function SceneScreen({ user }) {
             setGlbPath(url);
           } else {
             console.error("Habitat não encontrado");
-            setIsLoading(false);
           }
         } catch (error) {
           console.error("Erro ao buscar modelo do habitat:", error);
-          setIsLoading(false);
         }
       }
     };
@@ -64,8 +60,10 @@ export default function SceneScreen({ user }) {
 
   return (
     <div className="sceneScreen-container">
-      <Sidebar setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
+      <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
+
       {renderActiveComponent()} {/* Renderiza o componente ativo */}
+
       {glbPath && <Scene glbPath={glbPath} />}
     </div>
   );
