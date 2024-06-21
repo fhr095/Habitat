@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, Alert } from "react-bootstrap";
+import { Form, Button, Alert, ProgressBar } from "react-bootstrap";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase";
 import { useLocation } from "react-router-dom";
 
@@ -15,6 +15,7 @@ export default function HabitatConfig() {
   });
   const [newGlbFile, setNewGlbFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertVariant, setAlertVariant] = useState("");
   const location = useLocation();
@@ -62,19 +63,42 @@ export default function HabitatConfig() {
 
       if (newGlbFile) {
         const storageRef = ref(storage, `habitats/${newGlbFile.name}`);
-        await uploadBytes(storageRef, newGlbFile);
-        glbPath = await getDownloadURL(storageRef);
+        const uploadTask = uploadBytesResumable(storageRef, newGlbFile);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Erro ao fazer upload do arquivo:", error);
+            setAlertMessage("Falha ao fazer upload do arquivo. Tente novamente.");
+            setAlertVariant("danger");
+          },
+          async () => {
+            glbPath = await getDownloadURL(uploadTask.snapshot.ref);
+            const habitatDocRef = doc(db, "habitats", habitatData.id);
+            await updateDoc(habitatDocRef, {
+              name: habitatData.name,
+              address: habitatData.address,
+              glbPath
+            });
+            setAlertMessage("Habitat atualizado com sucesso.");
+            setAlertVariant("success");
+            setUploadProgress(0);
+          }
+        );
+      } else {
+        const habitatDocRef = doc(db, "habitats", habitatData.id);
+        await updateDoc(habitatDocRef, {
+          name: habitatData.name,
+          address: habitatData.address,
+          glbPath
+        });
+        setAlertMessage("Habitat atualizado com sucesso.");
+        setAlertVariant("success");
       }
-
-      const habitatDocRef = doc(db, "habitats", habitatData.id);
-      await updateDoc(habitatDocRef, {
-        name: habitatData.name,
-        address: habitatData.address,
-        glbPath
-      });
-
-      setAlertMessage("Habitat atualizado com sucesso.");
-      setAlertVariant("success");
     } catch (error) {
       console.error("Erro ao atualizar habitat:", error);
       setAlertMessage("Falha ao atualizar o habitat. Tente novamente.");
@@ -122,8 +146,11 @@ export default function HabitatConfig() {
             className="form-control"
           />
         </Form.Group>
+        {newGlbFile && (
+          <ProgressBar now={uploadProgress} label={`${Math.round(uploadProgress)}%`} className="mb-3" />
+        )}
         <Button variant="primary" onClick={handleSaveChanges} disabled={loading} className="btn-primary">
-          {loading ? "Salvando..." : "Salvar Alterações"}
+          {loading ? <div className="spinner-border spinner-border-sm" role="status"><span className="sr-only">Salvando...</span></div> : "Salvar Alterações"}
         </Button>
       </Form>
     </div>

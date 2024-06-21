@@ -5,7 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import "../styles/Scene.scss";
 
-export default function Scene({ glbPath, onLoadComplete }) {
+export default function Scene({ glbPath }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
@@ -54,7 +54,6 @@ export default function Scene({ glbPath, onLoadComplete }) {
         };
         animate();
         setLoadingProgress(100); // Carregamento completo
-        if (onLoadComplete) onLoadComplete(); // Notificar que o carregamento está completo
       },
       (xhr) => {
         if (!isMounted) return;
@@ -65,7 +64,6 @@ export default function Scene({ glbPath, onLoadComplete }) {
       },
       (error) => {
         console.error("Error loading GLB model:", error);
-        if (isMounted && onLoadComplete) onLoadComplete(); // Notificar que o carregamento falhou
       }
     );
 
@@ -85,7 +83,7 @@ export default function Scene({ glbPath, onLoadComplete }) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [glbPath, onLoadComplete]);
+  }, [glbPath]);
 
   return (
     <div ref={mountRef} className="scene-container">

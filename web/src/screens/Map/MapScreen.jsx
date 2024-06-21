@@ -8,8 +8,6 @@ import AddHabitat from './components/AddHabitat';
 import ListHabitats from './components/ListHabitats';
 
 import LoginRegisterModal from './components/LoginRegisterModal';
-import VerificationModal from './components/VerificationModal';
-import CongratsModal from './components/CongratsModal';
 
 import './styles/MapScreen.scss';
 

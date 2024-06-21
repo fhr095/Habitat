@@ -62,16 +62,11 @@ export default function SceneScreen({ user }) {
     }
   };
 
-  const handleLoadComplete = () => {
-    setIsLoading(false);
-  };
-
   return (
     <div className="sceneScreen-container">
       <Sidebar setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
       {renderActiveComponent()} {/* Renderiza o componente ativo */}
-      {isLoading && <div className="loading-overlay">Carregando...</div>}
-      {glbPath && <Scene glbPath={glbPath} onLoadComplete={handleLoadComplete} />}
+      {glbPath && <Scene glbPath={glbPath} />}
     </div>
   );
 }

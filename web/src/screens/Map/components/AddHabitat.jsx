@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, ProgressBar } from "react-bootstrap";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase";
 import "../styles/AddHabitat.scss";
@@ -50,7 +50,7 @@ export default function AddHabitat({ user }) {
             userEmail: user.email,
           };
 
-          await setDoc(doc(db, "habitats", user.uid), habitatData);
+          await addDoc(collection(db, "habitats"), habitatData);
 
           setName("");
           setAddress("");
