@@ -28,7 +28,9 @@ export default function MapScreen({ user, onLoginClick, onLogoutClick }) {
 
   return (
     <div className='mapScreen-container'>
-      <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} />
+      {!user ? null : (
+        <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} />
+      )}
       
       {renderActiveComponent()}
 
@@ -37,6 +39,7 @@ export default function MapScreen({ user, onLoginClick, onLogoutClick }) {
         onLoginClick={onLoginClick} 
         onLogoutClick={onLogoutClick} 
       />
+
       <Map />
     </div>
   );

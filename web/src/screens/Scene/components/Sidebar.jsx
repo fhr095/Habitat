@@ -24,7 +24,7 @@ export default function Sidebar({ activeComponent, setActiveComponent }) {
         </div>
       </Nav.Item>
       <Nav.Item>
-        <div className="nav-link" onClick={() => handleComponentToggle("AddAvatar")}>
+        <div className="nav-link" onClick={() => handleComponentToggle("Avatar")}>
           <FaUserPlus size={20} />
         </div>
       </Nav.Item>

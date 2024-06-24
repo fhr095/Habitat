@@ -8,7 +8,7 @@ import Sidebar from "./components/Sidebar";
 import Scene from "./components/Scene";
 
 import HabitatConfig from "./components/HabitatConfig";
-import AddAvatar from "./components/AddAvatar";
+import Avatar from "./components/Avatar";
 import AddWidget from "./components/AddWidget";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -18,15 +18,17 @@ export default function SceneScreen({ user }) {
   const [glbPath, setGlbPath] = useState("");
   const [activeComponent, setActiveComponent] = useState(null);
   const location = useLocation();
+  const [habitatId, setHabitatId] = useState(null);
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
       const queryParams = new URLSearchParams(location.search);
-      const habitatId = queryParams.get("id");
+      const id = queryParams.get("id");
+      setHabitatId(id);
 
-      if (habitatId) {
+      if (id) {
         try {
-          const habitatDocRef = doc(db, "habitats", habitatId);
+          const habitatDocRef = doc(db, "habitats", id);
           const habitatDoc = await getDoc(habitatDocRef);
           if (habitatDoc.exists()) {
             const habitatData = habitatDoc.data();
@@ -49,8 +51,8 @@ export default function SceneScreen({ user }) {
     switch (activeComponent) {
       case "HabitatConfig":
         return <HabitatConfig />;
-      case "AddAvatar":
-        return <AddAvatar />;
+      case "Avatar":
+        return <Avatar habitatId={habitatId} />;
       case "AddWidget":
         return <AddWidget />;
       default:
@@ -61,9 +63,7 @@ export default function SceneScreen({ user }) {
   return (
     <div className="sceneScreen-container">
       <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
-
       {renderActiveComponent()} {/* Renderiza o componente ativo */}
-
       {glbPath && <Scene glbPath={glbPath} />}
     </div>
   );
