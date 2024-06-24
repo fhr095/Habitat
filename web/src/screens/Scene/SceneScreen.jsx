@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getDownloadURL, ref } from "firebase/storage";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useLocation } from "react-router-dom";
 import { storage, db } from "../../firebase";
 
@@ -19,6 +19,8 @@ export default function SceneScreen({ user }) {
   const [activeComponent, setActiveComponent] = useState(null);
   const location = useLocation();
   const [habitatId, setHabitatId] = useState(null);
+  const [modelParts, setModelParts] = useState([]);
+  const [selectedPart, setSelectedPart] = useState(null);
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
@@ -52,7 +54,7 @@ export default function SceneScreen({ user }) {
       case "HabitatConfig":
         return <HabitatConfig />;
       case "Avatar":
-        return <Avatar habitatId={habitatId} />;
+        return <Avatar habitatId={habitatId} modelParts={modelParts} setSelectedPart={setSelectedPart} />;
       case "AddWidget":
         return <AddWidget />;
       default:
@@ -62,9 +64,9 @@ export default function SceneScreen({ user }) {
 
   return (
     <div className="sceneScreen-container">
-      <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} /> {/* Passa a função para o Sidebar */}
-      {renderActiveComponent()} {/* Renderiza o componente ativo */}
-      {glbPath && <Scene glbPath={glbPath} />}
+      <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} />
+      {renderActiveComponent()}
+      {glbPath && <Scene glbPath={glbPath} setModelParts={setModelParts} selectedPart={selectedPart} />}
     </div>
   );
 }

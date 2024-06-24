@@ -5,12 +5,13 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import "../styles/Scene.scss";
 
-export default function Scene({ glbPath }) {
+export default function Scene({ glbPath, setModelParts, selectedPart }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const modelRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true;  // Variável de controle para verificar se o componente está montado
+    let isMounted = true;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -20,7 +21,7 @@ export default function Scene({ glbPath }) {
     );
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0); // Configura o fundo transparente
+    renderer.setClearColor(0x000000, 0);
     mountRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -41,19 +42,29 @@ export default function Scene({ glbPath }) {
       glbPath,
       (gltf) => {
         if (!isMounted) return;
-        scene.add(gltf.scene);
-        gltf.scene.rotation.y = Math.PI;
-        camera.position.set(0, 10, 50); // Ajusta a posição inicial da câmera para um zoom adequado e visualização de cima
-        camera.lookAt(gltf.scene.position); // Faz a câmera olhar para o modelo
+        modelRef.current = gltf.scene;
+        scene.add(modelRef.current);
+        modelRef.current.rotation.y = Math.PI;
+        camera.position.set(0, 10, 50);
+        camera.lookAt(modelRef.current.position);
+
+        const parts = [];
+        modelRef.current.traverse((child) => {
+          if (child.isMesh) {
+            parts.push(child.name || child.uuid);
+          }
+        });
+        setModelParts(parts);
+
         const animate = function () {
           if (!isMounted) return;
           requestAnimationFrame(animate);
-          gltf.scene.rotation.y += 0.001; // Rotação lenta
+          modelRef.current.rotation.y += 0.001;
           controls.update();
           renderer.render(scene, camera);
         };
         animate();
-        setLoadingProgress(100); // Carregamento completo
+        setLoadingProgress(100);
       },
       (xhr) => {
         if (!isMounted) return;
@@ -76,7 +87,7 @@ export default function Scene({ glbPath }) {
     window.addEventListener("resize", handleResize);
 
     return () => {
-      isMounted = false;  // Desmontar o componente
+      isMounted = false;
       window.removeEventListener("resize", handleResize);
       renderer.dispose();
       if (mountRef.current) {
@@ -84,6 +95,17 @@ export default function Scene({ glbPath }) {
       }
     };
   }, [glbPath]);
+
+  useEffect(() => {
+    if (selectedPart && modelRef.current) {
+      modelRef.current.traverse((child) => {
+        if (child.isMesh) {
+          child.material.transparent = true;
+          child.material.opacity = child.name === selectedPart ? 1 : 0.1;
+        }
+      });
+    }
+  }, [selectedPart]);
 
   return (
     <div ref={mountRef} className="scene-container">

@@ -4,7 +4,7 @@ import axios from "axios";
 import { Button, Form, Card, Alert, ProgressBar } from "react-bootstrap";
 import "../styles/Avatar.scss";
 
-export default function Avatar({ habitatId }) {
+export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   const [avatarData, setAvatarData] = useState({
     name: "",
     personality: "",
@@ -56,6 +56,9 @@ export default function Avatar({ habitatId }) {
       ...prevData,
       data: updatedData
     }));
+    if (field === "fade") {
+      setSelectedPart(value);
+    }
   };
 
   const handleAddNewInfo = () => {
@@ -132,10 +135,15 @@ export default function Avatar({ habitatId }) {
               <Form.Group>
                 <Form.Label>Fade</Form.Label>
                 <Form.Control
-                  type="text"
+                  as="select"
                   value={data.fade}
                   onChange={(e) => handleInputChange(index, "fade", e.target.value)}
-                />
+                >
+                  <option value="">Selecione uma parte</option>
+                  {modelParts.map((part, idx) => (
+                    <option key={idx} value={part}>{part}</option>
+                  ))}
+                </Form.Control>
               </Form.Group>
               <Button variant="danger" onClick={() => handleRemoveInfo(index)}>
                 Remover
