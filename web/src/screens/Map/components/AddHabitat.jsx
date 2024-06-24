@@ -52,6 +52,7 @@ export default function AddHabitat({ user }) {
             address,
             glbPath,
             userEmail: user.email,
+            avatarImage: ""
           };
 
           await addDoc(collection(db, "habitats"), habitatData);

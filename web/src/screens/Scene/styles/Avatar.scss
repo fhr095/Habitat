@@ -14,23 +14,77 @@
   border-radius: 5px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   z-index: 10;
-  
+
   .header {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     width: 100%;
     height: auto;
     padding: 10px;
     background-color: #004736;
     border-radius: 5px 5px 0 0;
-    gap: 20px;
-    
-    .create-avatar-button {
+    gap: 10px;
+    z-index: 20;
+
+    .avatar-image-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .avatar-image-label {
+        cursor: pointer;
+      }
+
+      .avatar-image {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      .avatar-image-placeholder {
+        width: 50px;
+        height: 50px;
+        background-color: lightgray;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .avatar-image-upload {
+        display: none;
+      }
+
+      .save-avatar-image-button {
+        background-color: white;
+        color: #004736;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: bold;
+
+        &:hover {
+          transform: scale(0.9);
+        }
+      }
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
       width: 100%;
+      justify-content: space-between;
+    }
+
+    .create-avatar-button {
       background-color: white;
       color: #004736;
       border: none;
@@ -43,14 +97,13 @@
       justify-content: center;
       align-items: center;
       gap: 10px;
-  
+
       &:hover {
         transform: scale(0.9);
       }
     }
-    
+
     .save-button {
-      width: 100%;
       background-color: white;
       color: #004736;
       border: none;
@@ -59,12 +112,12 @@
       cursor: pointer;
       transition: all 0.3s;
       font-weight: bold;
-  
+
       &:hover {
         transform: scale(0.9);
       }
     }
-    
+
     .advanced-settings-button {
       background-color: transparent;
       display: flex;
@@ -74,31 +127,33 @@
       border: none;
       cursor: pointer;
       transition: all 0.3s;
-  
+
       &:hover {
         transform: scale(0.9);
       }
     }
   }
-  
+
   .avatar-cards {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    margin-top: 60px; // Adjusted for the header height
+    margin-top: 20px;
+    z-index: 5;
   }
-  
+
   .avatar-card {
     border: 1px solid #ddd;
     padding: 15px;
     border-radius: 5px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    background-color: white;
   }
-  
+
   .new-info-form {
     margin-top: 20px;
   }
-  
+
   .upload-progress {
     margin-top: 10px;
   }
@@ -113,7 +168,7 @@
   border-radius: 5px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   z-index: 10;
-  
+
   .close-button {
     float: right;
     color: #333;
@@ -121,7 +176,7 @@
     background: none;
     font-size: 20px;
     cursor: pointer;
-    
+
     &:hover {
       color: red;
     }
