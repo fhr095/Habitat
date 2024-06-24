@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FaCogs } from "react-icons/fa";
+import { FaCogs, FaPlus } from "react-icons/fa";
 import axios from "axios";
 import { Button, Form, Card, Alert, ProgressBar } from "react-bootstrap";
 import "../styles/Avatar.scss";
+
+import AvatarConfig from "./AvatarConfig";
 
 export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   const [avatarData, setAvatarData] = useState({
@@ -17,6 +19,7 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertVariant, setAlertVariant] = useState("");
+  const [showAdvancedConfig, setShowAdvancedConfig] = useState(false);
 
   const username = "habitat";
   const password = "lobomau"; 
@@ -32,10 +35,10 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
         });
         const data = response.data;
         setAvatarData({
-          name: "Teste",
-          personality: "Feliz",
-          criativity: 1,
-          context: "Carro",
+          name: data.name || "",
+          personality: data.personality || "",
+          criativity: data.criativity || 1,
+          context: data.context || "",
           avt: habitatId,
           data: data.data || []  // Garantir que data é uma matriz
         });
@@ -101,62 +104,76 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   };
 
   return (
-    <div className="avatar-container">
-      <div className="header">
-        <Button variant="primary" className="create-avatar-button" onClick={handleAddNewInfo}>
-          Adicionar informações
-        </Button>
-        <Button variant="success" className="save-button" onClick={handleSave}>
-          {loading ? "Salvando..." : "Salvar"}
-        </Button>
-        <Button variant="secondary" className="advanced-settings-button">
-          <FaCogs size={20} />
-        </Button>
-      </div>
-
-      {alertMessage && (
-        <Alert variant={alertVariant} onClose={() => setAlertMessage("")} dismissible>
-          {alertMessage}
-        </Alert>
-      )}
-
-      <div className="avatar-cards">
-        {avatarData.data.map((data, index) => (
-          <Card key={index} className="avatar-card">
-            <Card.Body>
-              <Form.Group>
-                <Form.Label>Info</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={data.info}
-                  onChange={(e) => handleInputChange(index, "info", e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Fade</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={data.fade}
-                  onChange={(e) => handleInputChange(index, "fade", e.target.value)}
-                >
-                  <option value="">Selecione uma parte</option>
-                  {modelParts.map((part, idx) => (
-                    <option key={idx} value={part}>{part}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-              <Button variant="danger" onClick={() => handleRemoveInfo(index)}>
-                Remover
-              </Button>
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
-
-      {loading && (
-        <div className="upload-progress">
-          <ProgressBar now={loading ? 100 : 0} label={`${loading ? "Salvando" : ""}`} />
+    <div className="avatar-container-wrapper">
+      <div className="avatar-container">
+        <div className="header">
+          <Button variant="primary" className="create-avatar-button" onClick={handleAddNewInfo}>
+            <FaPlus size={16} /> Informações
+          </Button>
+          <Button variant="success" className="save-button" onClick={handleSave}>
+            {loading ? "Salvando..." : "Salvar"}
+          </Button>
+          <Button 
+            variant="secondary" 
+            className="advanced-settings-button"
+            onClick={() => setShowAdvancedConfig(!showAdvancedConfig)}
+          >
+            <FaCogs size={20} />
+          </Button>
         </div>
+
+        {alertMessage && (
+          <Alert variant={alertVariant} onClose={() => setAlertMessage("")} dismissible>
+            {alertMessage}
+          </Alert>
+        )}
+
+        <div className="avatar-cards">
+          {avatarData.data.map((data, index) => (
+            <Card key={index} className="avatar-card">
+              <Card.Body>
+                <Form.Group>
+                  <Form.Label>Info</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={data.info}
+                    onChange={(e) => handleInputChange(index, "info", e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Fade</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={data.fade}
+                    onChange={(e) => handleInputChange(index, "fade", e.target.value)}
+                  >
+                    <option value="">Selecione uma parte</option>
+                    {modelParts.map((part, idx) => (
+                      <option key={idx} value={part}>{part}</option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
+                <Button variant="danger" onClick={() => handleRemoveInfo(index)}>
+                  Remover
+                </Button>
+              </Card.Body>
+            </Card>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="upload-progress">
+            <ProgressBar now={loading ? 100 : 0} label={`${loading ? "Salvando" : ""}`} />
+          </div>
+        )}
+      </div>
+
+      {showAdvancedConfig && (
+        <AvatarConfig 
+          avatarData={avatarData}
+          setAvatarData={setAvatarData}
+          onClose={() => setShowAdvancedConfig(false)}
+        />
       )}
     </div>
   );
