@@ -30,6 +30,17 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   const username = "habitat";
   const password = "lobomau"; 
 
+  const resetAvatarData = () => {
+    setAvatarData({
+      name: "",
+      personality: "",
+      criativity: 1,
+      context: "",
+      avt: habitatId,
+      data: []
+    });
+  };
+
   useEffect(() => {
     const fetchAvatarData = async () => {
       try {
@@ -146,6 +157,7 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
       if (response.status === 200) {
         setAlertMessage("Alterações salvas com sucesso.");
         setAlertVariant("success");
+        resetAvatarData();
       } else {
         throw new Error("Falha ao salvar as alterações.");
       }

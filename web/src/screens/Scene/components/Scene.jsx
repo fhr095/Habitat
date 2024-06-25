@@ -9,6 +9,7 @@ export default function Scene({ glbPath, setModelParts, selectedPart }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const modelRef = useRef(null);
+  const blinkRef = useRef({ intervalId: null, isBlinking: false, originalColor: null });
 
   useEffect(() => {
     let isMounted = true;
@@ -98,13 +99,43 @@ export default function Scene({ glbPath, setModelParts, selectedPart }) {
 
   useEffect(() => {
     if (selectedPart && modelRef.current) {
+      if (blinkRef.current.isBlinking) {
+        clearInterval(blinkRef.current.intervalId);
+        blinkRef.current.isBlinking = false;
+      }
+
       modelRef.current.traverse((child) => {
         if (child.isMesh) {
           child.material.transparent = true;
           child.material.opacity = child.name === selectedPart ? 1 : 0.1;
         }
       });
+
+      if (selectedPart) {
+        const selectedObject = modelRef.current.getObjectByName(selectedPart);
+        if (selectedObject) {
+          blinkRef.current.isBlinking = true;
+          blinkRef.current.originalColor = selectedObject.material.color.clone();
+          selectedObject.material.color.set(0xff0000); // Red color
+
+          blinkRef.current.intervalId = setInterval(() => {
+            selectedObject.material.opacity =
+              selectedObject.material.opacity === 1 ? 0.5 : 1;
+          }, 500);
+        }
+      }
     }
+
+    return () => {
+      if (blinkRef.current.isBlinking) {
+        const selectedObject = modelRef.current.getObjectByName(selectedPart);
+        if (selectedObject && blinkRef.current.originalColor) {
+          selectedObject.material.color.copy(blinkRef.current.originalColor);
+        }
+        clearInterval(blinkRef.current.intervalId);
+        blinkRef.current.isBlinking = false;
+      }
+    };
   }, [selectedPart]);
 
   return (
