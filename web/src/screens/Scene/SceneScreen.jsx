@@ -10,6 +10,7 @@ import Scene from "./components/Scene";
 import HabitatConfig from "./components/HabitatConfig";
 import Avatar from "./components/Avatar";
 import AddWidget from "./components/AddWidget";
+import Reviews from "./components/Reviews";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/SceneScreen.scss";
@@ -54,9 +55,17 @@ export default function SceneScreen({ user }) {
       case "HabitatConfig":
         return <HabitatConfig />;
       case "Avatar":
-        return <Avatar habitatId={habitatId} modelParts={modelParts} setSelectedPart={setSelectedPart} />;
+        return (
+          <Avatar
+            habitatId={habitatId}
+            modelParts={modelParts}
+            setSelectedPart={setSelectedPart}
+          />
+        );
       case "AddWidget":
-        return <AddWidget />;
+        return <AddWidget habitatId={habitatId} />;
+      case "Reviews":
+        return <Reviews habitatId={habitatId} />;
       default:
         return null;
     }
@@ -64,9 +73,18 @@ export default function SceneScreen({ user }) {
 
   return (
     <div className="sceneScreen-container">
-      <Sidebar activeComponent={activeComponent} setActiveComponent={setActiveComponent} />
+      <Sidebar
+        activeComponent={activeComponent}
+        setActiveComponent={setActiveComponent}
+      />
       {renderActiveComponent()}
-      {glbPath && <Scene glbPath={glbPath} setModelParts={setModelParts} selectedPart={selectedPart} />}
+      {glbPath && (
+        <Scene
+          glbPath={glbPath}
+          setModelParts={setModelParts}
+          selectedPart={selectedPart}
+        />
+      )}
     </div>
   );
 }

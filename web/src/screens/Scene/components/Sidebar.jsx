@@ -1,6 +1,6 @@
 import React from "react";
 import { Nav } from "react-bootstrap";
-import { FaCogs, FaUserPlus, FaPlusSquare, FaArrowLeft } from 'react-icons/fa';
+import { FaCogs, FaUserPlus, FaPlusSquare, FaArrowLeft, FaStar } from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
 
 import "../styles/Sidebar.scss";
@@ -31,6 +31,11 @@ export default function Sidebar({ activeComponent, setActiveComponent }) {
       <Nav.Item>
         <div className="nav-link" onClick={() => handleComponentToggle("AddWidget")}>
           <FaPlusSquare size={20} />
+        </div>
+      </Nav.Item>
+      <Nav.Item>
+        <div className="nav-link" onClick={() => handleComponentToggle("Reviews")}>
+          <FaStar size={20} />
         </div>
       </Nav.Item>
       <Nav.Item>
