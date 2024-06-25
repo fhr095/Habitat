@@ -22,6 +22,7 @@ export default function SceneScreen({ user }) {
   const [habitatId, setHabitatId] = useState(null);
   const [modelParts, setModelParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
+  const [resetTrigger, setResetTrigger] = useState(0);
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
@@ -50,6 +51,11 @@ export default function SceneScreen({ user }) {
     fetchHabitatModel();
   }, [location]);
 
+  const handleResetModel = () => {
+    setSelectedPart(null);
+    setResetTrigger((prev) => prev + 1);
+  };
+
   const renderActiveComponent = () => {
     switch (activeComponent) {
       case "HabitatConfig":
@@ -60,6 +66,7 @@ export default function SceneScreen({ user }) {
             habitatId={habitatId}
             modelParts={modelParts}
             setSelectedPart={setSelectedPart}
+            resetModel={handleResetModel}
           />
         );
       case "AddWidget":
@@ -83,6 +90,7 @@ export default function SceneScreen({ user }) {
           glbPath={glbPath}
           setModelParts={setModelParts}
           selectedPart={selectedPart}
+          resetTrigger={resetTrigger}
         />
       )}
     </div>

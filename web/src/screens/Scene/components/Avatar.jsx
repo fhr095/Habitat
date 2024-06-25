@@ -9,7 +9,7 @@ import "../styles/Avatar.scss";
 
 import AvatarConfig from "./AvatarConfig";
 
-export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
+export default function Avatar({ habitatId, modelParts, setSelectedPart, resetModel }) {
   const [avatarData, setAvatarData] = useState({
     name: "",
     personality: "",
@@ -30,48 +30,37 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
   const username = "habitat";
   const password = "lobomau"; 
 
-  const resetAvatarData = () => {
-    setAvatarData({
-      name: "",
-      personality: "",
-      criativity: 1,
-      context: "",
-      avt: habitatId,
-      data: []
-    });
+  const fetchAvatarData = async () => {
+    try {
+      const response = await axios.get(`https://roko.flowfuse.cloud/trainDataJSON?utm_source=${habitatId}`, {
+        auth: {
+          username,
+          password
+        }
+      });
+      const data = response.data;
+      setAvatarData({
+        name: data.name || "",
+        personality: data.personality || "",
+        criativity: data.criativity || 1,
+        context: data.context || "",
+        avt: habitatId,
+        data: data.data || []
+      });
+
+      // Fetch the avatar image URL from Firestore
+      const habitatDocRef = doc(db, "habitats", habitatId);
+      const habitatDoc = await getDoc(habitatDocRef);
+      if (habitatDoc.exists()) {
+        const habitatData = habitatDoc.data();
+        setAvatarImageUrl(habitatData.avatarImage || "");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados do avatar:", error);
+    }
   };
 
   useEffect(() => {
-    const fetchAvatarData = async () => {
-      try {
-        const response = await axios.get(`https://roko.flowfuse.cloud/trainDataJSON?utm_source=${habitatId}`, {
-          auth: {
-            username,
-            password
-          }
-        });
-        const data = response.data;
-        setAvatarData({
-          name: data.name || "",
-          personality: data.personality || "",
-          criativity: data.criativity || 1,
-          context: data.context || "",
-          avt: habitatId,
-          data: data.data || []
-        });
-
-        // Fetch the avatar image URL from Firestore
-        const habitatDocRef = doc(db, "habitats", habitatId);
-        const habitatDoc = await getDoc(habitatDocRef);
-        if (habitatDoc.exists()) {
-          const habitatData = habitatDoc.data();
-          setAvatarImageUrl(habitatData.avatarImage || "");
-        }
-      } catch (error) {
-        console.error("Erro ao buscar dados do avatar:", error);
-      }
-    };
-
     if (habitatId) {
       fetchAvatarData();
     }
@@ -157,7 +146,8 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart }) {
       if (response.status === 200) {
         setAlertMessage("Alterações salvas com sucesso.");
         setAlertVariant("success");
-        resetAvatarData();
+        await fetchAvatarData(); // Atualiza a lista de informações após salvar
+        resetModel(); // Chama a função para resetar o modelo
       } else {
         throw new Error("Falha ao salvar as alterações.");
       }

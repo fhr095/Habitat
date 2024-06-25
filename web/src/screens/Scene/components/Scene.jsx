@@ -5,7 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import "../styles/Scene.scss";
 
-export default function Scene({ glbPath, setModelParts, selectedPart }) {
+export default function Scene({ glbPath, setModelParts, selectedPart, resetTrigger }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const modelRef = useRef(null);
@@ -70,7 +70,7 @@ export default function Scene({ glbPath, setModelParts, selectedPart }) {
       (xhr) => {
         if (!isMounted) return;
         if (xhr.lengthComputable) {
-          const percentComplete = (xhr.loaded / xhr.total) * 100;
+          const percentComplete = (xhr.loaded / xhr.totalBytes) * 100;
           setLoadingProgress(Math.round(percentComplete));
         }
       },
@@ -95,7 +95,7 @@ export default function Scene({ glbPath, setModelParts, selectedPart }) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [glbPath]);
+  }, [glbPath, resetTrigger]);
 
   useEffect(() => {
     if (selectedPart && modelRef.current) {
@@ -124,18 +124,23 @@ export default function Scene({ glbPath, setModelParts, selectedPart }) {
           }, 500);
         }
       }
-    }
-
-    return () => {
+    } else {
+      if (modelRef.current) {
+        modelRef.current.traverse((child) => {
+          if (child.isMesh) {
+            child.material.transparent = false;
+            child.material.opacity = 1;
+            if (blinkRef.current.originalColor) {
+              child.material.color.copy(blinkRef.current.originalColor);
+            }
+          }
+        });
+      }
       if (blinkRef.current.isBlinking) {
-        const selectedObject = modelRef.current.getObjectByName(selectedPart);
-        if (selectedObject && blinkRef.current.originalColor) {
-          selectedObject.material.color.copy(blinkRef.current.originalColor);
-        }
         clearInterval(blinkRef.current.intervalId);
         blinkRef.current.isBlinking = false;
       }
-    };
+    }
   }, [selectedPart]);
 
   return (
