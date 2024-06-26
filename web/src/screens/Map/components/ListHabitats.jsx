@@ -27,7 +27,7 @@ export default function ListHabitats({ user }) {
   }, [user.email]);
 
   const handleCardClick = (id) => {
-    navigate(`/scene?id=${id}`);
+    navigate(`/config?id=${id}`);
   };
 
   return (

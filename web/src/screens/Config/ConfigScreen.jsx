@@ -13,9 +13,9 @@ import AddWidget from "./components/AddWidget";
 import Reviews from "./components/Reviews";
 
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./styles/SceneScreen.scss";
+import "./styles/ConfigScreen.scss";
 
-export default function SceneScreen({ user }) {
+export default function ConfigScreen({ user }) {
   const [glbPath, setGlbPath] = useState("");
   const [activeComponent, setActiveComponent] = useState(null);
   const location = useLocation();
