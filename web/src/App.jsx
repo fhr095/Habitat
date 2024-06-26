@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, applyActionCode } from "firebase/auth";
 
 import ConfigScreen from "./screens/Config/ConfigScreen";
+import SceneScreen from "./screens/Scene/SceneScreen";
 import MapScreen from "./screens/Map/MapScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
 
@@ -75,6 +76,7 @@ export default function App() {
         handleClose={handleCloseCongratsModal}
       />
       <Routes>
+        <Route path="/scene" element={<SceneScreen />} />
         <Route path="/config" element={<ConfigScreen user={user} onLoginClick={handleOpenLoginModal} onLogoutClick={() => setUser(null)} />} />
         <Route path="/map" element={<MapScreen user={user} onLoginClick={handleOpenLoginModal} onLogoutClick={() => setUser(null)} />} />
         <Route path="/" element={<HomeScreen />} />

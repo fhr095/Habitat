@@ -3,9 +3,9 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-import "../styles/Scene.scss";
+import "../styles/SceneConfig.scss";
 
-export default function Scene({ glbPath, setModelParts, selectedPart, resetTrigger }) {
+export default function SceneConfig({ glbPath, setModelParts, selectedPart, resetTrigger }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const modelRef = useRef(null);
@@ -144,7 +144,7 @@ export default function Scene({ glbPath, setModelParts, selectedPart, resetTrigg
   }, [selectedPart]);
 
   return (
-    <div ref={mountRef} className="scene-container">
+    <div ref={mountRef} className="sceneConfig-container">
       {loadingProgress < 100 && (
         <div className="loading-overlay">
           <div className="loading-text">Carregando: {loadingProgress}%</div>

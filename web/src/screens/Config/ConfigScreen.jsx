@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { storage, db } from "../../firebase";
 
 import Sidebar from "./components/Sidebar";
-import Scene from "./components/Scene";
+import SceneConfig from "./components/SceneConfig";
 
 import HabitatConfig from "./components/HabitatConfig";
 import Avatar from "./components/Avatar";
@@ -79,14 +79,15 @@ export default function ConfigScreen({ user }) {
   };
 
   return (
-    <div className="sceneScreen-container">
+    <div className="configScreen-container">
       <Sidebar
         activeComponent={activeComponent}
         setActiveComponent={setActiveComponent}
+        habitatId={habitatId}
       />
       {renderActiveComponent()}
       {glbPath && (
-        <Scene
+        <SceneConfig
           glbPath={glbPath}
           setModelParts={setModelParts}
           selectedPart={selectedPart}
