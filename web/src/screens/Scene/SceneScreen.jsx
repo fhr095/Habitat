@@ -6,6 +6,7 @@ import { db, storage } from "../../firebase";
 
 import Scene from "./components/Scene";
 import VoiceButton from "./components/VoiceButton";
+import Widget from "./components/Widget";
 
 import "./styles/SceneScreen.scss";
 
@@ -49,6 +50,8 @@ export default function SceneScreen() {
       <div className="buttons">
         <VoiceButton setTranscript={setTranscript}/>
       </div>
+
+      <Widget habitatId={habitatId}/>
     </div>
   );
 }

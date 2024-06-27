@@ -10,7 +10,7 @@ export default function Scene({ glbPath, habitatId, transcript }) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const modelRef = useRef(null);
   const controlsRef = useRef(null);
-  const cameraRef = useRef(null); // Ref for camera
+  const cameraRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -21,7 +21,7 @@ export default function Scene({ glbPath, habitatId, transcript }) {
       0.1,
       1000
     );
-    cameraRef.current = camera; // Store camera in ref
+    cameraRef.current = camera;
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000, 0);
@@ -137,6 +137,28 @@ export default function Scene({ glbPath, habitatId, transcript }) {
           if (audio) {
             const audioElement = new Audio(audio);
             audioElement.play();
+
+            audioElement.addEventListener('ended', () => {
+              // Restore the model to its original state after the audio ends
+              modelRef.current.traverse((child) => {
+                if (child.isMesh) {
+                  child.material.transparent = false;
+                  child.material.opacity = 1;
+                }
+              });
+
+              // Smoothly move the camera back to its original position
+              const originalPosition = { x: 0, y: 10, z: 50 };
+              new TWEEN.Tween(cameraRef.current.position)
+                .to(originalPosition, 2000)
+                .easing(TWEEN.Easing.Quadratic.Out)
+                .onUpdate(() => {
+                  cameraRef.current.lookAt(new THREE.Vector3(0, 0, 0));
+                  controlsRef.current.target.set(0, 0, 0);
+                  controlsRef.current.update();
+                })
+                .start();
+            });
           }
         } catch (error) {
           console.error("Error communicating with AI:", error);
