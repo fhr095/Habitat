@@ -7,14 +7,19 @@ import { db, storage } from "../../firebase";
 import Scene from "./components/Scene";
 import VoiceButton from "./components/VoiceButton";
 import Widget from "./components/Widget";
+import Response from "./components/Response";
 
+import { FaHome } from "react-icons/fa";
 import "./styles/SceneScreen.scss";
 
 export default function SceneScreen() {
   const [glbPath, setGlbPath] = useState("");
   const [habitatId, setHabitatId] = useState("");
+  const [responses, setResponses] = useState([]);
   const [transcript, setTranscript] = useState("");
+  const [fade, setFade] = useState("");
   const location = useLocation();
+  const [resetTrigger, setResetTrigger] = useState(false);
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
@@ -43,15 +48,33 @@ export default function SceneScreen() {
     fetchHabitatModel();
   }, [location]);
 
+  const handleHomeButtonClick = () => {
+    setResetTrigger((prev) => !prev); // Toggle the reset trigger
+  };
+
   return (
     <div className="SceneScreen-container">
-      {glbPath && <Scene glbPath={glbPath} habitatId={habitatId} transcript={transcript}/>}
+      {glbPath && (
+        <Scene
+          glbPath={glbPath}
+          habitatId={habitatId}
+          transcript={transcript}
+          setResponse={setResponses}
+          fade={fade}
+          resetTrigger={resetTrigger}
+        />
+      )}
 
       <div className="buttons">
-        <VoiceButton setTranscript={setTranscript}/>
+        <button onClick={handleHomeButtonClick}>
+          <FaHome size={30} />
+        </button>
+        <VoiceButton setTranscript={setTranscript} />
       </div>
 
-      <Widget habitatId={habitatId}/>
+      <Widget habitatId={habitatId} />
+
+      <Response habitatId={habitatId} transcript={transcript} responses={responses} setFade={setFade} />
     </div>
   );
 }

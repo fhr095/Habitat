@@ -5,7 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import axios from "axios";
 import TWEEN from "@tweenjs/tween.js";
 
-export default function Scene({ glbPath, habitatId, transcript }) {
+export default function Scene({ glbPath, habitatId, transcript, setResponse, fade, resetTrigger }) {
   const mountRef = useRef(null);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const modelRef = useRef(null);
@@ -91,7 +91,7 @@ export default function Scene({ glbPath, habitatId, transcript }) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [glbPath]);
+  }, [glbPath, resetTrigger]);
 
   useEffect(() => {
     if (transcript && habitatId && modelRef.current) {
@@ -102,63 +102,10 @@ export default function Scene({ glbPath, habitatId, transcript }) {
             avt: habitatId
           });
 
-          const { comandos } = response.data;
-          const { fade, audio } = comandos[0]; // Assuming 'comandos' is an array and we want the first command
+          const { comandos } = response.data; // Assuming 'comandos' is an array of objects
 
-          if (fade) {
-            modelRef.current.traverse((child) => {
-              if (child.isMesh) {
-                child.material.transparent = true;
-                child.material.opacity = child.name === fade ? 1 : 0.1;
-              }
-            });
-
-            const selectedObject = modelRef.current.getObjectByName(fade);
-            if (selectedObject) {
-              const box = new THREE.Box3().setFromObject(selectedObject);
-              const center = box.getCenter(new THREE.Vector3());
-              const size = box.getSize(new THREE.Vector3());
-              
-              const distance = Math.max(size.x, size.y, size.z) * 2;
-              const targetPosition = center.clone().add(new THREE.Vector3(0, 0, distance));
-              
-              new TWEEN.Tween(cameraRef.current.position)
-                .to({ x: targetPosition.x, y: targetPosition.y, z: targetPosition.z }, 2000)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .onUpdate(() => {
-                  cameraRef.current.lookAt(center);
-                  controlsRef.current.target.copy(center);
-                  controlsRef.current.update();
-                })
-                .start();
-            }
-          }
-
-          if (audio) {
-            const audioElement = new Audio(audio);
-            audioElement.play();
-
-            audioElement.addEventListener('ended', () => {
-              // Restore the model to its original state after the audio ends
-              modelRef.current.traverse((child) => {
-                if (child.isMesh) {
-                  child.material.transparent = false;
-                  child.material.opacity = 1;
-                }
-              });
-
-              // Smoothly move the camera back to its original position
-              const originalPosition = { x: 0, y: 10, z: 50 };
-              new TWEEN.Tween(cameraRef.current.position)
-                .to(originalPosition, 2000)
-                .easing(TWEEN.Easing.Quadratic.Out)
-                .onUpdate(() => {
-                  cameraRef.current.lookAt(new THREE.Vector3(0, 0, 0));
-                  controlsRef.current.target.set(0, 0, 0);
-                  controlsRef.current.update();
-                })
-                .start();
-            });
+          if (comandos && comandos.length > 0) {
+            setResponse(comandos); // Pass the entire array to the Response component
           }
         } catch (error) {
           console.error("Error communicating with AI:", error);
@@ -168,6 +115,60 @@ export default function Scene({ glbPath, habitatId, transcript }) {
       sendMessageToAI();
     }
   }, [transcript, habitatId]);
+
+  useEffect(() => {
+    // Logic to handle the fade effect
+    if (modelRef.current && resetTrigger) {
+      modelRef.current.traverse((child) => {
+        if (child.isMesh) {
+          child.material.transparent = false;
+          child.material.opacity = 1;
+        }
+      });
+
+      const originalPosition = { x: 0, y: 10, z: 50 };
+      new TWEEN.Tween(cameraRef.current.position)
+        .to(originalPosition, 2000)
+        .easing(TWEEN.Easing.Quadratic.Out)
+        .onUpdate(() => {
+          cameraRef.current.lookAt(new THREE.Vector3(0, 0, 0));
+          controlsRef.current.target.set(0, 0, 0);
+          controlsRef.current.update();
+        })
+        .start();
+    }
+  }, [resetTrigger]);
+
+  useEffect(() => {
+    if (fade) {
+      modelRef.current.traverse((child) => {
+        if (child.isMesh) {
+          child.material.transparent = true;
+          child.material.opacity = child.name === fade ? 1 : 0.1;
+        }
+      });
+
+      const selectedObject = modelRef.current.getObjectByName(fade);
+      if (selectedObject) {
+        const box = new THREE.Box3().setFromObject(selectedObject);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+
+        const distance = Math.max(size.x, size.y, size.z) * 2;
+        const targetPosition = center.clone().add(new THREE.Vector3(0, 0, distance));
+
+        new TWEEN.Tween(cameraRef.current.position)
+          .to({ x: targetPosition.x, y: targetPosition.y, z: targetPosition.z }, 2000)
+          .easing(TWEEN.Easing.Quadratic.Out)
+          .onUpdate(() => {
+            cameraRef.current.lookAt(center);
+            controlsRef.current.target.copy(center);
+            controlsRef.current.update();
+          })
+          .start();
+      }
+    }
+  }, [fade]);
 
   return (
     <div ref={mountRef} className="scene-container">
