@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signInWithRedirect, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
 import { Modal, Button, Form } from 'react-bootstrap';
 import '../styles/LoginRegisterModal.scss';
 import { FcGoogle } from 'react-icons/fc';
 import FinalizeRegistrationModal from './FinalizeRegistrationModal';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 
 export default function LoginRegisterModal({ show, handleClose, handleShowCongrats }) {
   const [showFinalizeModal, setShowFinalizeModal] = useState(false);
   const [userUid, setUserUid] = useState(null);
   const [userEmail, setUserEmail] = useState('');
-  const [emailVerificationSent, setEmailVerificationSent] = useState(false); // Adicionando a inicialização aqui
+  const [emailVerificationSent, setEmailVerificationSent] = useState(false);
 
   // Estado do login
   const [loginEmail, setLoginEmail] = useState('');
@@ -60,9 +60,31 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      await user.reload();
+      if (!user.emailVerified) {
+        setLoginError('Por favor, verifique seu email antes de fazer login.');
+        await auth.signOut();
+        return;
+      }
+
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        setUserUid(user.uid);
+        setUserEmail(user.email);
+        setShowFinalizeModal(true);
+        handleClose(); // Fecha o modal de login e cadastro
+      } else {
+        handleClose();
+      }
     } catch (error) {
-      setLoginError('Falha ao fazer login com o Google. Tente novamente.');
+      if (error.code === 'auth/popup-closed-by-user') {
+        setLoginError('O popup foi fechado antes da conclusão. Tente novamente.');
+      } else {
+        setLoginError('Falha ao fazer login com o Google. Tente novamente.');
+      }
     }
   };
 

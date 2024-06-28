@@ -10,7 +10,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/talkwithifc/, '')
       }
-    }
+    },
   },
   build: {
     chunkSizeWarningLimit: 1000, // Aumenta o limite de tamanho do chunk para 1000 kB
