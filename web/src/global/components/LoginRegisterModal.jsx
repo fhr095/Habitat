@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getRedirectResult, sendEmailVerification, signOut } from 'firebase/auth';
 import { Modal, Button, Form } from 'react-bootstrap';
 import '../styles/LoginRegisterModal.scss';
 import { FcGoogle } from 'react-icons/fc';
@@ -52,6 +52,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
       }
     } catch (error) {
       setLoginError('Falha ao fazer login. Verifique suas credenciais e tente novamente.');
+      console.error('Login error:', error);
     }
   };
 
@@ -85,6 +86,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
       } else {
         setLoginError('Falha ao fazer login com o Google. Tente novamente.');
       }
+      console.error('Google login error:', error);
     }
   };
 
@@ -116,6 +118,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
       })
       .catch((error) => {
         setLoginError('Falha ao fazer login com o Google. Tente novamente.');
+        console.error('Google redirect result error:', error);
       });
   }, []);
 
@@ -158,6 +161,7 @@ export default function LoginRegisterModal({ show, handleClose, handleShowCongra
           setRegisterError('Ocorreu um erro inesperado. Tente novamente mais tarde.');
           break;
       }
+      console.error('Register error:', err);
     }
   };
 
