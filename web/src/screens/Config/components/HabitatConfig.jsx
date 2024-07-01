@@ -111,7 +111,7 @@ export default function HabitatConfig() {
   };
 
   return (
-    <div className="habitatConfig-container">
+    <div className="components-container">
       <h2>Configurar Habitat</h2>
       {alertMessage && (
         <Alert variant={alertVariant} onClose={() => setAlertMessage("")} dismissible>

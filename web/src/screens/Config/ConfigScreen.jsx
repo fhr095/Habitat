@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getDownloadURL, ref } from "firebase/storage";
 import { doc, getDoc } from "firebase/firestore";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { storage, db } from "../../firebase";
 
 import Sidebar from "./components/Sidebar";
 import SceneConfig from "./components/SceneConfig";
 
 import HabitatConfig from "./components/HabitatConfig";
+import AccessConfig from "./components/AccessConfig";
 import Avatar from "./components/Avatar";
 import AddWidget from "./components/AddWidget";
 import Reviews from "./components/Reviews";
@@ -19,10 +20,12 @@ export default function ConfigScreen({ user }) {
   const [glbPath, setGlbPath] = useState("");
   const [activeComponent, setActiveComponent] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [habitatId, setHabitatId] = useState(null);
   const [modelParts, setModelParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [listEmails, setListEmails] = useState([]);
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
@@ -39,17 +42,25 @@ export default function ConfigScreen({ user }) {
             const modelRef = ref(storage, habitatData.glbPath);
             const url = await getDownloadURL(modelRef);
             setGlbPath(url);
+            // Verificar se o usuário tem permissão
+            if (user?.email !== habitatData.userEmail && !habitatData.accessList.includes(user?.email)) {
+              navigate("/map");
+            }
           } else {
             console.error("Habitat não encontrado");
+            navigate("/map");
           }
         } catch (error) {
           console.error("Erro ao buscar modelo do habitat:", error);
+          navigate("/map");
         }
+      } else {
+        navigate("/map");
       }
     };
 
     fetchHabitatModel();
-  }, [location]);
+  }, [location, user, navigate]);
 
   const handleResetModel = () => {
     setSelectedPart(null);
@@ -60,6 +71,8 @@ export default function ConfigScreen({ user }) {
     switch (activeComponent) {
       case "HabitatConfig":
         return <HabitatConfig />;
+      case "AccessConfig":
+        return <AccessConfig setListEmails={setListEmails} />;
       case "Avatar":
         return (
           <Avatar

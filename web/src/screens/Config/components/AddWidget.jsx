@@ -110,7 +110,7 @@ export default function AddWidget({ habitatId }) {
   };
 
   return (
-    <div className="widgets-container">
+    <div className="components-container">
       {alertMessage && (
         <Alert variant={alertVariant} onClose={() => setAlertMessage("")} dismissible>
           {alertMessage}

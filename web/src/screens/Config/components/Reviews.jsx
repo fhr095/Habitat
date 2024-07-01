@@ -21,7 +21,7 @@ export default function Reviews({ habitatId }) {
   }, [habitatId]);
 
   return (
-    <div className="reviews-container">
+    <div className="components-container">
       {reviews.map(review => (
         <div key={review.id} className="review-card">
           <div className="review-question">{review.question}</div>
