@@ -7,9 +7,9 @@ import SceneScreen from "./screens/Scene/SceneScreen";
 import MapScreen from "./screens/Map/MapScreen";
 import HomeScreen from "./screens/Home/HomeScreen";
 
-import VerificationModal from "./screens/Map/components/VerificationModal";
-import LoginRegisterModal from "./screens/Map/components/LoginRegisterModal";
-import CongratsModal from "./screens/Map/components/CongratsModal";
+import VerificationModal from "./global/components/VerificationModal";
+import LoginRegisterModal from "./global/components/LoginRegisterModal";
+import CongratsModal from "./global/components/CongratsModal";
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
