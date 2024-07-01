@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase"; // Certifique-se de ajustar o caminho para o seu arquivo de configuração do Firebase
+import { Button, Form, InputGroup, ListGroup } from "react-bootstrap";
 
 export default function AccessConfig({ habitatId }) {
     const [emailInput, setEmailInput] = useState("");
@@ -51,27 +52,46 @@ export default function AccessConfig({ habitatId }) {
         }
     };
 
+    const handleCopyLink = () => {
+        const currentUrl = window.location.href;
+        navigator.clipboard.writeText(currentUrl).then(() => {
+            alert("Link copiado para a área de transferência!");
+        }, (err) => {
+            console.error("Erro ao copiar o link: ", err);
+        });
+    };
+
     return (
-        <div className="components-container">
+        <div className="components-container container mt-3">
             <h2>Configuração de Acesso</h2>
             <p>Adicione os emails daqueles que terão acesso a esta página:</p>
-            <div className="email-input-container">
-                <input
+            <InputGroup className="mb-3">
+                <Form.Control
+                    type="text"
+                    value={window.location.href}
+                    readOnly
+                />
+                <Button variant="outline-secondary" onClick={handleCopyLink}>
+                    Copiar Link
+                </Button>
+            </InputGroup>
+            <InputGroup className="mb-3">
+                <Form.Control
                     type="email"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     placeholder="Digite o email"
                 />
-                <button onClick={handleAddEmail}>Adicionar</button>
-            </div>
-            {error && <p className="error-message">{error}</p>}
+                <Button variant="outline-secondary" onClick={handleAddEmail}>Adicionar</Button>
+            </InputGroup>
+            {error && <p className="text-danger">{error}</p>}
             <div className="access-emails-list">
                 <h3>Emails com acesso:</h3>
-                <ul>
+                <ListGroup>
                     {accessEmails.map((email, index) => (
-                        <li key={index}>{email}</li>
+                        <ListGroup.Item key={index}>{email}</ListGroup.Item>
                     ))}
-                </ul>
+                </ListGroup>
             </div>
         </div>
     );
