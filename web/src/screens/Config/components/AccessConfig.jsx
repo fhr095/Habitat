@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../../firebase"; // Certifique-se de ajustar o caminho para o seu arquivo de configuração do Firebase
 
-export default function AccessConfig({ setListEmails }) {
+export default function AccessConfig({ habitatId }) {
     const [emailInput, setEmailInput] = useState("");
     const [userEmails, setUserEmails] = useState([]);
     const [accessEmails, setAccessEmails] = useState([]);
@@ -15,15 +15,37 @@ export default function AccessConfig({ setListEmails }) {
             setUserEmails(emails);
         };
 
-        fetchUsers();
-    }, []);
+        const fetchAccessList = async () => {
+            const habitatDocRef = doc(db, "habitats", habitatId);
+            const habitatDoc = await getDoc(habitatDocRef);
+            if (habitatDoc.exists()) {
+                setAccessEmails(habitatDoc.data().accessList || []);
+            }
+        };
 
-    const handleAddEmail = () => {
+        fetchUsers();
+        fetchAccessList();
+    }, [habitatId]);
+
+    const handleAddEmail = async () => {
         if (userEmails.includes(emailInput)) {
-            setAccessEmails(prevEmails => [...prevEmails, emailInput]);
-            setListEmails(prevEmails => [...prevEmails, emailInput]);
-            setEmailInput("");
-            setError("");
+            try {
+                const habitatDocRef = doc(db, "habitats", habitatId);
+                const habitatDoc = await getDoc(habitatDocRef);
+                
+                // Verifica se o campo accessList existe
+                let currentAccessList = habitatDoc.exists() && habitatDoc.data().accessList ? habitatDoc.data().accessList : [];
+
+                await setDoc(habitatDocRef, {
+                    accessList: [...currentAccessList, emailInput]
+                }, { merge: true });
+
+                setAccessEmails(prevEmails => [...prevEmails, emailInput]);
+                setEmailInput("");
+                setError("");
+            } catch (error) {
+                setError("Erro ao adicionar email à lista de acesso.");
+            }
         } else {
             setError("Email não cadastrado na tabela de usuários.");
         }

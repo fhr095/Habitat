@@ -25,9 +25,10 @@ export default function ConfigScreen({ user }) {
   const [modelParts, setModelParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(0);
-  const [listEmails, setListEmails] = useState([]);
 
   useEffect(() => {
+    if (!user) return; // Aguarda até que o user esteja definido
+
     const fetchHabitatModel = async () => {
       const queryParams = new URLSearchParams(location.search);
       const id = queryParams.get("id");
@@ -42,8 +43,13 @@ export default function ConfigScreen({ user }) {
             const modelRef = ref(storage, habitatData.glbPath);
             const url = await getDownloadURL(modelRef);
             setGlbPath(url);
+            
+            console.log("Habitat Data:", habitatData);
+            console.log("User Email:", user?.email);
+
             // Verificar se o usuário tem permissão
-            if (user?.email !== habitatData.userEmail && !habitatData.accessList.includes(user?.email)) {
+            if (user?.email !== habitatData.userEmail && !(habitatData.accessList || []).includes(user?.email)) {
+              console.log("Usuário não autorizado. Redirecionando para /map.");
               navigate("/map");
             }
           } else {
@@ -72,7 +78,7 @@ export default function ConfigScreen({ user }) {
       case "HabitatConfig":
         return <HabitatConfig />;
       case "AccessConfig":
-        return <AccessConfig setListEmails={setListEmails} />;
+        return <AccessConfig habitatId={habitatId} />;
       case "Avatar":
         return (
           <Avatar
