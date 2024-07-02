@@ -70,7 +70,7 @@ export default function SceneConfig({ glbPath, setModelParts, selectedPart, rese
       (xhr) => {
         if (!isMounted) return;
         if (xhr.lengthComputable) {
-          const percentComplete = (xhr.loaded / xhr.totalBytes) * 100;
+          const percentComplete = (xhr.loaded / xhr.total) * 100;
           setLoadingProgress(Math.round(percentComplete));
         }
       },

@@ -9,7 +9,7 @@ import "../styles/Avatar.scss";
 
 import AvatarConfig from "./AvatarConfig";
 
-export default function Avatar({ habitatId, modelParts, setSelectedPart, resetModel }) {
+export default function Avatar({ habitatId, modelParts, setSelectedPart, resetModel, address }) {
   const [avatarData, setAvatarData] = useState({
     name: "",
     personality: "",
@@ -255,6 +255,7 @@ export default function Avatar({ habitatId, modelParts, setSelectedPart, resetMo
           avatarData={avatarData}
           setAvatarData={setAvatarData}
           onClose={() => setShowAdvancedConfig(false)}
+          address={address}
         />
       )}
     </div>

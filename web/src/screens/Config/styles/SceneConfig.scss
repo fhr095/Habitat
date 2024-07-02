@@ -15,14 +15,16 @@
     left: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 71, 54, 0.8); /* Fundo verde com opacidade */
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #004736;
-    font-size: 1.5rem;
     z-index: 10;
   }
-  
+
+  .loading-text {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
 }
-
-

@@ -25,6 +25,7 @@ export default function ConfigScreen({ user }) {
   const [modelParts, setModelParts] = useState([]);
   const [selectedPart, setSelectedPart] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     if (!user) return; // Aguarda até que o user esteja definido
@@ -43,7 +44,8 @@ export default function ConfigScreen({ user }) {
             const modelRef = ref(storage, habitatData.glbPath);
             const url = await getDownloadURL(modelRef);
             setGlbPath(url);
-            
+            setAddress(habitatData.address || "");
+
             console.log("Habitat Data:", habitatData);
             console.log("User Email:", user?.email);
 
@@ -86,6 +88,7 @@ export default function ConfigScreen({ user }) {
             modelParts={modelParts}
             setSelectedPart={setSelectedPart}
             resetModel={handleResetModel}
+            address={address}
           />
         );
       case "AddWidget":
