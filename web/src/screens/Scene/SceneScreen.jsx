@@ -9,7 +9,7 @@ import VoiceButton from "./components/VoiceButton";
 import Widget from "./components/Widget";
 import Response from "./components/Response";
 import MapBackground from "./components/MapBackgroud";
-import MapWidget from "./components/MapWidget";
+import MiniMap from "./components/MiniMap";
 
 import { FaHome } from "react-icons/fa";
 import "./styles/SceneScreen.scss";
@@ -79,7 +79,7 @@ export default function SceneScreen() {
         <VoiceButton setTranscript={setTranscript} />
       </div>
 
-      {address && <MapWidget address={address} />}
+      {address && <MiniMap address={address} />}
 
       <Widget habitatId={habitatId} />
 
