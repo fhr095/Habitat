@@ -25,7 +25,7 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
     cameraRef.current = camera;
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xffffff, 1); // Fundo branco para a cena carregada
+    renderer.setClearColor(0x000000, 0); // Fundo transparente para a cena carregada
     mountRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);

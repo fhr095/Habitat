@@ -8,6 +8,8 @@ import Scene from "./components/Scene";
 import VoiceButton from "./components/VoiceButton";
 import Widget from "./components/Widget";
 import Response from "./components/Response";
+import MapBackground from "./components/MapBackgroud";
+import MapWidget from "./components/MapWidget";
 
 import { FaHome } from "react-icons/fa";
 import "./styles/SceneScreen.scss";
@@ -20,6 +22,7 @@ export default function SceneScreen() {
   const [fade, setFade] = useState("");
   const location = useLocation();
   const [resetTrigger, setResetTrigger] = useState(false);
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     const fetchHabitatModel = async () => {
@@ -36,6 +39,7 @@ export default function SceneScreen() {
             const modelRef = ref(storage, habitatData.glbPath);
             const url = await getDownloadURL(modelRef);
             setGlbPath(url);
+            setAddress(habitatData.address || "");
           } else {
             console.error("Habitat não encontrado");
           }
@@ -66,12 +70,16 @@ export default function SceneScreen() {
         />
       )}
 
+      {address && <MapBackground address={address} />}
+
       <div className="buttons">
         <button type="button" onClick={handleHomeButtonClick}>
           <FaHome size={30} />
         </button>
         <VoiceButton setTranscript={setTranscript} />
       </div>
+
+      {address && <MapWidget address={address} />}
 
       <Widget habitatId={habitatId} />
 
