@@ -24,6 +24,9 @@
   }
 
   .habitat-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 15px;
     background-color: #f4f4f4;
     border-radius: 5px;
@@ -36,6 +39,16 @@
 
     &:hover {
       background-color: #e0e0e0;
+    }
+
+    .delete-button {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-weight: normal;
     }
   }
 }

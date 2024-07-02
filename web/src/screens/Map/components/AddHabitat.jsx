@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, ProgressBar, Alert } from "react-bootstrap";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase";
 import "../styles/AddHabitat.scss";
@@ -20,7 +20,8 @@ export default function AddHabitat({ user }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !address || !glbFile) {
+
+    if (!name || !glbFile) {
       setAlertMessage("Por favor, preencha todos os campos e envie um arquivo .glb");
       setAlertVariant("danger");
       return;
@@ -29,6 +30,19 @@ export default function AddHabitat({ user }) {
     setLoading(true);
 
     try {
+      if (address) {
+        // Verificar se o endereço já está cadastrado
+        const addressQuery = query(collection(db, "habitats"), where("address", "==", address));
+        const querySnapshot = await getDocs(addressQuery);
+
+        if (!querySnapshot.empty) {
+          setAlertMessage("O endereço já está cadastrado.");
+          setAlertVariant("danger");
+          setLoading(false);
+          return;
+        }
+      }
+
       const storageRef = ref(storage, `habitats/${glbFile.name}`);
       const uploadTask = uploadBytesResumable(storageRef, glbFile);
 
@@ -98,7 +112,6 @@ export default function AddHabitat({ user }) {
             type="text"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            required
           />
         </Form.Group>
         <Form.Group className="mb-3">

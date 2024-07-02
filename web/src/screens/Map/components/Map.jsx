@@ -131,9 +131,25 @@ export default function Map() {
     map.current.addControl(new mapboxgl.NavigationControl());
   }, []);
 
+  const handle2D = () => {
+    map.current.easeTo({ pitch: 0, bearing: 0 });
+  };
+
+  const handle3D = () => {
+    map.current.easeTo({ pitch: 45, bearing: -17.6 });
+  };
+
   return (
     <div className="map-container">
       <div ref={mapContainer} className="mapbox-map" />
+      <div className="map-controls">
+        <button onClick={handle2D}>
+          2D
+        </button>
+        <button onClick={handle3D}>
+          3D
+        </button>
+      </div>
     </div>
   );
 }
