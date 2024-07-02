@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import axios from "axios";
 import TWEEN from "@tweenjs/tween.js";
+import "../styles/SceneScreen.scss";
 
 export default function Scene({ glbPath, habitatId, transcript, setResponse, fade, resetTrigger }) {
   const mountRef = useRef(null);
@@ -24,7 +25,7 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
     cameraRef.current = camera;
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0xffffff, 1); // Fundo branco para a cena carregada
     mountRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -57,21 +58,21 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
           if (!isMounted) return;
           requestAnimationFrame(animate);
           TWEEN.update();
-          model.rotation.y += 0.001; // Adjust rotation speed to be slower
+          model.rotation.y += 0.001; // Ajustar velocidade de rotação
           controls.update();
           renderer.render(scene, camera);
         };
         animate();
-        setLoadingProgress(100); // Set loading progress to 100% when done
+        setLoadingProgress(100); // Define o progresso de carregamento para 100% ao terminar
       },
       (xhr) => {
         if (xhr.lengthComputable) {
-          const percentComplete = (xhr.loaded / xhr.totalBytes) * 100;
+          const percentComplete = (xhr.loaded / xhr.total) * 100;
           setLoadingProgress(Math.round(percentComplete));
         }
       },
       (error) => {
-        console.error("Error loading GLB model:", error);
+        console.error("Erro ao carregar o modelo GLB:", error);
       }
     );
 
@@ -91,7 +92,7 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [glbPath, resetTrigger]);
+  }, [glbPath]);
 
   useEffect(() => {
     if (transcript && habitatId && modelRef.current) {
@@ -102,13 +103,13 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
             avt: habitatId
           });
 
-          const { comandos } = response.data; // Assuming 'comandos' is an array of objects
+          const { comandos } = response.data; // Supondo que 'comandos' seja um array de objetos
 
           if (comandos && comandos.length > 0) {
-            setResponse(comandos); // Pass the entire array to the Response component
+            setResponse(comandos); // Passar o array inteiro para o componente Response
           }
         } catch (error) {
-          console.error("Error communicating with AI:", error);
+          console.error("Erro ao comunicar com a IA:", error);
         }
       };
 
@@ -117,15 +118,7 @@ export default function Scene({ glbPath, habitatId, transcript, setResponse, fad
   }, [transcript, habitatId]);
 
   useEffect(() => {
-    // Logic to handle the fade effect
     if (modelRef.current && resetTrigger) {
-      modelRef.current.traverse((child) => {
-        if (child.isMesh) {
-          child.material.transparent = false;
-          child.material.opacity = 1;
-        }
-      });
-
       const originalPosition = { x: 0, y: 10, z: 50 };
       new TWEEN.Tween(cameraRef.current.position)
         .to(originalPosition, 2000)

@@ -48,7 +48,8 @@ export default function SceneScreen() {
     fetchHabitatModel();
   }, [location]);
 
-  const handleHomeButtonClick = () => {
+  const handleHomeButtonClick = (event) => {
+    event.preventDefault(); // Prevent default form action
     setResetTrigger((prev) => !prev); // Toggle the reset trigger
   };
 
@@ -66,7 +67,7 @@ export default function SceneScreen() {
       )}
 
       <div className="buttons">
-        <button onClick={handleHomeButtonClick}>
+        <button type="button" onClick={handleHomeButtonClick}>
           <FaHome size={30} />
         </button>
         <VoiceButton setTranscript={setTranscript} />
