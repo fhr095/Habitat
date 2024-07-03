@@ -32,19 +32,53 @@
         .topics{
             width: 100%;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 10px;
             margin-bottom: 100px;
 
-            p{
-                font-size: 1rem;
+            header{
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                p{
+                    font-size: 1rem;
+                }
+
+                button{
+                    background-color: transparent;
+                    border: none;
+                    cursor: pointer;
+                    color: #333;
+                }
             }
 
-            button{
-                background-color: transparent;
-                border: none;
-                cursor: pointer;
-                color: #333;
+            .members-list{
+                width: 100%;
+                max-height: 100px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                overflow: auto;
+                
+
+                .member-item{
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    gap: 10px;
+
+                    img{
+                        width: 20px;
+                        height: 20px;
+                        border-radius: 50%;
+                    }
+
+                    p{
+                        font-size: 1rem;
+                    }
+                }
             }
         }
     }

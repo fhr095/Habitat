@@ -59,6 +59,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
                   glbFileUrl,
                   isPublic,
                   createdBy: userEmail,
+                  members: [userEmail],  // Adiciona o usuário como membro
                 });
 
                 console.log("Habitat criado com imagem e arquivo GLB");
@@ -74,6 +75,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               glbFileUrl,
               isPublic,
               createdBy: userEmail,
+              members: [userEmail],  // Adiciona o usuário como membro
             });
 
             console.log("Habitat criado com arquivo GLB");

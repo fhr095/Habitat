@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaCompass } from "react-icons/fa";
 import { collection, query, where, getDocs } from "firebase/firestore";
+import { getAuth, signOut } from "firebase/auth";
 import { db } from "../../../../firebase";
-import ModalCreateHabitat from "../ModalCreateHabtiat/ModalCreateHabitat";
+import ModalCreateHabitat from "../ModalCreateHabitat/ModalCreateHabitat";
+import ListHabitats from "../ListHabitats/ListHabitats";
 import './Habitats.scss';
 
 export default function Habitats({ user, setHabitat }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [habitats, setHabitats] = useState([]);
 
   useEffect(() => {
@@ -20,17 +24,19 @@ export default function Habitats({ user, setHabitat }) {
           getDocs(habitatsMemberQuery)
         ]);
 
-        const fetchedHabitats = [];
+        const habitatsMap = new Map();
 
         createdSnapshot.forEach((doc) => {
-          fetchedHabitats.push({ id: doc.id, ...doc.data() });
+          habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
         });
 
         memberSnapshot.forEach((doc) => {
-          fetchedHabitats.push({ id: doc.id, ...doc.data() });
+          if (!habitatsMap.has(doc.id)) {
+            habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
+          }
         });
 
-        setHabitats(fetchedHabitats);
+        setHabitats(Array.from(habitatsMap.values()));
       } catch (error) {
         console.error("Erro ao buscar habitats: ", error);
       }
@@ -39,21 +45,43 @@ export default function Habitats({ user, setHabitat }) {
     fetchHabitats();
   }, [user.email]);
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  const openCreateModal = () => {
+    setIsCreateModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  const toggleListModal = () => {
+    setIsListModalOpen(prevState => !prevState);
+  };
+
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen(prevState => !prevState);
   };
 
   const handleHabitatClick = habitat => () => {
     setHabitat(habitat);
   };
 
+  const handleLogout = () => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+      console.log("Usuário deslogado");
+    }).catch((error) => {
+      console.error("Erro ao deslogar: ", error);
+    });
+  };
+
   return (
     <div className="habitats-sidebar">
-      <div className="buttons profile" style={{ backgroundImage: `url(${user.profileImageUrl})` }} />
+      <div className="buttons profile" style={{ backgroundImage: `url(${user.profileImageUrl})` }} onClick={toggleProfileMenu} />
+      {isProfileMenuOpen && (
+        <div className="profile-menu">
+          <button onClick={handleLogout}>Deslogar</button>
+        </div>
+      )}
       <div className="divider" />
 
       {habitats.length > 0 ? (
@@ -66,14 +94,15 @@ export default function Habitats({ user, setHabitat }) {
 
       <div className="divider" />
 
-      <div className="buttons" onClick={openModal}>
+      <div className="buttons" onClick={openCreateModal}>
         <FaPlus size={20} />
       </div>
-      <div className="buttons">
+      <div className="buttons" onClick={toggleListModal}>
         <FaCompass size={20} />
       </div>
 
-      {isModalOpen && <ModalCreateHabitat onClose={closeModal} userEmail={user.email} />}
+      {isCreateModalOpen && <ModalCreateHabitat onClose={closeCreateModal} userEmail={user.email} />}
+      {isListModalOpen && <ListHabitats onClose={toggleListModal} userEmail={user.email} />}
     </div>
   );
 }
