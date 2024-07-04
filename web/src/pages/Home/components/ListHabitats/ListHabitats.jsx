@@ -33,6 +33,17 @@ export default function ListHabitats({ onClose, userEmail }) {
       zoom: zoom,
       pitch: pitch,
       bearing: bearing,
+      interactive: true, // Permitir interações
+      scrollZoom: true,
+      boxZoom: true,
+      dragRotate: false, // Desabilitar a rotação do mapa
+      dragPan: true,
+      keyboard: false,
+      doubleClickZoom: true,
+      touchZoomRotate: {
+        zoom: true,
+        rotate: false // Desabilitar a rotação do mapa em dispositivos de toque
+      }
     });
 
     map.current.on("load", () => {

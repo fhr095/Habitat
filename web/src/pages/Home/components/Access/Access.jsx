@@ -4,12 +4,15 @@ import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, deleteD
 import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
+import ModalAddGroups from "../ModalAddGroups/ModalAddGroups"; // Importar o modal de grupos
 import "./Access.scss";
 
 export default function Access({ habitat, userEmail, setChatMember }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
+  const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false); // Estado para o modal de grupos
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
+  const [groups, setGroups] = useState([]); // Estado para os grupos
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -29,15 +32,38 @@ export default function Access({ habitat, userEmail, setChatMember }) {
       }
     };
 
-    fetchMembers();
-  }, [habitat.members]);
+    const fetchGroups = async () => {
+      try {
+        const q = query(collection(db, `habitats/${habitat.id}/groups`));
+        const querySnapshot = await getDocs(q);
+        const groupsData = [];
+        querySnapshot.forEach((doc) => {
+          groupsData.push({ id: doc.id, ...doc.data() });
+        });
+        setGroups(groupsData);
+      } catch (error) {
+        console.error("Erro ao buscar grupos: ", error);
+      }
+    };
 
-  const openModal = () => {
-    setIsModalOpen(true);
+    fetchMembers();
+    fetchGroups();
+  }, [habitat.id, habitat.members]);
+
+  const openMembersModal = () => {
+    setIsMembersModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeMembersModal = () => {
+    setIsMembersModalOpen(false);
+  };
+
+  const openGroupsModal = () => {
+    setIsGroupsModalOpen(true);
+  };
+
+  const closeGroupsModal = () => {
+    setIsGroupsModalOpen(false);
   };
 
   const toggleContextMenu = () => {
@@ -104,7 +130,7 @@ export default function Access({ habitat, userEmail, setChatMember }) {
       <div className="topics">
         <header>
           <p>Membros</p>
-          <button onClick={openModal}>
+          <button onClick={openMembersModal}>
             <FaPlus size={15} />
           </button>
         </header>
@@ -122,7 +148,32 @@ export default function Access({ habitat, userEmail, setChatMember }) {
         </div>
       </div>
 
-      {isModalOpen && <ModalAddMembers onClose={closeModal} habitatId={habitat.id} />}
+      <div className="divider" />
+      <div className="topics">
+        <header>
+          <p>Grupos</p>
+          {habitat.createdBy === userEmail && (
+            <button onClick={openGroupsModal}>
+              <FaPlus size={15} />
+            </button>
+          )}
+        </header>
+        <div className="groups-list">
+          {groups.length > 0 ? (
+            groups.map(group => (
+              <div key={group.id} className="group-item">
+                <img src={group.imgUrl} alt={group.name} />
+                <p>{group.name}</p>
+              </div>
+            ))
+          ) : (
+            <></>
+          )}
+        </div>
+      </div>
+
+      {isMembersModalOpen && <ModalAddMembers onClose={closeMembersModal} habitatId={habitat.id} />}
+      {isGroupsModalOpen && <ModalAddGroups onClose={closeGroupsModal} habitatId={habitat.id} userEmail={userEmail} />}
     </div>
   );
 }

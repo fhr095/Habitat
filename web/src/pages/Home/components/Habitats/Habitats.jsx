@@ -62,6 +62,10 @@ export default function Habitats({ user, setHabitat }) {
   };
 
   const handleHabitatClick = habitat => () => {
+    if(isListModalOpen) {
+      setIsListModalOpen(false);
+      setHabitat(habitat.id);
+    }
     setHabitat(prevHabitat => prevHabitat.id === habitat.id ? {} : habitat);
   };
 

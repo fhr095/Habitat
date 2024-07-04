@@ -4,6 +4,7 @@
   right: 0;
   width: calc(100% - 60px);
   height: 100%;
+  z-index: 3000;
 
   .mapbox-map {
     width: 100%;
