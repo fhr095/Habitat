@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { collection, query, where, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import mapboxgl from 'mapbox-gl';
 import { db } from "../../../../firebase";
 import "./ListHabitats.scss";
 
+mapboxgl.accessToken = "pk.eyJ1IjoiYXBwaWF0ZWNoIiwiYSI6ImNseGw5NDBscDA3dTEyaW9wcGpzNWh2a24ifQ.J3_X8omVDBHK-QAisBUP1w";
+
 export default function ListHabitats({ onClose, userEmail }) {
   const [publicHabitats, setPublicHabitats] = useState([]);
+  const mapContainer = React.useRef(null);
+  const map = React.useRef(null);
 
   useEffect(() => {
     const fetchPublicHabitats = async () => {
       try {
-        const q = query(collection(db, "habitats"), where("isPublic", "==", true));
+        const q = query(collection(db, "habitats"), where("isPublic", "==", true), where("address", "!=", ""));
         const querySnapshot = await getDocs(q);
         const habitats = [];
         querySnapshot.forEach((doc) => {
@@ -23,6 +28,55 @@ export default function ListHabitats({ onClose, userEmail }) {
 
     fetchPublicHabitats();
   }, []);
+
+  useEffect(() => {
+    if (map.current) return; // initialize map only once
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/light-v10', // Estilo de mapa em branco
+      center: [-43.9352, -19.9208], // Coordenadas de Belo Horizonte (BH)
+      zoom: 14,
+      pitch: 45, // Inclinação da câmera
+      bearing: -17.6, // Rotação da câmera
+      antialias: true // Ativar a suavização de serrilhado para 3D
+    });
+
+    map.current.on('load', () => {
+      map.current.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+          'fill-extrusion-color': '#aaa',
+          'fill-extrusion-height': [
+            'interpolate', ['linear'], ['zoom'],
+            15, 0,
+            15.05, ['get', 'height']
+          ],
+          'fill-extrusion-base': [
+            'interpolate', ['linear'], ['zoom'],
+            15, 0,
+            15.05, ['get', 'min_height']
+          ],
+          'fill-extrusion-opacity': 0.6
+        }
+      });
+
+      publicHabitats.forEach(habitat => {
+        const marker = new mapboxgl.Marker()
+          .setLngLat([habitat.longitude, habitat.latitude]) // Assuming you have longitude and latitude fields
+          .setPopup(new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`<h3>${habitat.name}</h3><p>${habitat.address}</p>`))
+          .addTo(map.current);
+
+        marker.getElement().addEventListener('click', () => handleJoinHabitat(habitat));
+      });
+    });
+
+  }, [publicHabitats]);
 
   const handleJoinHabitat = async (habitat) => {
     if (habitat.createdBy === userEmail) {
@@ -49,23 +103,7 @@ export default function ListHabitats({ onClose, userEmail }) {
 
   return (
     <div className="list-habitats">
-      <h1>Habitats Públicos</h1>
-      <div className="habitat-grid">
-        {publicHabitats.length > 0 ? (
-          publicHabitats.map(habitat => (
-            <div
-              key={habitat.id}
-              className={`habitat-item ${habitat.createdBy === userEmail || (habitat.members && habitat.members.includes(userEmail)) ? 'disabled' : ''}`}
-              onClick={() => handleJoinHabitat(habitat)}
-            >
-              <img src={habitat.imageUrl} alt="" />
-              <p>{habitat.name}</p>
-            </div>
-          ))
-        ) : (
-          <p>Nenhum habitat público encontrado.</p>
-        )}
-      </div>
+      <div ref={mapContainer} className="map-container" />
     </div>
   );
 }

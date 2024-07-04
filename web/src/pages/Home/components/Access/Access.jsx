@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FaAngleDown, FaPlus } from "react-icons/fa";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../../../firebase";
+import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, deleteDoc } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
+import { db, storage } from "../../../../firebase";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import "./Access.scss";
 
-export default function Access({ habitat }) {
+export default function Access({ habitat, userEmail }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
@@ -38,13 +40,57 @@ export default function Access({ habitat }) {
     setIsModalOpen(false);
   };
 
+  const toggleContextMenu = () => {
+    setIsContextMenuOpen(prevState => !prevState);
+  };
+
+  const handleDeleteHabitat = async () => {
+    try {
+      // Deletar o modelo GLB do Storage
+      const glbFileRef = ref(storage, habitat.glbFileUrl);
+      await deleteObject(glbFileRef);
+
+      // Deletar o documento do habitat do Firestore
+      const habitatRef = doc(db, "habitats", habitat.id);
+      await deleteDoc(habitatRef);
+
+      alert("Habitat deletado com sucesso.");
+      window.location.reload();
+    } catch (error) {
+      console.error("Erro ao deletar habitat: ", error);
+    }
+  };
+
+  const handleLeaveHabitat = async () => {
+    try {
+      const habitatRef = doc(db, "habitats", habitat.id);
+      await updateDoc(habitatRef, {
+        members: arrayRemove(userEmail)
+      });
+
+      alert("Você saiu do habitat.");
+      setIsContextMenuOpen(false);
+    } catch (error) {
+      console.error("Erro ao sair do habitat: ", error);
+    }
+  };
+
   return (
     <div className="access-container">
       <header>
         <p>{habitat.name}</p>
-        <button>
+        <button onClick={toggleContextMenu}>
           <FaAngleDown size={20} />
         </button>
+        {isContextMenuOpen && (
+          <div className="context-menu">
+            {habitat.createdBy === userEmail ? (
+              <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
+            ) : (
+              <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
+            )}
+          </div>
+        )}
       </header>
       <div className="divider" />
 

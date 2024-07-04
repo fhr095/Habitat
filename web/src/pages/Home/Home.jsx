@@ -14,7 +14,7 @@ export default function Home({ user }) {
         <Habitats user={user} setHabitat={setHabitat}/>
 
         {habitat.id ? (
-          <Access habitat={habitat} />
+          <Access habitat={habitat} userEmail={user.email} />
         ) : (
           <></>
         )}
