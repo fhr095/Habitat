@@ -89,7 +89,7 @@ export default function Habitats({ user, setHabitat }) {
           <div onClick={handleHabitatClick(habitat)} key={habitat.id} className="buttons habitat-item" style={{ backgroundImage: `url(${habitat.imageUrl})` }} />
         ))
       ) : (
-        <p>Nenhum habitat encontrado.</p>
+        <></>
       )}
 
       <div className="divider" />

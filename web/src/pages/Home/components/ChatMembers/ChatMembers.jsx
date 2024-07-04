@@ -1,0 +1,75 @@
+import React, { useState, useEffect } from "react";
+import { collection, addDoc, query, where, onSnapshot, orderBy, doc, setDoc } from "firebase/firestore";
+import { db } from "../../../../firebase";
+import "./ChatMembers.scss";
+
+export default function ChatMembers({ habitatId, user, chatMember, setChatMember }) {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+
+  useEffect(() => {
+    const chatId = [user.email, chatMember.email].sort().join("_");
+    const chatRef = doc(db, `habitats/${habitatId}/conversations/${chatId}`);
+    const messagesRef = collection(chatRef, "messages");
+
+    const q = query(messagesRef, orderBy("timestamp"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const messages = [];
+      querySnapshot.forEach((doc) => {
+        messages.push({ id: doc.id, ...doc.data() });
+      });
+      setMessages(messages);
+    });
+
+    return () => unsubscribe();
+  }, [habitatId, user.email, chatMember.email]);
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim() === "") return;
+
+    const chatId = [user.email, chatMember.email].sort().join("_");
+    const chatRef = doc(db, `habitats/${habitatId}/conversations/${chatId}`);
+    const messagesRef = collection(chatRef, "messages");
+
+    const message = {
+      sender: user.email,
+      message: newMessage,
+      timestamp: new Date(),
+    };
+
+    // Adicionar conversa se não existir
+    await setDoc(chatRef, {
+      users: [user.email, chatMember.email],
+    }, { merge: true });
+
+    // Adicionar mensagem à conversa
+    await addDoc(messagesRef, message);
+
+    setNewMessage("");
+  };
+
+  return (
+    <div className="chat-members">
+      <header>
+        <h2>Chat with {chatMember.name}</h2>
+        <button onClick={() => setChatMember({})}>Close</button>
+      </header>
+      <div className="messages">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`message ${msg.sender === user.email ? "sent" : "received"}`}>
+            <p>{msg.message}</p>
+          </div>
+        ))}
+      </div>
+      <footer>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message"
+        />
+        <button onClick={handleSendMessage}>Send</button>
+      </footer>
+    </div>
+  );
+}

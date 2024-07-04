@@ -6,7 +6,7 @@ import { db, storage } from "../../../../firebase";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import "./Access.scss";
 
-export default function Access({ habitat, userEmail }) {
+export default function Access({ habitat, userEmail, setChatMember }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
@@ -70,8 +70,15 @@ export default function Access({ habitat, userEmail }) {
 
       alert("Você saiu do habitat.");
       setIsContextMenuOpen(false);
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao sair do habitat: ", error);
+    }
+  };
+
+  const handleMemberClick = (member) => {
+    if (member.email !== userEmail) {
+      setChatMember(member);
     }
   };
 
@@ -104,7 +111,7 @@ export default function Access({ habitat, userEmail }) {
         <div className="members-list">
           {members.length > 0 ? (
             members.map(member => (
-              <div key={member.id} className="member-item">
+              <div key={member.id} className="member-item" onClick={() => handleMemberClick(member)}>
                 <img src={member.profileImageUrl} alt={member.name} />
                 <p>{member.name}</p>
               </div>
@@ -113,36 +120,6 @@ export default function Access({ habitat, userEmail }) {
             <></>
           )}
         </div>
-      </div>
-
-      <div className="divider" />
-      <div className="topics">
-        <header>
-          <p>Bots e Assistentes</p>
-          <button onClick={openModal}>
-            <FaPlus size={15} />
-          </button>
-        </header>
-      </div>
-
-      <div className="divider" />
-      <div className="topics">
-        <header>
-          <p>Grupos</p>
-          <button onClick={openModal}>
-            <FaPlus size={15} />
-          </button>
-        </header>
-      </div>
-
-      <div className="divider" />
-      <div className="topics">
-        <header>
-          <p>Salas</p>
-          <button onClick={openModal}>
-            <FaPlus size={15} />
-          </button>
-        </header>
       </div>
 
       {isModalOpen && <ModalAddMembers onClose={closeModal} habitatId={habitat.id} />}
