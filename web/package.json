@@ -12,6 +12,8 @@
   "dependencies": {
     "@mapbox/mapbox-sdk": "^0.16.0",
     "@react-leaflet/core": "^2.1.0",
+    "@react-three/drei": "^9.108.1",
+    "@react-three/fiber": "^8.16.8",
     "@tweenjs/tween.js": "^23.1.2",
     "annyang": "^2.6.1",
     "antd": "^5.18.1",

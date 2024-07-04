@@ -78,7 +78,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               members: [userEmail],  // Adiciona o usuário como membro
             });
 
-            console.log("Habitat criado com arquivo GLB");
+            window.location.reload();
             setIsSubmitting(false);
             onClose();
           }

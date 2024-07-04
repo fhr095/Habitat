@@ -62,7 +62,7 @@ export default function Habitats({ user, setHabitat }) {
   };
 
   const handleHabitatClick = habitat => () => {
-    setHabitat(habitat);
+    setHabitat(prevHabitat => prevHabitat.id === habitat.id ? {} : habitat);
   };
 
   const handleLogout = () => {

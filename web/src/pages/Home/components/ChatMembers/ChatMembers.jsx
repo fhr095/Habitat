@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, query, where, onSnapshot, orderBy, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { FaTimes } from "react-icons/fa";
 import "./ChatMembers.scss";
 
 export default function ChatMembers({ habitatId, user, chatMember, setChatMember }) {
@@ -51,8 +52,13 @@ export default function ChatMembers({ habitatId, user, chatMember, setChatMember
   return (
     <div className="chat-members">
       <header>
-        <h2>Chat with {chatMember.name}</h2>
-        <button onClick={() => setChatMember({})}>Close</button>
+        <div className="chat-member-info">
+          <img src={chatMember.profileImageUrl} alt={chatMember.name} />
+          <p>{chatMember.name}</p>
+        </div>
+        <button onClick={() => setChatMember({})}>
+          <FaTimes size={20} />
+        </button>
       </header>
       <div className="messages">
         {messages.map((msg) => (
@@ -66,9 +72,9 @@ export default function ChatMembers({ habitatId, user, chatMember, setChatMember
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message"
+          placeholder="Digite uma mensagem"
         />
-        <button onClick={handleSendMessage}>Send</button>
+        <button onClick={handleSendMessage}>Enviar</button>
       </footer>
     </div>
   );
