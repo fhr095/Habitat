@@ -7,7 +7,7 @@ import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import ModalAddGroups from "../ModalAddGroups/ModalAddGroups"; // Importar o modal de grupos
 import "./Access.scss";
 
-export default function Access({ habitat, userEmail, setChatMember }) {
+export default function Access({ habitat, userEmail, setChatMember, setChatGroup }) {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false); // Estado para o modal de grupos
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
@@ -108,6 +108,10 @@ export default function Access({ habitat, userEmail, setChatMember }) {
     }
   };
 
+  const handleGroupClick = (group) => {
+    setChatGroup(group);
+  };
+
   return (
     <div className="access-container">
       <header>
@@ -161,7 +165,7 @@ export default function Access({ habitat, userEmail, setChatMember }) {
         <div className="groups-list">
           {groups.length > 0 ? (
             groups.map(group => (
-              <div key={group.id} className="group-item">
+              <div key={group.id} className="group-item" onClick={() => handleGroupClick(group)}>
                 <img src={group.imgUrl} alt={group.name} />
                 <p>{group.name}</p>
               </div>
