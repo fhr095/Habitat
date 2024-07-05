@@ -18,14 +18,24 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     const fetchMembers = async () => {
       try {
         const membersData = [];
-        const memberEmails = habitat.members || []; // Use empty array if members does not exist
-        for (const email of memberEmails) {
-          const q = query(collection(db, "users"), where("email", "==", email));
-          const querySnapshot = await getDocs(q);
-          querySnapshot.forEach((doc) => {
-            membersData.push({ id: doc.id, ...doc.data() });
-          });
+        const q = query(collection(db, `habitats/${habitat.id}/members`));
+        const querySnapshot = await getDocs(q);
+
+        for (const memberDoc of querySnapshot.docs) {
+          const memberData = memberDoc.data();
+          const userQuery = query(collection(db, "users"), where("email", "==", memberData.email));
+          const userDocSnapshot = await getDocs(userQuery);
+          if (!userDocSnapshot.empty) {
+            const userData = userDocSnapshot.docs[0].data();
+            membersData.push({
+              id: memberDoc.id,
+              ...memberData,
+              profileImageUrl: userData.profileImageUrl,
+              name: userData.name,
+            });
+          }
         }
+
         setMembers(membersData);
       } catch (error) {
         console.error("Erro ao buscar membros: ", error);
@@ -48,7 +58,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
 
     fetchMembers();
     fetchGroups();
-  }, [habitat.id, habitat.members]);
+  }, [habitat.id]);
 
   const openMembersModal = () => {
     setIsMembersModalOpen(true);
@@ -144,6 +154,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
               <div key={member.id} className="member-item" onClick={() => handleMemberClick(member)}>
                 <img src={member.profileImageUrl} alt={member.name} />
                 <p>{member.name}</p>
+                <span style={{ color: member.color }}>{member.tag}</span>
               </div>
             ))
           ) : (

@@ -94,6 +94,7 @@
       overflow: auto;
       
       .member-item, .group-item {
+        position: relative;
         width: 100%;
         display: flex;
         align-items: center;
@@ -109,6 +110,11 @@
         
         p {
           font-size: 1rem;
+        }
+
+        span{
+          position: absolute;
+          right: 0;
         }
       }
     }

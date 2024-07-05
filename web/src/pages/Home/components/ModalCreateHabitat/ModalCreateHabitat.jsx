@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import "./ModalCreateHabitat.scss";
@@ -52,14 +52,21 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               async () => {
                 const imageUrl = await getDownloadURL(uploadImageTask.snapshot.ref);
 
-                await addDoc(collection(db, "habitats"), {
+                const habitatRef = await addDoc(collection(db, "habitats"), {
                   name,
                   address,
                   imageUrl,
                   glbFileUrl,
                   isPublic,
                   createdBy: userEmail,
-                  members: [userEmail],  // Adiciona o usuário como membro
+                });
+
+                // Adicionar o criador como membro do habitat
+                const memberRef = doc(db, `habitats/${habitatRef.id}/members/${userEmail}`);
+                await setDoc(memberRef, {
+                  email: userEmail,
+                  tag: "Criador",
+                  color: "#004736",
                 });
 
                 console.log("Habitat criado com imagem e arquivo GLB");
@@ -68,17 +75,24 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               }
             );
           } else {
-            await addDoc(collection(db, "habitats"), {
+            const habitatRef = await addDoc(collection(db, "habitats"), {
               name,
               address,
               imageUrl: null,
               glbFileUrl,
               isPublic,
               createdBy: userEmail,
-              members: [userEmail],  // Adiciona o usuário como membro
             });
 
-            window.location.reload();
+            // Adicionar o criador como membro do habitat
+            const memberRef = doc(db, `habitats/${habitatRef.id}/members/${userEmail}`);
+            await setDoc(memberRef, {
+              email: userEmail,
+              tag: "Criador",
+              color: "#004736",
+            });
+
+            console.log("Habitat criado com arquivo GLB");
             setIsSubmitting(false);
             onClose();
           }

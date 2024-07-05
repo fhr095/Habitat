@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { collection, query, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, query, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import "./ModalAddMembers.scss";
 
 export default function ModalAddMembers({ onClose, habitatId }) {
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState("");
+  const [tag, setTag] = useState("");
+  const [color, setColor] = useState("#000000");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -29,10 +31,9 @@ export default function ModalAddMembers({ onClose, habitatId }) {
   const handleAddMember = async () => {
     setIsSubmitting(true);
     try {
-      const habitatRef = doc(db, "habitats", habitatId);
-      await updateDoc(habitatRef, {
-        members: arrayUnion(selectedUser)
-      });
+      const memberRef = doc(db, `habitats/${habitatId}/members/${selectedUser}`);
+      const member = { email: selectedUser, tag, color };
+      await setDoc(memberRef, member);
       setIsSubmitting(false);
       onClose();
     } catch (error) {
@@ -60,6 +61,23 @@ export default function ModalAddMembers({ onClose, habitatId }) {
               <option key={user} value={user}>{user}</option>
             ))}
           </datalist>
+          <label>
+            Tag:
+            <input 
+              type="text" 
+              value={tag} 
+              onChange={(e) => setTag(e.target.value)} 
+              placeholder="Tag" 
+            />
+          </label>
+          <label>
+            Cor da Tag:
+            <input 
+              type="color" 
+              value={color} 
+              onChange={(e) => setColor(e.target.value)} 
+            />
+          </label>
         </div>
         <button 
           onClick={handleAddMember} 
