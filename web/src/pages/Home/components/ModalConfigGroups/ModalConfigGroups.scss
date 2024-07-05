@@ -1,11 +1,7 @@
 @import "../../../../styles/variables.scss";
 
 .modal-config-group {
-  @extend .modal;
-
   .modal-content {
-    @extend .modal-content;
-
     h2 {
       margin-bottom: 20px;
     }

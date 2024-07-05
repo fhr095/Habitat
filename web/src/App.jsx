@@ -4,9 +4,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 import { auth, db } from "./firebase"; // Certifique-se de ajustar o caminho conforme necessário
-import Home from "./pages/Home/Home";
+import Home from "./pages/Home/Home";0
 import LoginRegister from "./pages/LoginRegister/LoginRegister";
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import "./App.css";
 
 export default function App() {

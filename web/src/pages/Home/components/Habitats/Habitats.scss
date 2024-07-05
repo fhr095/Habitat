@@ -25,7 +25,7 @@
     cursor: pointer;
   }
 
-  .profile-menu {
+  .dropdown {
     position: absolute;
     top: 60px;
     left: 0;
@@ -33,17 +33,18 @@
     border: 1px solid $light-gray;
     border-radius: 5px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 10000;
     width: 150px;
-
-    button {
+  
+    .dropdown-item {
       background: none;
       border: none;
       padding: 10px 20px;
       cursor: pointer;
       width: 100%;
       text-align: left;
-
+      color: $text;
+  
       &:hover {
         background-color: $secondary-color;
       }

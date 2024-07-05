@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaCompass } from "react-icons/fa";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../../../../firebase";
 import ModalCreateHabitat from "../ModalCreateHabitat/ModalCreateHabitat";
@@ -17,24 +17,25 @@ export default function Habitats({ user, setHabitat }) {
     const fetchHabitats = async () => {
       try {
         const habitatsCreatedQuery = query(collection(db, "habitats"), where("createdBy", "==", user.email));
-        const habitatsMemberQuery = query(collection(db, "habitats"), where("members", "array-contains", user.email));
-
-        const [createdSnapshot, memberSnapshot] = await Promise.all([
-          getDocs(habitatsCreatedQuery),
-          getDocs(habitatsMemberQuery)
-        ]);
+        const habitatsCollectionSnapshot = await getDocs(collection(db, "habitats"));
 
         const habitatsMap = new Map();
 
+        // Adicionar habitats criados pelo usuário
+        const createdSnapshot = await getDocs(habitatsCreatedQuery);
         createdSnapshot.forEach((doc) => {
           habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
         });
 
-        memberSnapshot.forEach((doc) => {
-          if (!habitatsMap.has(doc.id)) {
-            habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
-          }
-        });
+        // Verificar habitats onde o usuário é membro
+        for (const habitatDoc of habitatsCollectionSnapshot.docs) {
+          const memberDoc = await getDocs(collection(db, `habitats/${habitatDoc.id}/members`));
+          memberDoc.forEach((doc) => {
+            if (doc.id === user.email) {
+              habitatsMap.set(habitatDoc.id, { id: habitatDoc.id, ...habitatDoc.data() });
+            }
+          });
+        }
 
         setHabitats(Array.from(habitatsMap.values()));
       } catch (error) {
@@ -62,7 +63,7 @@ export default function Habitats({ user, setHabitat }) {
   };
 
   const handleHabitatClick = habitat => () => {
-    if(isListModalOpen) {
+    if (isListModalOpen) {
       setIsListModalOpen(false);
       setHabitat(habitat.id);
     }
@@ -82,8 +83,8 @@ export default function Habitats({ user, setHabitat }) {
     <div className="habitats-sidebar">
       <div className="buttons profile" style={{ backgroundImage: `url(${user.profileImageUrl})` }} onClick={toggleProfileMenu} />
       {isProfileMenuOpen && (
-        <div className="profile-menu">
-          <button onClick={handleLogout}>Deslogar</button>
+        <div className="dropdown">
+          <button className="dropdown-item" onClick={handleLogout}>Deslogar</button>
         </div>
       )}
       <div className="divider" />

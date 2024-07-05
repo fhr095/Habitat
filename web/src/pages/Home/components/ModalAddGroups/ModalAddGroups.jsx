@@ -41,13 +41,15 @@ export default function ModalAddGroups({ habitatId, onClose, userEmail }) {
     }
 
     try {
-      const groupRef = await addDoc(collection(db, `habitats/${habitatId}/groups`), {
+      const groupData = {
         name: groupName,
-        imgUrl: imageUrl,
+        imgUrl: imageUrl || "",
         users: groupMembers,
         admin: userEmail, // Define o criador como administrador
         createdAt: new Date(),
-      });
+      };
+
+      const groupRef = await addDoc(collection(db, `habitats/${habitatId}/groups`), groupData);
 
       // Adicionar grupo aos usuários
       for (const email of groupMembers) {

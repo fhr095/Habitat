@@ -1,44 +1,93 @@
 @import "../../../../styles/variables.scss";
 
 .modal-create-group {
-  @extend .modal;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   .modal-content {
-    @extend .modal-content;
+    background-color: $white;
+    padding: 20px;
+    border: 1px solid $gray;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+
+    .close {
+      color: $gray;
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 28px;
+      font-weight: bold;
+
+      &:hover,
+      &:focus {
+        color: $primary-color;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    }
 
     h2 {
+      color: $primary-color;
+      font-size: 24px;
+      text-align: center;
       margin-bottom: 20px;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
 
       label {
         display: flex;
         flex-direction: column;
-        font-weight: bold;
+        font-size: 16px;
+        color: $primary-color;
+      }
 
-        input[type="text"], input[type="file"] {
-          margin-top: 5px;
-          padding: 8px;
-          border: 1px solid $light-gray;
-          border-radius: 5px;
+      input[type="text"],
+      input[type="file"] {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        display: inline-block;
+        border: 1px solid $light-gray;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+
+      button[type="button"],
+      button[type="submit"] {
+        background-color: $primary-color;
+        color: $white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &:disabled {
+          background-color: $light-gray;
+          cursor: not-allowed;
         }
 
-        button {
-          margin-top: 5px;
-          padding: 5px 10px;
-          background-color: $primary-color;
-          color: $white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-
-          &:hover {
-            background-color: darken($primary-color, 10%);
-          }
+        &:not(:disabled):hover {
+          background-color: darken($primary-color, 10%);
         }
       }
 
@@ -48,44 +97,24 @@
 
         li {
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          padding: 5px;
-          background-color: $secondary-color;
+          justify-content: space-between;
+          padding: 10px;
           border: 1px solid $light-gray;
           border-radius: 5px;
-          margin-top: 5px;
+          margin: 5px 0;
 
           button {
-            padding: 5px;
-            background-color: #dc3545;
-            color: $white;
+            background: none;
             border: none;
-            border-radius: 5px;
+            color: $danger-color;
             cursor: pointer;
+            font-size: 14px;
 
             &:hover {
-              background-color: darken(#dc3545, 10%);
+              text-decoration: underline;
             }
           }
-        }
-      }
-
-      button[type="submit"] {
-        padding: 10px;
-        background-color: $primary-color;
-        color: $white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-
-        &:hover {
-          background-color: darken($primary-color, 10%);
-        }
-
-        &:disabled {
-          background-color: $light-gray;
-          cursor: not-allowed;
         }
       }
     }

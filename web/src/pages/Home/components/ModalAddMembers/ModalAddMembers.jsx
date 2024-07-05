@@ -43,8 +43,8 @@ export default function ModalAddMembers({ onClose, habitatId }) {
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content">
+    <div className="modal-addMembers">
+      <div className="modal-addMembers-content">
         <span className="close" onClick={onClose}>&times;</span>
         <h1>Adicionar Membros</h1>
         <div className="form-group">

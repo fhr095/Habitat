@@ -21,44 +21,56 @@
     justify-content: space-between;
     position: relative;
 
-    p {
+    .text {
       font-size: 1.2rem;
+      color: $text;
     }
 
-    button {
-      background-color: transparent;
-      border: none;
-      cursor: pointer;
-      color: $text;
+    .context-menu {
       position: relative;
+
+      .context-menu-toggle {
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        color: $text;
+        position: relative;
+      }
+
+      .context-menu-items {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: $white;
+        border: 1px solid $light-gray;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        width: 150px;
+        margin-top: 5px;
+
+        button {
+          display: block;
+          width: 100%;
+          padding: 10px 20px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          color: $text;
+
+          &:hover {
+            background-color: $secondary-color;
+          }
+        }
+      }
     }
   }
 
-  .context-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: $white;
-    border: 1px solid $light-gray;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    width: 150px;
-    margin-top: 5px;
-
-    button {
-      display: block;
-      width: 100%;
-      padding: 10px 20px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      text-align: left;
-
-      &:hover {
-        background-color: $secondary-color;
-      }
-    }
+  .divider {
+    width: 100%;
+    height: 2px;
+    background-color: $light-gray;
   }
 
   .topics {
@@ -73,8 +85,9 @@
       align-items: center;
       justify-content: space-between;
 
-      p {
+      .text {
         font-size: 1rem;
+        color: $text;
       }
 
       button {
@@ -92,7 +105,7 @@
       flex-direction: column;
       gap: 10px;
       overflow: auto;
-      
+
       .member-item, .group-item {
         position: relative;
         width: 100%;
@@ -101,20 +114,48 @@
         justify-content: flex-start;
         gap: 10px;
         cursor: pointer;
-        
+
         img {
           width: 20px;
           height: 20px;
           border-radius: 50%;
         }
-        
-        p {
+
+        .text {
           font-size: 1rem;
+          color: $text;
         }
 
-        span{
+        span {
           position: absolute;
           right: 0;
+        }
+
+        .member-context-menu {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          background-color: $white;
+          border: 1px solid $light-gray;
+          border-radius: 5px;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
+          width: 150px;
+
+          button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            color: $text;
+
+            &:hover {
+              background-color: $secondary-color;
+            }
+          }
         }
       }
     }
