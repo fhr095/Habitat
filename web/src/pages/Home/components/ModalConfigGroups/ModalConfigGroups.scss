@@ -1,0 +1,117 @@
+@import "../../../../styles/variables.scss";
+
+.modal-config-group {
+  @extend .modal;
+
+  .modal-content {
+    @extend .modal-content;
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+
+      label {
+        font-size: 16px;
+        color: $primary-color;
+        
+        input[type="text"],
+        input[type="file"] {
+          margin-top: 5px;
+          padding: 8px;
+          border: 1px solid $light-gray;
+          border-radius: 5px;
+        }
+      }
+
+      button[type="submit"] {
+        padding: 10px;
+        background-color: $primary-color;
+        color: $white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+          background-color: darken($primary-color, 10%);
+        }
+
+        &:disabled {
+          background-color: $light-gray;
+          cursor: not-allowed;
+        }
+      }
+
+      .add-member {
+        display: flex;
+        gap: 10px;
+
+        input[type="text"] {
+          flex: 1;
+          padding: 8px;
+          border: 1px solid $light-gray;
+          border-radius: 5px;
+        }
+
+        button {
+          padding: 8px 12px;
+          background-color: $primary-color;
+          color: $white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: darken($primary-color, 10%);
+          }
+        }
+      }
+    }
+
+    .members-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 10px 0;
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px 0;
+        border-bottom: 1px solid $light-gray;
+
+        button {
+          background-color: #ff4d4d;
+          color: $white;
+          border: none;
+          border-radius: 3px;
+          padding: 5px 10px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #ff1a1a;
+          }
+        }
+      }
+    }
+
+    .delete-button {
+      background-color: #ff4d4d;
+      color: $white;
+      border: none;
+      padding: 15px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        background-color: #ff1a1a;
+      }
+    }
+  }
+}

@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, query, onSnapshot, orderBy, doc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { FaCheck, FaTimes, FaEllipsisV  } from "react-icons/fa";
+
+import ModalConfigGroups from "../ModalConfigGroups/ModalConfigGroups";
+
 import "./ChatGroups.scss";
 
 export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
 
   useEffect(() => {
     const chatRef = doc(db, `habitats/${habitatId}/groups/${group.id}`);
@@ -46,7 +51,16 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
           <img src={group.imgUrl} alt={group.name} />
           <p>{group.name}</p>
         </div>
-        <button onClick={() => setChatGroup({})}>✖</button>
+        <div className="icons-buttons">
+          {group.admin === user.email && (
+            <button onClick={() => setIsConfigModalOpen(true)}>
+              <FaEllipsisV size={20} />
+            </button>
+          )}
+          <button onClick={() => setChatGroup({})}>
+            <FaTimes size={20} />
+          </button>
+        </div>
       </header>
       <div className="messages">
         {messages.map((msg) => (
@@ -62,8 +76,17 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type a message"
         />
-        <button onClick={handleSendMessage}>Send</button>
+        <button onClick={handleSendMessage}>
+          <FaCheck size={20} />
+        </button>
       </footer>
+      {isConfigModalOpen && (
+        <ModalConfigGroups 
+          group={group} 
+          habitatId={habitatId} 
+          onClose={() => setIsConfigModalOpen(false)} 
+        />
+      )}
     </div>
   );
 }

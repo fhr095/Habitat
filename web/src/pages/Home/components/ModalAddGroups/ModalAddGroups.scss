@@ -1,30 +1,10 @@
+@import "../../../../styles/variables.scss";
+
 .modal-create-group {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  @extend .modal;
 
   .modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    max-width: 100%;
-    position: relative;
-
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      cursor: pointer;
-      font-size: 20px;
-    }
+    @extend .modal-content;
 
     h2 {
       margin-bottom: 20px;
@@ -43,21 +23,21 @@
         input[type="text"], input[type="file"] {
           margin-top: 5px;
           padding: 8px;
-          border: 1px solid #ddd;
+          border: 1px solid $light-gray;
           border-radius: 5px;
         }
 
         button {
           margin-top: 5px;
           padding: 5px 10px;
-          background-color: #007bff;
-          color: #fff;
+          background-color: $primary-color;
+          color: $white;
           border: none;
           border-radius: 5px;
           cursor: pointer;
 
           &:hover {
-            background-color: #0056b3;
+            background-color: darken($primary-color, 10%);
           }
         }
       }
@@ -71,21 +51,21 @@
           justify-content: space-between;
           align-items: center;
           padding: 5px;
-          background-color: #f8f9fa;
-          border: 1px solid #ddd;
+          background-color: $secondary-color;
+          border: 1px solid $light-gray;
           border-radius: 5px;
           margin-top: 5px;
 
           button {
             padding: 5px;
             background-color: #dc3545;
-            color: #fff;
+            color: $white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
 
             &:hover {
-              background-color: #c82333;
+              background-color: darken(#dc3545, 10%);
             }
           }
         }
@@ -93,18 +73,18 @@
 
       button[type="submit"] {
         padding: 10px;
-        background-color: #007bff;
-        color: #fff;
+        background-color: $primary-color;
+        color: $white;
         border: none;
         border-radius: 5px;
         cursor: pointer;
 
         &:hover {
-          background-color: #0056b3;
+          background-color: darken($primary-color, 10%);
         }
 
         &:disabled {
-          background-color: #ccc;
+          background-color: $light-gray;
           cursor: not-allowed;
         }
       }

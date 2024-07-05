@@ -1,8 +1,10 @@
+@import "../../../../styles/variables.scss";
+
 .scene {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: calc(100% - 60px);
-    height: 100vh;
-    overflow: hidden;
-  }  
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(100% - 60px);
+  height: 100vh;
+  overflow: hidden;
+}

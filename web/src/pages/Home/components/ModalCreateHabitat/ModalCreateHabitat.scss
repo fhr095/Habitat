@@ -1,108 +1,76 @@
-$primary-color: #004736;
-$secondary-color: #f3f3f3;
-$white: #ffffff;
-$gray: #888888;
-$light-gray: #dddddd;
+@import "../../../../styles/variables.scss";
 
 .modal-create-habitat {
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  @extend .modal;
 
   .modal-create-habitat-content {
-    background-color: $white;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid $gray;
-    border-radius: 10px;
-    width: 50%;
-    max-width: 600px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  }
+    @extend .modal-content;
 
-  .close {
-    color: $gray;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-
-    &:hover,
-    &:focus {
+    h1 {
       color: $primary-color;
-      text-decoration: none;
-      cursor: pointer;
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
     }
-  }
 
-  h1 {
-    color: $primary-color;
-    font-size: 24px;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-
-    label {
+    form {
       display: flex;
       flex-direction: column;
-      font-size: 16px;
-      color: $primary-color;
+      gap: 15px;
 
-      input[type="text"],
-      input[type="file"],
-      input[type="checkbox"] {
-        margin-top: 5px;
-        padding: 10px;
-        border: 1px solid $light-gray;
+      label {
+        display: flex;
+        flex-direction: column;
+        font-size: 16px;
+        color: $primary-color;
+
+        input[type="text"],
+        input[type="file"],
+        input[type="checkbox"] {
+          margin-top: 5px;
+          padding: 10px;
+          border: 1px solid $light-gray;
+          border-radius: 5px;
+          font-size: 16px;
+        }
+
+        input[type="checkbox"] {
+          width: auto;
+        }
+      }
+
+      button {
+        background-color: $primary-color;
+        color: $white;
+        border: none;
+        padding: 15px;
         border-radius: 5px;
         font-size: 16px;
-      }
+        cursor: pointer;
+        transition: background-color 0.3s;
 
-      input[type="checkbox"] {
-        width: auto;
+        &:disabled {
+          background-color: $light-gray;
+          cursor: not-allowed;
+        }
+
+        &:not(:disabled):hover {
+          background-color: darken($primary-color, 10%);
+        }
       }
     }
 
-    button {
-      background-color: $primary-color;
-      color: $white;
-      border: none;
-      padding: 15px;
+    .progress-bar {
+      margin-top: 20px;
+      background-color: $secondary-color;
       border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s;
+      overflow: hidden;
 
-      &:disabled {
-        background-color: $light-gray;
-        cursor: not-allowed;
+      .progress {
+        height: 20px;
+        background-color: $primary-color;
+        transition: width 0.3s;
       }
-
-      &:not(:disabled):hover {
-        background-color: darken($primary-color, 10%);
-      }
-    }
-  }
-
-  .progress-bar {
-    margin-top: 20px;
-    background-color: $secondary-color;
-    border-radius: 5px;
-    overflow: hidden;
-
-    .progress {
-      height: 20px;
-      background-color: $primary-color;
-      transition: width 0.3s;
     }
   }
 }

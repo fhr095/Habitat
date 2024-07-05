@@ -1,10 +1,12 @@
+@import "../../../../styles/variables.scss";
+
 .chat-members {
   position: fixed;
   bottom: 10px;
   right: 10px;
   width: 300px;
   height: 400px;
-  background-color: white;
+  background-color: $white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   display: flex;
@@ -13,8 +15,8 @@
 
   header {
     padding: 10px;
-    background-color: #f1f1f1;
-    border-bottom: 1px solid #ccc;
+    background-color: $secondary-color;
+    border-bottom: 1px solid $light-gray;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -22,16 +24,17 @@
     .chat-member-info {
       display: flex;
       align-items: center;
+      justify-content: center;
 
       img {
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         margin-right: 10px;
       }
 
       p {
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin: 0;
       }
     }
@@ -41,6 +44,7 @@
       border: none;
       cursor: pointer;
       font-size: 1rem;
+      color: $text;
     }
   }
 
@@ -55,36 +59,43 @@
       border-radius: 5px;
 
       &.sent {
-        background-color: #e1ffc7;
+        background-color: lighten($primary-color, 20%);
         align-self: flex-end;
       }
 
       &.received {
-        background-color: #f1f1f1;
+        background-color: $secondary-color;
         align-self: flex-start;
       }
     }
   }
 
   footer {
-    padding: 10px;
+    width: 100%;
+    height: 50px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    gap: 10px;
 
     input {
       flex: 1;
-      padding: 5px;
-      border: 1px solid #ccc;
+      padding: 10px;
+      border: 1px solid $light-gray;
       border-radius: 5px;
-      margin-right: 5px;
+      font-size: 1rem;
     }
 
     button {
-      padding: 5px 10px;
+      padding: 5px;
+      background-color: $primary-color;
+      color: $white;
       border: none;
-      background-color: #004736;
-      color: white;
       border-radius: 5px;
-      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }

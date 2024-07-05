@@ -1,3 +1,5 @@
+@import "../../../../styles/variables.scss";
+
 .modal {
   position: fixed;
   z-index: 1;
@@ -9,10 +11,10 @@
   background-color: rgba(0, 0, 0, 0.4);
 
   .modal-content {
-    background-color: #ffffff;
+    background-color: $white;
     margin: 10% auto;
     padding: 20px;
-    border: 1px solid #888;
+    border: 1px solid $gray;
     border-radius: 10px;
     width: 50%;
     max-width: 600px;
@@ -20,21 +22,21 @@
   }
 
   .close {
-    color: #888;
+    color: $gray;
     float: right;
     font-size: 28px;
     font-weight: bold;
 
     &:hover,
     &:focus {
-      color: #004736;
+      color: $primary-color;
       text-decoration: none;
       cursor: pointer;
     }
   }
 
   h1 {
-    color: #004736;
+    color: $primary-color;
     font-size: 24px;
     text-align: center;
     margin-bottom: 20px;
@@ -47,20 +49,20 @@
 
     label {
       font-size: 16px;
-      color: #004736;
+      color: $primary-color;
     }
 
     input[type="text"] {
       padding: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid $light-gray;
       border-radius: 5px;
       font-size: 16px;
     }
   }
 
   button {
-    background-color: #004736;
-    color: #ffffff;
+    background-color: $primary-color;
+    color: $white;
     border: none;
     padding: 15px;
     border-radius: 5px;
@@ -69,12 +71,12 @@
     transition: background-color 0.3s;
 
     &:disabled {
-      background-color: #ddd;
+      background-color: $light-gray;
       cursor: not-allowed;
     }
 
     &:not(:disabled):hover {
-      background-color: darken(#004736, 10%);
+      background-color: darken($primary-color, 10%);
     }
   }
 }

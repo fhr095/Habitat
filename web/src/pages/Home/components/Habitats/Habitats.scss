@@ -1,3 +1,5 @@
+@import "../../../../styles/variables.scss";
+
 .habitats-sidebar {
   width: 60px;
   height: 100%;
@@ -13,7 +15,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #ccc;
+    background-color: $light-gray;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,8 +29,8 @@
     position: absolute;
     top: 60px;
     left: 0;
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: $white;
+    border: 1px solid $light-gray;
     border-radius: 5px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     z-index: 1000;
@@ -43,7 +45,7 @@
       text-align: left;
 
       &:hover {
-        background-color: #f3f3f3;
+        background-color: $secondary-color;
       }
     }
   }

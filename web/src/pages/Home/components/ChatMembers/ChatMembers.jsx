@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, query, where, onSnapshot, orderBy, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaCheck  } from "react-icons/fa";
 import "./ChatMembers.scss";
 
 export default function ChatMembers({ habitatId, user, chatMember, setChatMember }) {
@@ -74,7 +74,9 @@ export default function ChatMembers({ habitatId, user, chatMember, setChatMember
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Digite uma mensagem"
         />
-        <button onClick={handleSendMessage}>Enviar</button>
+        <button onClick={handleSendMessage}>
+          <FaCheck size={20} />
+        </button>
       </footer>
     </div>
   );
