@@ -87,7 +87,14 @@ export default function Habitats({ user, setHabitat }) {
           <button className="dropdown-item" onClick={handleLogout}>Deslogar</button>
         </div>
       )}
-      <div className="divider" />
+      
+      {habitats.length > 0 ? (
+        <div className="divider"/>
+      ) : (
+        <></>
+      )
+      }
+      
 
       {habitats.length > 0 ? (
         habitats.map(habitat => (

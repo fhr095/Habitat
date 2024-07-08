@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import Habitats from "./components/Habitats/Habitats";
 import Access from "./components/Access/Access";
