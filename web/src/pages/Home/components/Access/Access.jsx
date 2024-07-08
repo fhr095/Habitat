@@ -3,8 +3,9 @@ import { FaAngleDown, FaPlus } from "react-icons/fa";
 import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
+import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
-import ModalAddGroups from "../ModalAddGroups/ModalAddGroups"; // Importar o modal de grupos
+import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
 import './Access.scss';
 
 export default function Access({ habitat, userEmail, setChatMember, setChatGroup }) {
