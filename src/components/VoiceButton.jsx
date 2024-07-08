@@ -1,71 +1,111 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 import "../styles/VoiceButton.scss";
 
 export default function VoiceButton({ setTranscript, isDisabled }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognition, setRecognition] = useState(null);
+  const [listening, setListening] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = "pt-BR";
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = "pt-BR";
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
 
-      recognitionInstance.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            const transcript = event.results[i][0].transcript.trim();
-            setTranscript(transcript);
-          }
-        }
+      recognitionRef.current.onstart = () => {
+        setListening(true);
       };
 
-      recognitionInstance.onerror = (event) => {
-        console.error("Erro de reconhecimento de voz:", event.error);
+      recognitionRef.current.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        setTranscript(result);
+        setListening(false);
       };
 
-      setRecognition(recognitionInstance);
+      recognitionRef.current.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setListening(false);
+      };
     } else {
-      console.error("Este navegador não suporta reconhecimento de voz.");
+      console.warn("Web Speech API not supported in this browser.");
     }
   }, [setTranscript]);
 
-  const handleMouseDown = () => {
-    if (recognition) {
-      recognition.start();
-      setIsRecording(true);
+  const handleStartListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
     }
   };
 
-  const handleMouseUp = () => {
-    if (recognition) {
-      recognition.stop();
-      setIsRecording(false);
+  const handleStopListening = () => {
+    if (recognitionRef.current && listening) {
+      recognitionRef.current.stop();
     }
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    setShowTooltip(false);
+    handleStartListening();
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    handleStopListening();
+  };
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setShowTooltip(false);
+    handleStartListening();
+  };
+
+  const handleMouseUp = (e) => {
+    e.preventDefault();
+    handleStopListening();
+  };
+
+  const handleMouseLeave = (e) => {
+    e.preventDefault();
+    handleStopListening();
+  };
+
+  const handleMouseClick = (e) => {
+    e.preventDefault();
+    setShowTooltip(true);
+    setTimeout(() => {
+      setShowTooltip(false);
+    }, 2000);
   };
 
   return (
-    <button
-      className="voice-button"
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      style={{
-        transform: isRecording ? "scale(1.2)" : "scale(1)",
-        transition: "transform 0.2s",
-      }}
-      disabled={isDisabled} // Desabilitar botão quando isDisabled for true
-    >
-      {isRecording ? (
-        <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
-      ) : (
-        <FaMicrophone color="white" size={20} />
-      )}
-    </button>
+    <div className="voice-button-container">
+      <button
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleMouseClick}
+        disabled={isDisabled}
+        className="voice-button"
+      >
+        {listening ? (
+          <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
+        ) : (
+          <FaMicrophone color="white" size={20} />
+        )}
+      </button>
+      {showTooltip && <div className="tooltip">Segure para falar e depois solte</div>}
+    </div>
   );
 }

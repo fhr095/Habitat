@@ -140,3 +140,17 @@
     width: 100%;
   }
 }
+
+
+@media screen and (max-width: 768px){
+  .response-container{
+
+    .message-container{
+      width: 100%;
+    }
+
+    .bot-icon{
+      margin-left: 30px;
+    }
+  }
+}

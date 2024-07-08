@@ -3,9 +3,11 @@ import ClipLoader from "react-spinners/ClipLoader";
 import "bootstrap/dist/css/bootstrap.min.css";
 import '../styles/LoadingResponse.scss';
 
+import { FaTimes } from "react-icons/fa";
+
 import Avatar from "../assets/images/Avatar.png"; // Importando a imagem
 
-export default function LoadingResponse() {
+export default function LoadingResponse({ onCancel }) {
   return (
     <div className="loading-response-container">
       <div className="message-wrapper">
@@ -15,6 +17,9 @@ export default function LoadingResponse() {
         <div className="message-container">
           <p>Carregando...</p>
           <ClipLoader color={"#000"} size={24} />
+          <button className="cancel-button" onClick={onCancel}>
+            <FaTimes size={15} />
+          </button>
         </div>
       </div>
     </div>
