@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { FaAngleDown, FaPlus, FaEllipsisV } from "react-icons/fa";
 import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, deleteDoc } from "firebase/firestore";
 import { ref, deleteObject } from "firebase/storage";
@@ -6,6 +6,7 @@ import { db, storage } from "../../../../firebase";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import ModalEditMember from "../ModalEditMember/ModalEditMember";
+import ModalEditGroup from "../ModalEditGroup/ModalEditGroup";
 import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
 import './Access.scss';
 
@@ -14,11 +15,14 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
+  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
-  const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedMember, setSelectedMember] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState("");
   const [editMemberDropdown, setEditMemberDropdown] = useState(null);
+  const [editGroupDropdown, setEditGroupDropdown] = useState(null);
   const [dropdownStyle, setDropdownStyle] = useState({});
 
   useEffect(() => {
@@ -91,12 +95,22 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     setIsEditModalOpen(false);
   };
 
-  const openEditMemberModal = () => {
+  const openEditMemberModal = (memberId) => {
+    setSelectedMember(memberId);
     setIsEditMemberModalOpen(true);
   };
 
   const closeEditMemberModal = () => {
     setIsEditMemberModalOpen(false);
+  };
+
+  const openEditGroupModal = (groupId) => {
+    setSelectedGroup(groupId);
+    setIsEditGroupModalOpen(true);
+  };
+
+  const closeEditGroupModal = () => {
+    setIsEditGroupModalOpen(false);
   };
 
   const toggleContextMenu = () => {
@@ -105,18 +119,52 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
 
   const handleDeleteHabitat = async () => {
     try {
+      const habitatRef = doc(db, "habitats", habitat.id);
+  
+      // Deletar subcoleção de membros
+      const membersCollection = collection(habitatRef, "members");
+      const membersSnapshot = await getDocs(membersCollection);
+      const deleteMembersPromises = membersSnapshot.docs.map(member => deleteDoc(member.ref));
+      await Promise.all(deleteMembersPromises);
+  
+      // Deletar subcoleção de grupos e suas subcoleções de mensagens
+      const groupsCollection = collection(habitatRef, "groups");
+      const groupsSnapshot = await getDocs(groupsCollection);
+      const deleteGroupsPromises = groupsSnapshot.docs.map(async (group) => {
+        const messagesCollection = collection(group.ref, "messages");
+        const messagesSnapshot = await getDocs(messagesCollection);
+        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
+        await Promise.all(deleteMessagesPromises);
+        return deleteDoc(group.ref);
+      });
+      await Promise.all(deleteGroupsPromises);
+  
+      // Deletar subcoleção de conversas e suas subcoleções de mensagens
+      const conversationsCollection = collection(habitatRef, "conversations");
+      const conversationsSnapshot = await getDocs(conversationsCollection);
+      const deleteConversationsPromises = conversationsSnapshot.docs.map(async (conversation) => {
+        const messagesCollection = collection(conversation.ref, "messages");
+        const messagesSnapshot = await getDocs(messagesCollection);
+        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
+        await Promise.all(deleteMessagesPromises);
+        return deleteDoc(conversation.ref);
+      });
+      await Promise.all(deleteConversationsPromises);
+  
+      // Deletar o arquivo GLB do Storage
       const glbFileRef = ref(storage, habitat.glbFileUrl);
       await deleteObject(glbFileRef);
-
-      const habitatRef = doc(db, "habitats", habitat.id);
+  
+      // Deletar o documento do habitat do Firestore
       await deleteDoc(habitatRef);
-
+  
       alert("Habitat deletado com sucesso.");
       window.location.reload();
     } catch (error) {
       console.error("Erro ao deletar habitat: ", error);
     }
   };
+  
 
   const handleLeaveHabitat = async () => {
     try {
@@ -148,9 +196,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       alert("Membro removido com sucesso!");
     } catch (error) {
       console.error("Erro ao remover membro: ", error);
-    } finally {
-      setSelectedMember(null);
-    }
+    } 
   };
 
   const handleGroupClick = (group) => {
@@ -167,8 +213,37 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     setEditMemberDropdown(editMemberDropdown === memberId ? null : memberId);
   };
 
+  const toggleEditGroupDropdown = (event, groupId) => {
+    const rect = event.target.getBoundingClientRect();
+    setDropdownStyle({
+      position: "fixed",
+      top: rect.top + window.scrollY + rect.height,
+      left: rect.left + window.scrollX + rect.width + 10 // Adds some space to the right
+    });
+    setEditGroupDropdown(editGroupDropdown === groupId ? null : groupId);
+  };
+
+  const handleRemoveGroup = async (group) => {
+    try {
+      const groupRef = doc(db, `habitats/${habitat.id}/groups`, group.id);
+      await deleteDoc(groupRef);
+
+      setGroups(groups.filter(g => g.id !== group.id));
+      alert("Grupo removido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover grupo: ", error);
+    }
+  }
+
   return (
-    <div className="access-container" onClick={() => setSelectedMember(null)}>
+    <div className="access-container" onClick={(e) => {
+      if (!e.target.closest('.edit-member-dropdown')) {
+        setSelectedMember(null);
+      }
+      if (!e.target.closest('.edit-group-dropdown')) {
+        setSelectedGroup(null);
+      }
+    }}>
       <header>
         <div className="text">{habitat.name}</div>
         <div className="context-menu">
@@ -217,11 +292,48 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                     </button>
                     {editMemberDropdown === member.id && (
                       <div className="edit-member-dropdown" style={dropdownStyle}>
-                        <button onClick={() => {
-                          setSelectedMember(member.id)
-                          openEditMemberModal()
-                        }}>Editar Membro</button>
+                        <button onClick={() => openEditMemberModal(member.id)}>Editar Membro</button>
                         <button onClick={() => handleRemoveMember(member)}>Expulsar Membro</button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            <></>
+          )}
+        </div>
+      </div>
+
+      <div className="divider" />
+      <div className="topics">
+        <header>
+          <div className="text">Grupos</div>
+
+          {habitat.createdBy === userEmail && (
+            <button onClick={openGroupsModal}>
+              <FaPlus size={15} />
+            </button>
+          )}
+        </header>
+        <div className="groups-list">
+          {groups.length > 0 ? (
+            groups.map(group => (
+              <div className="group-container" key={group.id}>
+                <div className="group-item" onClick={() => handleGroupClick(group)}>
+                  <img src={group.imgUrl} alt={group.name} />
+                  <div className="text">{group.name}</div>
+                </div>
+                {habitat.createdBy === userEmail && (
+                  <>
+                    <button className="edit-button" onClick={(e) => toggleEditGroupDropdown(e, group.id)}>
+                      <FaEllipsisV size={15} />
+                    </button>
+                    {editGroupDropdown === group.id && (
+                      <div className="edit-group-dropdown" style={dropdownStyle}>
+                        <button onClick={() => openEditGroupModal(group.id)}>Editar Grupo</button>
+                        <button onClick={() => handleRemoveGroup(group)}>Remover Grupo</button>
                       </div>
                     )}
                   </>
@@ -237,7 +349,8 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       {isMembersModalOpen && <ModalAddMembers onClose={closeMembersModal} habitatId={habitat.id} />}
       {isGroupsModalOpen && <ModalAddGroups onClose={closeGroupsModal} habitatId={habitat.id} userEmail={userEmail} />}
       {isEditModalOpen && <ModalEditHabitat habitatId={habitat.id} onClose={closeEditModal} />}
-      {isEditMemberModalOpen && <ModalEditMember habitatId={habitat.id} memberId={selectedMember} onClose={closeEditMemberModal} />}
+      {isEditMemberModalOpen && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={closeEditMemberModal} />}
+      {isEditGroupModalOpen && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={closeEditGroupModal} />}
     </div>
   );
 }

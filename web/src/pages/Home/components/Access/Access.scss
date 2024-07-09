@@ -107,7 +107,8 @@
       gap: 10px;
       overflow: auto;
 
-      .member-container {
+      .member-container,
+      .group-container {
         width: 100%;
         display: flex;
         align-items: center;
@@ -152,7 +153,8 @@
           }
         }
 
-        .edit-member-dropdown {
+        .edit-member-dropdown,
+        .edit-group-dropdown {
           background-color: $white;
           border: 1px solid $light-gray;
           border-radius: 5px;

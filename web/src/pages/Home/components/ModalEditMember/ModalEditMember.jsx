@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import './ModalEditMember.scss';
+import "./ModalEditMember.scss";
 
-export default function ModalEditMember({ habitatId, memberId, onClose }) {
+export default function ModalEditMember({ habitatId, selectedMember, onClose }) {
   const [tag, setTag] = useState("");
-  const [color, setColor] = useState("#000000");
+  const [color, setColor] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [memberData, setMemberData] = useState(null);
+  const [memberId, setMemberId] = useState(selectedMember);
 
   useEffect(() => {
-    const fetchMember = async () => {
+    const fetchMemberData = async () => {
       try {
         const memberRef = doc(db, `habitats/${habitatId}/members/${memberId}`);
         const memberDoc = await getDoc(memberRef);
-
         if (memberDoc.exists()) {
-          const data = memberDoc.data();
-          setTag(data.tag || "");
-          setColor(data.color || "#000000");
-          setMemberData(data);
+          const memberData = memberDoc.data();
+          setTag(memberData.tag);
+          setColor(memberData.color);
         } else {
-          console.error("Membro não encontrado!");
+          console.error("Member document does not exist.");
         }
       } catch (error) {
-        console.error("Erro ao buscar membro: ", error);
+        console.error("Erro ao buscar dados do membro: ", error);
       }
     };
 
-    fetchMember();
+    if (memberId) {
+      fetchMemberData();
+    }
   }, [habitatId, memberId]);
 
   const handleSubmit = async (e) => {
@@ -50,10 +50,6 @@ export default function ModalEditMember({ habitatId, memberId, onClose }) {
       setIsSubmitting(false);
     }
   };
-
-  if (!memberData) {
-    return <div>Carregando...</div>;
-  }
 
   return (
     <div className="modal-edit-member">
