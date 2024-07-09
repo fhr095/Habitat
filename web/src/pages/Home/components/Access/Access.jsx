@@ -5,14 +5,17 @@ import { ref, deleteObject } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
+import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
+import ModalAddBots from "../ModalAddBots/ModalAddBots";
 import ModalEditMember from "../ModalEditMember/ModalEditMember";
 import ModalEditGroup from "../ModalEditGroup/ModalEditGroup";
-import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
+
 import './Access.scss';
 
 export default function Access({ habitat, userEmail, setChatMember, setChatGroup }) {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
+  const [isBotsModalOpen, setIsBotsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
@@ -85,6 +88,14 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
 
   const closeGroupsModal = () => {
     setIsGroupsModalOpen(false);
+  };
+
+  const openBotsModal = () => {
+    setIsBotsModalOpen(true);
+  };
+
+  const closeBotsModal = () => {
+    setIsBotsModalOpen(false);
   };
 
   const openEditModal = () => {
@@ -165,7 +176,6 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     }
   };
   
-
   const handleLeaveHabitat = async () => {
     try {
       const habitatRef = doc(db, "habitats", habitat.id);
@@ -293,7 +303,9 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                     {editMemberDropdown === member.id && (
                       <div className="edit-member-dropdown" style={dropdownStyle}>
                         <button onClick={() => openEditMemberModal(member.id)}>Editar Membro</button>
-                        <button onClick={() => handleRemoveMember(member)}>Expulsar Membro</button>
+                        {habitat.createdBy !== member.email && (
+                          <button onClick={() => handleRemoveMember(member)}>Remover Membro</button>
+                        )}
                       </div>
                     )}
                   </>
@@ -346,8 +358,22 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         </div>
       </div>
 
+      <div className="divider" />
+      <div className="topics">
+        <header>
+          <div className="text">Bots e Assistentes</div>
+
+          {habitat.createdBy === userEmail && (
+            <button onClick={openBotsModal}>
+              <FaPlus size={15} />
+            </button>
+          )}
+        </header>
+      </div>
+
       {isMembersModalOpen && <ModalAddMembers onClose={closeMembersModal} habitatId={habitat.id} />}
       {isGroupsModalOpen && <ModalAddGroups onClose={closeGroupsModal} habitatId={habitat.id} userEmail={userEmail} />}
+      {isBotsModalOpen && <ModalAddBots onClose={closeBotsModal} habitatId={habitat.id} />}
       {isEditModalOpen && <ModalEditHabitat habitatId={habitat.id} onClose={closeEditModal} />}
       {isEditMemberModalOpen && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={closeEditMemberModal} />}
       {isEditGroupModalOpen && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={closeEditGroupModal} />}
