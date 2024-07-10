@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { db, storage } from "../../../../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import axios from "axios";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import "./ModalAddBots.scss";
 
 export default function ModalAddBots({ onClose, habitatId }) {
@@ -11,66 +10,104 @@ export default function ModalAddBots({ onClose, habitatId }) {
     personality: "",
     creativity: 1,
     context: "",
-    avt: "teste carro",
+    avt: habitatId,
     data: []
   });
-  
-  const [image, setImage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleChange = (e) => {
+  const username = "habitat";
+  const password = "lobomau";
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBotData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files[0]) {
-      setImage(e.target.files[0]);
+    setImageFile(e.target.files[0]);
+  };
+
+  const handleSaveImage = async () => {
+    if (!imageFile) return;
+    setLoading(true);
+    try {
+      const storageRef = ref(storage, `avatars/${imageFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, imageFile);
+      await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("Erro ao enviar imagem de avatar:", error);
+            reject(error);
+          },
+          async () => {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            setImageUrl(downloadURL);
+            resolve();
+          }
+        );
+      });
+    } catch (error) {
+      console.error("Erro ao salvar imagem do avatar: ", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      let imageUrl = "";
-      if (image) {
-        const storageRef = ref(storage, `bots/${image.name}`);
-        await uploadBytes(storageRef, image);
-        imageUrl = await getDownloadURL(storageRef);
+      // Upload image if present
+      let imageURL = imageUrl;
+      if (imageFile && !imageUrl) {
+        await handleSaveImage();
+        imageURL = imageUrl;
       }
 
-      const botDataWithImage = { ...botData, imageUrl };
-
-      // Save bot data to Firestore
-      const botDocRef = doc(collection(db, "bots"));
-      await setDoc(botDocRef, botDataWithImage);
-
-      // Save additional data (name, imageUrl, avt) to a separate collection
-      const additionalData = {
-        name: botData.name,
-        imageUrl,
-        avt: botData.avt
-      };
-      const additionalDataDocRef = doc(collection(db, `habitats/${habitatId}/avatars`));
-      await setDoc(additionalDataDocRef, additionalData);
-
-      // Send data to external API without the image URL
+      // Send data to external API
       const { name, personality, creativity, context, avt, data } = botData;
       const botDataForAPI = { name, personality, creativity, context, avt, data };
-      await axios.post("https://roko.flowfuse.cloud/trainDataJSON", botDataForAPI, {
-        auth: {
-          username: "habitat",
-          password: "lobomau"
-        }
+      console.log("Bot data for API:", botDataForAPI)
+
+      const response = await fetch("https://roko.flowfuse.cloud/trainDataJSON", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Basic ${btoa(`${username}:${password}`)}`
+        },
+        body: JSON.stringify(botDataForAPI)
       });
 
+      if (!response.ok) {
+        throw new Error("Falha ao adicionar bot.");
+      }
+
+      // Save bot data in Firestore
+      const newBotRef = doc(collection(db, `habitats/${habitatId}/avatars`));
+      await setDoc(newBotRef, {
+        name: botData.name,
+        avt: habitatId,
+        imageUrl: imageURL
+      });
+
+      setAlertMessage("Bot adicionado com sucesso!");
+      setAlertVariant("success");
       onClose();
     } catch (error) {
       console.error("Error creating bot:", error);
+      setAlertMessage("Erro ao adicionar bot: " + error.message);
+      setAlertVariant("danger");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -78,30 +115,55 @@ export default function ModalAddBots({ onClose, habitatId }) {
     <div className="modal-add-bots">
       <div className="modal-content">
         <span className="close" onClick={onClose}>&times;</span>
-        <h2>Criar Novo Bot</h2>
+        <h2>Adicionar Bot</h2>
         <form onSubmit={handleSubmit}>
           <label>
             Nome:
-            <input type="text" name="name" value={botData.name} onChange={handleChange} required />
+            <input
+              type="text"
+              name="name"
+              value={botData.name}
+              onChange={handleInputChange}
+              required
+            />
           </label>
           <label>
             Personalidade:
-            <input type="text" name="personality" value={botData.personality} onChange={handleChange} required />
+            <input
+              type="text"
+              name="personality"
+              value={botData.personality}
+              onChange={handleInputChange}
+              required
+            />
           </label>
           <label>
             Criatividade:
-            <input type="number" name="creativity" value={botData.creativity} onChange={handleChange} min="1" max="5" required />
+            <input
+              type="number"
+              name="creativity"
+              value={botData.creativity}
+              onChange={handleInputChange}
+              min="1"
+              max="5"
+              required
+            />
           </label>
           <label>
             Contexto:
-            <textarea name="context" value={botData.context} onChange={handleChange} required />
+            <textarea
+              name="context"
+              value={botData.context}
+              onChange={handleInputChange}
+              required
+            />
           </label>
           <label>
             Imagem:
             <input type="file" onChange={handleImageChange} accept="image/*" required />
           </label>
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? "Carregando..." : "Criar Bot"}
+          <button type="submit" disabled={loading}>
+            {loading ? "Carregando..." : "Adicionar Bot"}
           </button>
         </form>
       </div>
