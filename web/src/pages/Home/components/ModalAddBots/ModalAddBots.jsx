@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { db, storage } from "../../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import axios from "axios";
 import "./ModalAddBots.scss";
 
 export default function ModalAddBots({ onClose, habitatId }) {
@@ -11,10 +12,12 @@ export default function ModalAddBots({ onClose, habitatId }) {
     creativity: 1,
     context: "",
     avt: habitatId,
-    data: []
+    data: [{
+      info: "",
+      fade: "",
+    }]
   });
   const [imageFile, setImageFile] = useState(null);
-  const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -31,12 +34,12 @@ export default function ModalAddBots({ onClose, habitatId }) {
   };
 
   const handleSaveImage = async () => {
-    if (!imageFile) return;
+    if (!imageFile) return "";
     setLoading(true);
     try {
       const storageRef = ref(storage, `avatars/${imageFile.name}`);
       const uploadTask = uploadBytesResumable(storageRef, imageFile);
-      await new Promise((resolve, reject) => {
+      const downloadURL = await new Promise((resolve, reject) => {
         uploadTask.on(
           "state_changed",
           (snapshot) => {
@@ -48,14 +51,15 @@ export default function ModalAddBots({ onClose, habitatId }) {
             reject(error);
           },
           async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            setImageUrl(downloadURL);
-            resolve();
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(url);
           }
         );
       });
+      return downloadURL;
     } catch (error) {
       console.error("Erro ao salvar imagem do avatar: ", error);
+      return "";
     } finally {
       setLoading(false);
     }
@@ -67,27 +71,20 @@ export default function ModalAddBots({ onClose, habitatId }) {
 
     try {
       // Upload image if present
-      let imageURL = imageUrl;
-      if (imageFile && !imageUrl) {
-        await handleSaveImage();
-        imageURL = imageUrl;
-      }
+      const imageURL = await handleSaveImage();
 
       // Send data to external API
       const { name, personality, creativity, context, avt, data } = botData;
       const botDataForAPI = { name, personality, creativity, context, avt, data };
-      console.log("Bot data for API:", botDataForAPI)
 
-      const response = await fetch("https://roko.flowfuse.cloud/trainDataJSON", {
-        method: "POST",
+      const response = await axios.post("https://roko.flowfuse.cloud/trainDataJSON", botDataForAPI, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Basic ${btoa(`${username}:${password}`)}`
-        },
-        body: JSON.stringify(botDataForAPI)
+        }
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Falha ao adicionar bot.");
       }
 
@@ -99,13 +96,11 @@ export default function ModalAddBots({ onClose, habitatId }) {
         imageUrl: imageURL
       });
 
-      setAlertMessage("Bot adicionado com sucesso!");
-      setAlertVariant("success");
+      alert("Bot adicionado com sucesso!");
       onClose();
     } catch (error) {
       console.error("Error creating bot:", error);
-      setAlertMessage("Erro ao adicionar bot: " + error.message);
-      setAlertVariant("danger");
+      alert("Erro ao adicionar bot: " + error.message);
     } finally {
       setLoading(false);
     }

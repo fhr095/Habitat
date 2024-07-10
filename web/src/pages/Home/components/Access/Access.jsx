@@ -22,6 +22,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
+  const [bots, setBots] = useState([]);
   const [selectedMember, setSelectedMember] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [editMemberDropdown, setEditMemberDropdown] = useState(null);
@@ -70,8 +71,23 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       }
     };
 
+    const fetchBots = async () => {
+      try {
+        const q = query(collection(db, `habitats/${habitat.id}/avatars`));
+        const querySnapshot = await getDocs(q);
+        const botsData = [];
+        querySnapshot.forEach((doc) => {
+          botsData.push({ id: doc.id, ...doc.data() });
+        });
+        setBots(botsData);
+      } catch (error) {
+        console.error("Erro ao buscar bots: ", error);
+      }
+    };
+
     fetchMembers();
     fetchGroups();
+    fetchBots();
   }, [habitat.id, userEmail]);
 
   const openMembersModal = () => {
@@ -369,6 +385,20 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
             </button>
           )}
         </header>
+        <div className="bots-list">
+          {bots.length > 0 ? (
+            bots.map(bot => (
+              <div className="bot-container" key={bot.id}>
+                <div className="bot-item">
+                  <img src={bot.imageUrl} alt={bot.name} />
+                  <div className="text">{bot.name}</div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <></>
+          )}
+        </div>
       </div>
 
       {isMembersModalOpen && <ModalAddMembers onClose={closeMembersModal} habitatId={habitat.id} />}
