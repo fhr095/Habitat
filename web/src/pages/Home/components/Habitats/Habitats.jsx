@@ -109,7 +109,7 @@ export default function Habitats({ user, setHabitat }) {
       <div className="buttons" onClick={openCreateModal}>
         <FaPlus size={20} />
       </div>
-      <div className="buttons" onClick={toggleListModal}>
+      <div className="buttons button-map" onClick={toggleListModal}>
         <FaCompass size={20} />
       </div>
 

@@ -3,6 +3,7 @@ import { doc, collection, setDoc } from "firebase/firestore";
 import { db, storage } from "../../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import axios from "axios";
+import { FaTimes } from "react-icons/fa";
 import "./ModalAddBots.scss";
 
 export default function ModalAddBots({ onClose, habitatId }) {
@@ -109,7 +110,7 @@ export default function ModalAddBots({ onClose, habitatId }) {
   return (
     <div className="modal-add-bots">
       <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
+        <span className="close" onClick={onClose}><FaTimes /></span>
         <h2>Adicionar Bot</h2>
         <form onSubmit={handleSubmit}>
           <label>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, query, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { FaTimes } from "react-icons/fa";
 import "./ModalAddMembers.scss";
 
 export default function ModalAddMembers({ onClose, habitatId }) {
@@ -28,7 +29,8 @@ export default function ModalAddMembers({ onClose, habitatId }) {
     fetchUsers();
   }, []);
 
-  const handleAddMember = async () => {
+  const handleAddMember = async (e) => {
+    e.preventDefault();
     setIsSubmitting(true);
     try {
       const memberRef = doc(db, `habitats/${habitatId}/members/${selectedUser}`);
@@ -45,9 +47,9 @@ export default function ModalAddMembers({ onClose, habitatId }) {
   return (
     <div className="modal-addMembers">
       <div className="modal-addMembers-content">
-        <span className="close" onClick={onClose}>&times;</span>
-        <h1>Adicionar Membros</h1>
-        <div className="form-group">
+        <span className="close" onClick={onClose}><FaTimes /></span>
+        <h2>Adicionar Membros</h2>
+        <form className="form-group" onSubmit={handleAddMember}>
           <label htmlFor="members">Selecione o Email do Membro:</label>
           <input 
             type="text" 
@@ -78,13 +80,13 @@ export default function ModalAddMembers({ onClose, habitatId }) {
               onChange={(e) => setColor(e.target.value)} 
             />
           </label>
-        </div>
-        <button 
-          onClick={handleAddMember} 
-          disabled={!selectedUser || isSubmitting}
-        >
-          {isSubmitting ? "Adicionando..." : "Adicionar Membro"}
-        </button>
+          <button 
+            type="submit"
+            disabled={!selectedUser || isSubmitting}
+          >
+            {isSubmitting ? "Adicionando..." : "Adicionar Membro"}
+          </button>
+        </form>
       </div>
     </div>
   );

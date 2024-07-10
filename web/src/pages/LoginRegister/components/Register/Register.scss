@@ -1,0 +1,55 @@
+@import "../../../../styles/variables.scss"; 
+
+.register{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: $primary-color;
+
+    h1{
+        font-size: 2rem;
+        margin-bottom: 20px;
+        color: $white;
+    }
+
+    form{
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+
+        label{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            color: $white;
+
+            input{
+                padding: 10px;
+                border: 1px solid $light-gray;
+                border-radius: 5px;
+                font-size: 1rem;
+            }
+        }
+
+        button{
+            padding: 10px;
+            background-color: $white;
+            color: $primary-color;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            
+            &:hover{
+                transform: scale(1.05);
+            }
+        }
+    }
+}

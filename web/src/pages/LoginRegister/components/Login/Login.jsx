@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { FaGoogle } from "react-icons/fa";
 import "./Login.scss";
 
 export default function Login() {
@@ -53,7 +54,7 @@ export default function Login() {
         </label>
         <button type="submit">Login</button>
       </form>
-      <button onClick={handleGoogleLogin}>Login com Google</button>
+      <button className="google-button" onClick={handleGoogleLogin}><FaGoogle/> Login com Google</button>
     </div>
   );
 }

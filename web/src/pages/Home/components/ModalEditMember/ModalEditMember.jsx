@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { FaTimes } from "react-icons/fa";
 import "./ModalEditMember.scss";
 
 export default function ModalEditMember({ habitatId, selectedMember, onClose }) {
@@ -54,7 +55,7 @@ export default function ModalEditMember({ habitatId, selectedMember, onClose }) 
   return (
     <div className="modal-edit-member">
       <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
+        <span className="close" onClick={onClose}><FaTimes /></span>
         <h2>Editar Membro</h2>
         <form onSubmit={handleSubmit}>
           <label>

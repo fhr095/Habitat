@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { FaTimes } from "react-icons/fa";
 import "./ModalEditGroup.scss";
 
 export default function ModalEditGroup({ habitatId, selectedGroup, onClose }) {
@@ -52,7 +53,7 @@ export default function ModalEditGroup({ habitatId, selectedGroup, onClose }) {
   return (
     <div className="modal-edit-group">
       <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
+        <span className="close" onClick={onClose}><FaTimes /></span>
         <h2>Editar Grupo</h2>
         <form onSubmit={handleSubmit}>
           <label>

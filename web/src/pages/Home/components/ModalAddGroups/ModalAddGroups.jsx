@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { collection, addDoc, doc, updateDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
+import { FaTimes } from "react-icons/fa";
 import "./ModalAddGroups.scss";
 
 export default function ModalAddGroups({ habitatId, onClose, userEmail }) {
@@ -80,7 +81,7 @@ export default function ModalAddGroups({ habitatId, onClose, userEmail }) {
   return (
     <div className="modal-create-group">
       <div className="modal-content">
-        <span className="close" onClick={onClose}>&times;</span>
+        <span className="close" onClick={onClose}><FaTimes /></span>
         <h2>Criar Novo Grupo</h2>
         <form onSubmit={handleCreateGroup}>
           <label>

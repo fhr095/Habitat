@@ -1,5 +1,16 @@
 @import "../../../../styles/variables.scss";
 
+@keyframes slideInZoom {
+  0% {
+    transform: translateX(-100%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
 .access-container {
   width: 350px;
   height: calc(100% - 20px);
@@ -13,6 +24,7 @@
   z-index: 10;
   gap: 10px;
   position: relative;
+  animation: slideInZoom 0.3s ease;
 
   header {
     width: 100%;

@@ -1,7 +1,7 @@
 @import "../../../../styles/variables.scss";
 
 .habitats-sidebar {
-  width: 60px;
+  width: 70px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -23,6 +23,15 @@
     background-position: cover;
     background-size: cover;
     cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      border-radius: 5px;
+    }
+  }
+
+  .button-map{
+    z-index: 1001;
   }
 
   .dropdown {

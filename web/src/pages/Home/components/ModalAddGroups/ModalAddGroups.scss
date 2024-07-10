@@ -2,119 +2,73 @@
 
 .modal-create-group {
   position: fixed;
-  z-index: 100;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1002;
   display: flex;
   justify-content: center;
   align-items: center;
 
-  .modal-content {
-    background-color: $white;
-    padding: 20px;
-    border: 1px solid $gray;
-    border-radius: 10px;
+  .modal-content{
     width: 50%;
-    max-width: 600px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-height: 100%;
+    background-color: $white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
     position: relative;
 
     .close {
-      color: $gray;
       position: absolute;
-      right: 20px;
-      top: 20px;
-      font-size: 28px;
-      font-weight: bold;
-
-      &:hover,
-      &:focus {
-        color: $primary-color;
-        text-decoration: none;
-        cursor: pointer;
-      }
+      top: 10px;
+      right: 10px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      color: $text;
     }
 
-    h2 {
+    h2{
       color: $primary-color;
-      font-size: 24px;
       text-align: center;
       margin-bottom: 20px;
     }
 
-    form {
+    form{
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 20px;
 
-      label {
+      label{
+        font-size: 16px;
+        color: $text;
         display: flex;
         flex-direction: column;
-        font-size: 16px;
-        color: $primary-color;
+        gap: 5px;
       }
 
       input[type="text"],
-      input[type="file"] {
-        width: 100%;
+      input[type="file"],
+      input[type="checkbox"]{
         padding: 10px;
-        margin: 10px 0;
-        display: inline-block;
         border: 1px solid $light-gray;
         border-radius: 5px;
-        box-sizing: border-box;
-        font-size: 16px;
       }
 
-      button[type="button"],
-      button[type="submit"] {
+      button{
+        padding: 10px;
         background-color: $primary-color;
         color: $white;
         border: none;
-        padding: 10px;
         border-radius: 5px;
-        font-size: 16px;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: all 0.3s;
 
-        &:disabled {
-          background-color: $light-gray;
-          cursor: not-allowed;
-        }
-
-        &:not(:disabled):hover {
-          background-color: darken($primary-color, 10%);
-        }
-      }
-
-      ul {
-        list-style-type: none;
-        padding: 0;
-
-        li {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px;
-          border: 1px solid $light-gray;
-          border-radius: 5px;
-          margin: 5px 0;
-
-          button {
-            background: none;
-            border: none;
-            color: $danger-color;
-            cursor: pointer;
-            font-size: 14px;
-
-            &:hover {
-              text-decoration: underline;
-            }
-          }
+        &:hover{
+          transform: scale(1.05);
         }
       }
     }

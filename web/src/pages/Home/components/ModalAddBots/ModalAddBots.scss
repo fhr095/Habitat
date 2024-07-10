@@ -1,74 +1,82 @@
+@import "../../../../styles/variables.scss";
+
 .modal-add-bots {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  z-index: 1002;
 
-  .modal-content {
-    background: white;
-    padding: 20px;
+  .modal-content{
+    width: 50%;
+    max-height: 100%;
+    background-color: $white;
     border-radius: 5px;
-    width: 400px;
-    max-width: 90%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    position: relative;
 
     .close {
-      float: right;
-      font-size: 24px;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: transparent;
+      border: none;
       cursor: pointer;
+      color: $text;
     }
 
-    h2 {
-      margin-top: 0;
+    h2{
+      color: $primary-color;
+      text-align: center;
+      margin-bottom: 20px;
     }
 
-    form {
+    form{
       display: flex;
       flex-direction: column;
+      gap: 20px;
 
-      label {
-        margin-bottom: 10px;
-
-        input,
-        textarea {
-          width: 100%;
-          padding: 8px;
-          margin-top: 5px;
-          border-radius: 3px;
-          border: 1px solid #ccc;
-        }
+      label{
+        font-size: 16px;
+        color: $text;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
       }
 
-      button {
+      input[type="text"],
+      input[type="number"],
+      input[type="file"],
+      input[type="checkbox"]{
         padding: 10px;
-        background-color: #007bff;
-        color: white;
+        border: 1px solid $light-gray;
+        border-radius: 5px;
+      }
+
+      textarea{
+        padding: 10px;
+        border: 1px solid $light-gray;
+        border-radius: 5px;
+      }
+
+      button{
+        padding: 10px;
+        background-color: $primary-color;
+        color: $white;
         border: none;
-        border-radius: 3px;
+        border-radius: 5px;
         cursor: pointer;
-        margin-top: 10px;
-      }
+        transition: all 0.3s;
 
-      img {
-        margin-top: 10px;
-      }
-    }
-
-    .alert {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 3px;
-      &.success {
-        background-color: #d4edda;
-        color: #155724;
-      }
-      &.danger {
-        background-color: #f8d7da;
-        color: #721c24;
+        &:hover{
+          transform: scale(1.05);
+        }
       }
     }
   }

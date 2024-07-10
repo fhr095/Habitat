@@ -2,101 +2,73 @@
 
 .modal-addMembers {
   position: fixed;
-  z-index: 100;
-  left: 0;
   top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1002;
 
-  &-content {
-    background-color: $white;
-    padding: 20px;
-    border: 1px solid $gray;
-    border-radius: 10px;
+  .modal-addMembers-content{
     width: 50%;
-    max-width: 600px;
-    box-shadow: 0 5px 15px rgba(253, 235, 235, 0.3);
+    max-height: 100%;
+    background-color: $white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
     position: relative;
 
     .close {
-      color: $gray;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: transparent;
+      border: none;
       cursor: pointer;
-
-      &:hover,
-      &:focus {
-        color: $primary-color;
-        text-decoration: none;
-      }
+      color: $text;
     }
 
-    h1 {
+    h2{
       color: $primary-color;
-      font-size: 24px;
       text-align: center;
       margin-bottom: 20px;
     }
 
-    .form-group {
+    form{
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 20px;
 
-      label {
+      label{
         font-size: 16px;
-        color: $primary-color;
-        margin-bottom: 5px;
+        color: $text;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
       }
 
       input[type="text"],
-      input[type="password"],
-      input[type="email"],
       input[type="file"],
-      textarea,
-      select {
-        width: 100%;
+      input[type="checkbox"]{
         padding: 10px;
-        margin: 10px 0;
-        display: inline-block;
         border: 1px solid $light-gray;
         border-radius: 5px;
-        box-sizing: border-box;
-        font-size: 16px;
       }
 
-      input[type="color"] {
-        width: 100px;
-        height: 40px;
-        border: none;
-        padding: 5px;
-        margin-top: 10px;
-        cursor: pointer;
-      }
-
-      button {
+      button{
+        padding: 10px;
         background-color: $primary-color;
         color: $white;
         border: none;
-        padding: 15px;
         border-radius: 5px;
-        font-size: 16px;
         cursor: pointer;
-        transition: background-color 0.3s;
+        transition: all 0.3s;
 
-        &:disabled {
-          background-color: $light-gray;
-          cursor: not-allowed;
-        }
-
-        &:not(:disabled):hover {
-          background-color: darken($primary-color, 10%);
+        &:hover{
+          transform: scale(1.05);
         }
       }
     }
