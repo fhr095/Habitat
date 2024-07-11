@@ -13,25 +13,30 @@ export default function Home({ user }) {
   const [habitat, setHabitat] = useState({});
   const [chatMember, setChatMember] = useState({});
   const [chatGroup, setChatGroup] = useState({});
-  const [chatBot, setChatBot] = useState({}); 
+  const [chatBot, setChatBot] = useState({});
   const [sceneKey, setSceneKey] = useState(Date.now()); // Chave única para reiniciar o componente Scene
-
-  useEffect(() => {
-    if (chatMember.id) {
-      setChatGroup({});
-      setChatBot({});
-    }else if(chatGroup.id){
-      setChatMember({});
-      setChatBot({});
-    }else if(chatBot.id){
-      setChatMember({});
-      setChatGroup({});
-    }
-  }, [chatMember, chatGroup, chatBot]);
 
   const handleSetHabitat = (newHabitat) => {
     setHabitat(newHabitat);
     setSceneKey(Date.now()); // Atualiza a chave única
+  };
+
+  const handleSetChatMember = (member) => {
+    setChatMember(member);
+    setChatGroup({});
+    setChatBot({});
+  };
+
+  const handleSetChatGroup = (group) => {
+    setChatGroup(group);
+    setChatMember({});
+    setChatBot({});
+  };
+
+  const handleSetChatBot = (bot) => {
+    setChatBot(bot);
+    setChatMember({});
+    setChatGroup({});
   };
 
   if (user) {
@@ -43,24 +48,24 @@ export default function Home({ user }) {
           <Access
             habitat={habitat}
             userEmail={user.email}
-            setChatMember={setChatMember}
-            setChatGroup={setChatGroup}
-            setChatBot={setChatBot}
+            setChatMember={handleSetChatMember}
+            setChatGroup={handleSetChatGroup}
+            setChatBot={handleSetChatBot}
           />
         ) : (
           <></>
         )}
 
-        {chatMember.id ? (
-          <ChatMembers habitatId={habitat.id} user={user} chatMember={chatMember} setChatMember={setChatMember} />
-        ) : (
-          <></>
+        {chatMember.id && (
+          <ChatMembers habitatId={habitat.id} user={user} chatMember={chatMember} setChatMember={handleSetChatMember} />
         )}
 
-        {chatGroup.id ? (
-          <ChatGroups habitatId={habitat.id} user={user} group={chatGroup} setChatGroup={setChatGroup} />
-        ) : (
-          <></>
+        {chatGroup.id && (
+          <ChatGroups habitatId={habitat.id} user={user} group={chatGroup} setChatGroup={handleSetChatGroup} />
+        )}
+
+        {chatBot.id && (
+          <ChatBots habitatId={habitat.id} user={user} bot={chatBot} setChatBot={handleSetChatBot} />
         )}
 
         {habitat.glbFileUrl && (

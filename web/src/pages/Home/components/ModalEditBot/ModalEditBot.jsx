@@ -49,7 +49,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                 }
             });
             alert("Bot atualizado com sucesso!");
-            onClose();
+            handleClose();
         } catch (error) {
             console.error("Erro ao editar bot: ", error);
             alert("Erro ao atualizar bot. Tente novamente.");
@@ -73,6 +73,11 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
 
     const handlePartSelect = (part) => {
         setHighlightedPart(part);
+    };
+
+    const handleClose = () => {
+        setHighlightedPart(""); // Reseta a parte destacada ao fechar
+        onClose();
     };
 
     function Model({ url }) {
@@ -112,7 +117,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
     return (
         <div className="edit-bot-page">
             <div className="page-content">
-                <span className="close" onClick={onClose}><FaTimes /></span>
+                <span className="close" onClick={handleClose}><FaTimes /></span>
                 <h2>Editar Bot</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-section">
