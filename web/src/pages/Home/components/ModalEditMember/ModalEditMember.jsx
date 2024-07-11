@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
 import "./ModalEditMember.scss";
@@ -52,6 +52,17 @@ export default function ModalEditMember({ habitatId, selectedMember, onClose }) 
     }
   };
 
+  const handleRemoveMember = async () => {
+    try {
+      const memberRef = doc(db, `habitats/${habitatId}/members/${memberId}`);
+      await deleteDoc(memberRef);
+      alert("Membro removido com sucesso!");
+      onClose();
+    } catch (error) {
+      console.error("Erro ao remover membro: ", error);
+    }
+  };
+
   return (
     <div className="modal-edit-member">
       <div className="modal-content">
@@ -76,9 +87,19 @@ export default function ModalEditMember({ habitatId, selectedMember, onClose }) 
               required
             />
           </label>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Atualizando..." : "Atualizar Membro"}
-          </button>
+          <div>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Atualizando..." : "Atualizar Membro"}
+            </button>
+            <button 
+              type="button"
+              onClick={handleRemoveMember}
+              disabled={isSubmitting}
+              className="remove-button"
+            >
+              Remover Membro
+            </button>
+          </div>
         </form>
       </div>
     </div>

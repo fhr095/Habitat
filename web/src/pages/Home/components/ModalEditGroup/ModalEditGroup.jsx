@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../../../firebase";
+import { doc, getDoc, updateDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { db, storage } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
 import "./ModalEditGroup.scss";
 
@@ -50,6 +50,28 @@ export default function ModalEditGroup({ habitatId, selectedGroup, onClose }) {
     }
   };
 
+  const handleRemoveGroup = async () => {
+    setIsSubmitting(true);
+    try {
+      const groupRef = doc(db, `habitats/${habitatId}/groups/${groupId}`);
+
+      // Deletar subcoleção de mensagens se existir
+      const messagesCollection = collection(groupRef, "messages");
+      const messagesSnapshot = await getDocs(messagesCollection);
+      const deleteMessagesPromises = messagesSnapshot.docs.map((messageDoc) => deleteDoc(messageDoc.ref));
+      await Promise.all(deleteMessagesPromises);
+
+      await deleteDoc(groupRef);
+
+      alert("Grupo removido com sucesso!");
+      onClose();
+    } catch (error) {
+      console.error("Erro ao remover grupo: ", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="modal-edit-group">
       <div className="modal-content">
@@ -74,9 +96,19 @@ export default function ModalEditGroup({ habitatId, selectedGroup, onClose }) {
               required
             />
           </label>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Atualizando..." : "Atualizar Grupo"}
-          </button>
+          <div>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Atualizando..." : "Atualizar Grupo"}
+            </button>
+            <button
+              type="button"
+              onClick={handleRemoveGroup}
+              disabled={isSubmitting}
+              className="remove-button"
+            >
+              Remover Grupo
+            </button>
+          </div>
         </form>
       </div>
     </div>

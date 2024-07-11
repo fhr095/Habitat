@@ -54,7 +54,7 @@ export default function ChatMembers({ habitatId, user, chatMember, setChatMember
       <header>
         <div className="chat-member-info">
           <img src={chatMember.profileImageUrl} alt={chatMember.name} />
-          <p>{chatMember.name}</p>
+          <div className="text">{chatMember.name}</div>
         </div>
         <button onClick={() => setChatMember({})}>
           <FaTimes size={20} />

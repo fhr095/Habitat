@@ -46,13 +46,11 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
       <header>
         <div className="chat-group-info">
           <img src={group.imgUrl} alt={group.name} />
-          <p>{group.name}</p>
+          <div className="text">{group.name}</div>
         </div>
-        <div className="icons-buttons">
           <button onClick={() => setChatGroup({})}>
             <FaTimes size={20} />
           </button>
-        </div>
       </header>
       <div className="messages">
         {messages.map((msg) => (
