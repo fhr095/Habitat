@@ -76,7 +76,9 @@ export default function ChatBots({ habitatId, user, bot, setChatBot }) {
             <div className="messages">
                 {messages.map((msg, index) => (
                     <div key={index} className={`message ${msg.sender === user.email ? "sent" : "received"}`}>
+                        {msg.sender !== user.email && <img src={bot.imageUrl} alt="Bot" className="profile-img" />}
                         <p>{msg.message}</p>
+                        {msg.sender === user.email && <img src={user.profileImageUrl} alt="User" className="profile-img" />}
                     </div>
                 ))}
             </div>

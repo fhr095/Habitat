@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, query, onSnapshot, orderBy, doc, getDocs } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, orderBy, doc, getDocs, where } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { FaCheck, FaTimes } from "react-icons/fa";
-
 import "./ChatGroups.scss";
 
 export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
@@ -31,10 +30,22 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
       const membersData = {};
       const q = query(collection(db, `habitats/${habitatId}/members`));
       const querySnapshot = await getDocs(q);
+      const emailSet = new Set();
+      
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         membersData[data.email] = data;
+        emailSet.add(data.email);
       });
+
+      // Fetch user profiles from the users collection
+      const userQuery = query(collection(db, "users"), where("email", "in", Array.from(emailSet)));
+      const userSnapshot = await getDocs(userQuery);
+      userSnapshot.forEach((doc) => {
+        const data = doc.data();
+        membersData[data.email].profileImageUrl = data.profileImageUrl;
+      });
+
       setMembers(membersData);
     };
 
