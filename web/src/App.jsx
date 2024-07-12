@@ -37,8 +37,13 @@ export default function App() {
   }, [navigate]);
 
   if (isAuthenticated === null) {
-    // Você pode mostrar um loader ou algo enquanto verifica a autenticação
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-page">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
