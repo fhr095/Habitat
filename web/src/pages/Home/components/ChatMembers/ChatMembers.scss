@@ -20,7 +20,7 @@
   z-index: 900;
   animation: slideInRight 0.3s ease-out;
 
-  header{
+  header {
     border-radius: 5px 5px 0 0;
     display: flex;
     justify-content: space-between;
@@ -31,20 +31,20 @@
     font-size: 1rem;
     font-weight: 500;
 
-    .chat-member-info{
+    .chat-member-info {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
 
-      img{
+      img {
         width: 30px;
         height: 30px;
         border-radius: 50%;
       }
     }
 
-    button{
+    button {
       background-color: transparent;
       border: none;
       color: $white;
@@ -52,7 +52,7 @@
     }
   }
 
-  .messages{
+  .messages {
     padding: 10px;
     background-color: $white;
     height: 300px;
@@ -61,33 +61,44 @@
     flex-direction: column;
     gap: 10px;
 
-    .message{
+    .message {
       display: flex;
+      align-items: center;
       gap: 10px;
-    }
 
-    .sent{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 5px;
-      border-radius: 5px;
-      background-color: $primary-color;
-      color: $white;
-    }
+      p {
+        margin: 0;
+        padding: 5px;
+        border-radius: 5px;
+      }
 
-    .received{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 5px;
-      border-radius: 5px;
-      background-color: $light-gray;
-      color: $text;
+      &.sent {
+        justify-content: flex-end;
+
+        p {
+          background-color: $primary-color;
+          color: $white;
+        }
+      }
+
+      &.received {
+        justify-content: flex-start;
+
+        p {
+          background-color: $light-gray;
+          color: $text;
+        }
+      }
+
+      .profile-img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
     }
   }
 
-  footer{
+  footer {
     border-radius: 0 0 5px 5px;
     display: flex;
     gap: 10px;
@@ -95,14 +106,14 @@
     background-color: $light-gray;
     color: $white;
 
-    input{
+    input {
       padding: 5px;
       border: none;
       border-radius: 5px;
       width: 100%;
     }
 
-    button{
+    button {
       width: 40px;
       height: 40px;
       background-color: $primary-color;
@@ -116,7 +127,7 @@
       cursor: pointer;
       transition: all 0.3s;
 
-      &:hover{
+      &:hover {
         transform: scale(1.1);
       }
     }

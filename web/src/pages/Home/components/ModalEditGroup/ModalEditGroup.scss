@@ -1,6 +1,6 @@
 @import "../../../../styles/variables.scss";
 
-.modal-edit-group{
+.modal-edit-group {
   position: fixed;
   top: 0;
   left: 0;
@@ -12,7 +12,7 @@
   align-items: center;
   z-index: 1200;
 
-  .modal-content{
+  .modal-content {
     width: 50%;
     max-height: 100%;
     background-color: $white;
@@ -31,18 +31,18 @@
       color: $text;
     }
 
-    h2{
+    h2 {
       color: $primary-color;
       text-align: center;
       margin-bottom: 20px;
     }
 
-    form{
+    form {
       display: flex;
       flex-direction: column;
       gap: 20px;
 
-      label{
+      label {
         font-size: 16px;
         color: $text;
         display: flex;
@@ -51,21 +51,76 @@
       }
 
       input[type="text"],
-      input[type="number"],
-      input[type="file"],
-      input[type="checkbox"]{
+      input[type="file"] {
         padding: 10px;
         border: 1px solid $light-gray;
         border-radius: 5px;
       }
 
-      div{
+      .members-list {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+
+        h3 {
+          color: $primary-color;
+          margin-bottom: 10px;
+        }
+
+        .add-member {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 20px;
+
+          input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid $light-gray;
+            border-radius: 5px;
+          }
+
+          button {
+            padding: 10px;
+            background-color: $primary-color;
+            color: $white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+        }
+
+        .member-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px;
+          border: 1px solid $light-gray;
+          border-radius: 5px;
+          margin-bottom: 10px;
+
+          button {
+            background-color: transparent;
+            border: none;
+            color: red;
+            cursor: pointer;
+          }
+        }
+      }
+
+      div {
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 20px;
 
-        button{
+        button {
           width: 100%;
           padding: 10px;
           background-color: $primary-color;
@@ -74,18 +129,16 @@
           border-radius: 5px;
           cursor: pointer;
           transition: all 0.3s;
-  
-          &:hover{
+
+          &:hover {
             transform: scale(1.05);
           }
         }
 
-        .remove-button{
+        .remove-button {
           background-color: red;
         }
       }
-
-      
     }
   }
 }

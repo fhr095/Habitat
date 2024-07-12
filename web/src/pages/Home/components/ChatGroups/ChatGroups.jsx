@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, query, onSnapshot, orderBy, doc } from "firebase/firestore";
+import { collection, addDoc, query, onSnapshot, orderBy, doc, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { FaCheck, FaTimes  } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 
 import "./ChatGroups.scss";
 
 export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [members, setMembers] = useState({});
 
   useEffect(() => {
     const chatRef = doc(db, `habitats/${habitatId}/groups/${group.id}`);
@@ -24,6 +25,21 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
 
     return () => unsubscribe();
   }, [habitatId, group.id]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      const membersData = {};
+      const q = query(collection(db, `habitats/${habitatId}/members`));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        membersData[data.email] = data;
+      });
+      setMembers(membersData);
+    };
+
+    fetchMembers();
+  }, [habitatId]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() === "") return;
@@ -48,14 +64,16 @@ export default function ChatGroups({ habitatId, user, group, setChatGroup }) {
           <img src={group.imgUrl} alt={group.name} />
           <div className="text">{group.name}</div>
         </div>
-          <button onClick={() => setChatGroup({})}>
-            <FaTimes size={20} />
-          </button>
+        <button onClick={() => setChatGroup({})}>
+          <FaTimes size={20} />
+        </button>
       </header>
       <div className="messages">
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.sender === user.email ? "sent" : "received"}`}>
+            {msg.sender !== user.email && <img src={members[msg.sender]?.profileImageUrl} alt={msg.sender} className="profile-img" />}
             <p>{msg.message}</p>
+            {msg.sender === user.email && <img src={user.profileImageUrl} alt={user.email} className="profile-img" />}
           </div>
         ))}
       </div>

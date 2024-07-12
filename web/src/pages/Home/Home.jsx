@@ -76,7 +76,7 @@ export default function Home({ user }) {
   } else {
     return (
       <div className="home">
-        <h1>Home</h1>
+        
       </div>
     );
   }

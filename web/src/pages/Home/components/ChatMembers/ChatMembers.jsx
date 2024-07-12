@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, query, where, onSnapshot, orderBy, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { FaTimes, FaCheck  } from "react-icons/fa";
+import { FaTimes, FaCheck } from "react-icons/fa";
 import "./ChatMembers.scss";
 
 export default function ChatMembers({ habitatId, user, chatMember, setChatMember }) {
@@ -63,7 +63,9 @@ export default function ChatMembers({ habitatId, user, chatMember, setChatMember
       <div className="messages">
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.sender === user.email ? "sent" : "received"}`}>
+            {msg.sender !== user.email && <img src={chatMember.profileImageUrl} alt={chatMember.name} className="profile-img" />}
             <p>{msg.message}</p>
+            {msg.sender === user.email && <img src={user.profileImageUrl} alt={user.name} className="profile-img" />}
           </div>
         ))}
       </div>
