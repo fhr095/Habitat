@@ -80,36 +80,76 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
         onClose();
     };
 
-    function Model({ url }) {
+    function Model({ url, highlightedPart }) {
         const gltf = useLoader(GLTFLoader, url);
         const modelRef = useRef();
+        const [materials, setMaterials] = useState([]);
 
         useFrame(() => {
             if (modelRef.current) {
-                modelRef.current.rotation.y += 0.01; // Adjust the rotation speed as needed
+                modelRef.current.rotation.y += 0.01; // Ajuste a velocidade de rotação conforme necessário
             }
         });
 
         useEffect(() => {
             setModelParts(Object.keys(gltf.nodes));
+
+            // Salva os materiais originais
+            const originalMaterials = Object.keys(gltf.nodes).reduce((acc, part) => {
+                const material = gltf.nodes[part].material;
+                if (material) {
+                    acc[part] = {
+                        color: material.color.clone(),
+                        transparent: material.transparent,
+                        opacity: material.opacity,
+                    };
+                }
+                return acc;
+            }, {});
+            setMaterials(originalMaterials);
+
             // Ajusta a rotação inicial do modelo
             if (modelRef.current) {
                 modelRef.current.rotation.x = Math.PI; // Rotaciona o modelo em 180 graus no eixo X
             }
         }, [gltf]);
 
+        useEffect(() => {
+            // Restaura os materiais ao desmontar o componente
+            return () => {
+                Object.keys(gltf.nodes).forEach(part => {
+                    const material = gltf.nodes[part].material;
+                    if (material && materials[part]) {
+                        material.color.copy(materials[part].color);
+                        material.transparent = materials[part].transparent;
+                        material.opacity = materials[part].opacity;
+                    }
+                });
+            };
+        }, [gltf, materials]);
+
         return (
             <group ref={modelRef}>
-                {Object.keys(gltf.nodes).map((part) => (
-                    <mesh
-                        key={part}
-                        geometry={gltf.nodes[part].geometry}
-                        material={gltf.nodes[part].material}
-                        material-transparent={highlightedPart !== part}
-                        material-opacity={highlightedPart === part ? 1 : 0.2}
-                        material-color={highlightedPart === part ? "red" : gltf.nodes[part].material?.color}
-                    />
-                ))}
+                {Object.keys(gltf.nodes).map((part) => {
+                    const material = gltf.nodes[part].material;
+                    if (material) {
+                        const clonedMaterial = material.clone();
+                        clonedMaterial.transparent = true;
+                        clonedMaterial.opacity = highlightedPart === part ? 1 : 0.2;
+                        if (highlightedPart === part) {
+                            clonedMaterial.color.set("red");
+                        }
+                        return (
+                            <mesh
+                                key={part}
+                                geometry={gltf.nodes[part].geometry}
+                                material={clonedMaterial}
+                            />
+                        );
+                    } else {
+                        return null;
+                    }
+                })}
             </group>
         );
     }
@@ -195,7 +235,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                             <Canvas>
                                 <ambientLight intensity={0.5} />
                                 <directionalLight position={[10, 10, 5]} intensity={1} />
-                                <Model url={glbFileUrl} />
+                                <Model url={glbFileUrl} highlightedPart={highlightedPart} />
                                 <OrbitControls enableZoom={true} enablePan={true} />
                             </Canvas>
                         </Suspense>

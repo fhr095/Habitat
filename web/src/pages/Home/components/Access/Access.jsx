@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaAngleDown, FaPlus, FaEllipsisV } from "react-icons/fa";
-import { collection, query, where, getDocs, doc, updateDoc, arrayRemove, deleteDoc } from "firebase/firestore";
+import { collection, query, where, doc, updateDoc, arrayRemove, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
@@ -12,29 +12,27 @@ import ModalEditBot from "../ModalEditBot/ModalEditBot";
 
 import './Access.scss';
 
-export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) { // Add setChatBot
+export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
   const [isBotsModalOpen, setIsBotsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
-  const [isEditBotModalOpen, setIsEditBotModalOpen] = useState(false); // Add state for bot modal
+  const [isEditBotModalOpen, setIsEditBotModalOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [bots, setBots] = useState([]);
   const [selectedMember, setSelectedMember] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedBot, setSelectedBot] = useState(""); // Add state for selected bot
+  const [selectedBot, setSelectedBot] = useState("");
 
   useEffect(() => {
-    const fetchMembers = async () => {
-      try {
+    const fetchMembers = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/members`));
+      const unsubscribe = onSnapshot(q, async (querySnapshot) => {
         const membersData = [];
-        const q = query(collection(db, `habitats/${habitat.id}/members`));
-        const querySnapshot = await getDocs(q);
-
         for (const memberDoc of querySnapshot.docs) {
           const memberData = memberDoc.data();
           const userQuery = query(collection(db, "users"), where("email", "==", memberData.email));
@@ -49,44 +47,44 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
             });
           }
         }
-
         setMembers(membersData);
-      } catch (error) {
-        console.error("Erro ao buscar membros: ", error);
-      }
+      });
+      return () => unsubscribe();
     };
 
-    const fetchGroups = async () => {
-      try {
-        const q = query(collection(db, `habitats/${habitat.id}/groups`), where("users", "array-contains", userEmail));
-        const querySnapshot = await getDocs(q);
+    const fetchGroups = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/groups`), where("users", "array-contains", userEmail));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const groupsData = [];
         querySnapshot.forEach((doc) => {
           groupsData.push({ id: doc.id, ...doc.data() });
         });
         setGroups(groupsData);
-      } catch (error) {
-        console.error("Erro ao buscar grupos: ", error);
-      }
+      });
+      return () => unsubscribe();
     };
 
-    const fetchBots = async () => {
-      try {
-        const q = query(collection(db, `habitats/${habitat.id}/avatars`));
-        const querySnapshot = await getDocs(q);
+    const fetchBots = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/avatars`));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const botsData = [];
         querySnapshot.forEach((doc) => {
           botsData.push({ id: doc.id, ...doc.data() });
         });
         setBots(botsData);
-      } catch (error) {
-        console.error("Erro ao buscar bots: ", error);
-      }
+      });
+      return () => unsubscribe();
     };
 
-    fetchMembers();
-    fetchGroups();
-    fetchBots();
+    const unsubscribeMembers = fetchMembers();
+    const unsubscribeGroups = fetchGroups();
+    const unsubscribeBots = fetchBots();
+
+    return () => {
+      unsubscribeMembers();
+      unsubscribeGroups();
+      unsubscribeBots();
+    };
   }, [habitat.id, userEmail]);
 
   const openMembersModal = () => {
@@ -139,12 +137,12 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     setIsEditGroupModalOpen(false);
   };
 
-  const openEditBotModal = (botAvt) => { // Add function to open bot modal
+  const openEditBotModal = (botAvt) => {
     setSelectedBot(botAvt);
     setIsEditBotModalOpen(true);
   };
 
-  const closeEditBotModal = () => { // Add function to close bot modal
+  const closeEditBotModal = () => {
     setIsEditBotModalOpen(false);
   };
 
@@ -228,7 +226,6 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   const handleBotClick = (bot) => {
     setChatBot(bot);
   };
-
 
   return (
     <div className="access-container">

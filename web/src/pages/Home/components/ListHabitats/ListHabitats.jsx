@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import { collection, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./ListHabitats.scss";
@@ -154,16 +154,14 @@ export default function ListHabitats({ onClose, userEmail }) {
       return;
     }
 
-    if (habitat.members && habitat.members.includes(userEmail)) {
-      alert("Você já é membro deste habitat.");
-      return;
-    }
-
     try {
-      const habitatRef = doc(db, "habitats", habitat.id);
-      await updateDoc(habitatRef, {
-        members: arrayUnion(userEmail) // Adiciona o email ao array de membros ou cria o array se não existir
+      const memberDocRef = doc(db, `habitats/${habitat.id}/members/${userEmail}`);
+      await setDoc(memberDocRef, {
+        email: userEmail,
+        color: "#000000",
+        tag: ""
       });
+
       alert("Você se juntou ao habitat!");
       onClose();
       window.location.reload();
