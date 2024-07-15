@@ -5,7 +5,7 @@ import { collection, addDoc, query, onSnapshot, orderBy } from "firebase/firesto
 import { db } from "../../../../firebase";
 import "./ChatBots.scss";
 
-export default function ChatBots({ habitatId, user, bot, setChatBot }) {
+export default function ChatBots({ habitatId, user, bot, setChatBot, setFade }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
 
@@ -31,12 +31,6 @@ export default function ChatBots({ habitatId, user, bot, setChatBot }) {
                 avt: bot.avt
             });
 
-            const botReply = {
-                sender: "bot",
-                message: response.data.comandos[0].texto,
-                timestamp: new Date(),
-            };
-
             const userMessage = {
                 sender: user.email,
                 message,
@@ -47,8 +41,21 @@ export default function ChatBots({ habitatId, user, bot, setChatBot }) {
             
             // Add user message to Firestore
             await addDoc(userMessagesRef, userMessage);
-            // Add bot reply to Firestore
-            await addDoc(userMessagesRef, botReply);
+
+            // Process and add all bot replies to Firestore
+            response.data.comandos.forEach(async (comando) => {
+                const botReply = {
+                    sender: "bot",
+                    message: comando.texto,
+                    timestamp: new Date(),
+                };
+                await addDoc(userMessagesRef, botReply);
+
+                // Send fade value to setFade if exists
+                if (comando.fade) {
+                    setFade(comando.fade);
+                }
+            });
 
         } catch (error) {
             console.error("Erro ao enviar mensagem para o bot: ", error);

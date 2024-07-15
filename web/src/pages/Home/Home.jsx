@@ -14,7 +14,8 @@ export default function Home({ user }) {
   const [chatMember, setChatMember] = useState({});
   const [chatGroup, setChatGroup] = useState({});
   const [chatBot, setChatBot] = useState({});
-  const [sceneKey, setSceneKey] = useState(Date.now()); // Chave única para reiniciar o componente Scene
+  const [sceneKey, setSceneKey] = useState(Date.now()); 
+  const [fade, setFade] = useState("");
 
   const handleSetHabitat = (newHabitat) => {
     setHabitat(newHabitat);
@@ -65,11 +66,11 @@ export default function Home({ user }) {
         )}
 
         {chatBot.id && (
-          <ChatBots habitatId={habitat.id} user={user} bot={chatBot} setChatBot={handleSetChatBot} />
+          <ChatBots habitatId={habitat.id} user={user} bot={chatBot} setChatBot={handleSetChatBot} setFade={setFade} />
         )}
 
         {habitat.glbFileUrl && (
-          <Scene key={sceneKey} glbFileUrl={habitat.glbFileUrl} />
+          <Scene key={sceneKey} glbFileUrl={habitat.glbFileUrl} fade={fade} setFade={setFade} />
         )}
       </div>
     );
