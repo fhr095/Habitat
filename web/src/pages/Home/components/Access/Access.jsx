@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaAngleDown, FaPlus, FaEllipsisV } from "react-icons/fa";
 import { collection, query, where, doc, updateDoc, arrayRemove, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
+import { useNavigate } from "react-router-dom";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
@@ -13,6 +14,7 @@ import ModalEditBot from "../ModalEditBot/ModalEditBot";
 import './Access.scss';
 
 export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) {
+  const navigate = useNavigate();
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
   const [isBotsModalOpen, setIsBotsModalOpen] = useState(false);
@@ -227,6 +229,10 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     setChatBot(bot);
   };
 
+  const handleViewScene = () => {
+    navigate(`/scene/${habitat.id}`);
+  };
+
   return (
     <div className="access-container">
       <header>
@@ -239,12 +245,17 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
             <div className="context-menu-items">
               {habitat.createdBy === userEmail && (
                 <>
+                  <button onClick={handleViewScene}>Visualizar</button>
                   <button onClick={openEditModal}>Editar Habitat</button>
                   <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
                 </>
               )}
               {habitat.createdBy !== userEmail && (
-                <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
+                <>
+                  <button onClick={handleViewScene}>Visualizar</button>
+                  <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
+                </> 
+
               )}
             </div>
           )}

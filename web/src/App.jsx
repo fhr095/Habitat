@@ -3,8 +3,10 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
-import { auth, db } from "./firebase"; // Certifique-se de ajustar o caminho conforme necessário
-import Home from "./pages/Home/Home";0
+import { auth, db } from "./firebase"; 
+
+import Home from "./pages/Home/Home";
+import Scene from "./pages/Scene/Scene";
 import LoginRegister from "./pages/LoginRegister/LoginRegister";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -26,7 +28,9 @@ export default function App() {
         } else {
           console.error("No such document!");
         }
-        navigate("/");
+        if (window.location.pathname === "/login") {
+          navigate("/");
+        }
       } else {
         setIsAuthenticated(false);
         navigate("/login");
@@ -50,6 +54,7 @@ export default function App() {
     <div className="app-container">
       <Routes>
         <Route path="/login" element={<LoginRegister />} />
+        <Route path="/scene/:id" element={<Scene />} />
         <Route path="/" element={<Home user={userData} />} />
       </Routes>
     </div>
