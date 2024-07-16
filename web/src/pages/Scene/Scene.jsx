@@ -7,6 +7,7 @@ import { db } from "../../firebase";
 import Model from "./components/Model/Model";
 import Buttons from "./components/Buttons/Buttons.jsx";
 import Response from "./components/Response/Response";
+import Welcome from "./components/Welcome/Welcome.jsx";
 
 import "./Scene.scss";
 
@@ -43,6 +44,8 @@ export default function Scene() {
       <Buttons setTranscript={setTranscript}/>
 
       <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade}/>
+
+      <Welcome habitatId={id} transcript={transcript} />
     </div>
   );
 }
