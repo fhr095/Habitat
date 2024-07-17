@@ -18,6 +18,7 @@ export default function Scene({ user }) {
   const [createdBy, setCreatedBy] = useState("");
   const [transcript, setTranscript] = useState("");
   const [fade, setFade] = useState([]);
+  const [resete, setResete] = useState(false);
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -43,9 +44,9 @@ export default function Scene({ user }) {
   if(user){
     return (
       <div className="scene-container">
-        {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
+        {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} resete={resete} setResete={setResete} /> : <p>Loading...</p>}
 
-        <Buttons setTranscript={setTranscript}/>
+        <Buttons setTranscript={setTranscript} setResete={setResete}/>
 
         <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade}/>
 
