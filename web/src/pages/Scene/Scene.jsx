@@ -7,13 +7,15 @@ import { db } from "../../firebase";
 import Model from "./components/Model/Model";
 import Buttons from "./components/Buttons/Buttons.jsx";
 import Response from "./components/Response/Response";
+import ConfigWelcome from "./components/ConfigWelcome/ConfigWelcome.jsx";
 import Welcome from "./components/Welcome/Welcome.jsx";
 
 import "./Scene.scss";
 
-export default function Scene() {
+export default function Scene({ user }) {
   const { id } = useParams();
   const [glbFileUrl, setGlbFileUrl] = useState(null);
+  const [createdBy, setCreatedBy] = useState("");
   const [transcript, setTranscript] = useState("");
   const [fade, setFade] = useState([]);
 
@@ -26,6 +28,7 @@ export default function Scene() {
         if (habitatDoc.exists()) {
           const habitatData = habitatDoc.data();
           setGlbFileUrl(habitatData.glbFileUrl);
+          setCreatedBy(habitatData.createdBy);
         } else {
           console.error("No such document!");
         }
@@ -37,15 +40,21 @@ export default function Scene() {
     fetchHabitatData();
   }, [id]);
 
-  return (
-    <div className="scene-container">
-      {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} /> : <p>Loading...</p>}
+  if(user){
+    return (
+      <div className="scene-container">
+        {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
-      <Buttons setTranscript={setTranscript}/>
+        <Buttons setTranscript={setTranscript}/>
 
-      <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade}/>
+        <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade}/>
 
-      <Welcome habitatId={id} transcript={transcript} />
-    </div>
-  );
+        {user.email == createdBy && (
+          <ConfigWelcome habitatId={id}/>
+        )}
+
+        <Welcome habitatId={id} transcript={transcript} />
+      </div>
+    );
+  }
 }

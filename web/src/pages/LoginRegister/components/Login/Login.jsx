@@ -23,7 +23,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/home");
+      navigate("/");
     } catch (error) {
       console.error("Erro ao fazer login: ", error);
       alert("Erro ao fazer login. Verifique suas credenciais e tente novamente.");
@@ -33,7 +33,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      navigate("/home");
+      navigate("/");
     } catch (error) {
       console.error("Erro ao fazer login com Google: ", error);
       alert("Erro ao fazer login com Google. Tente novamente.");

@@ -198,6 +198,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                         </label>
                     </div>
                     <div className="form-section">
+                        <p>Digite: "Você está aqui" e selecione um local no modelo caso queira definir um ponto inicial para quem for visualizar</p>
                         {botData.data.map((item, index) => (
                             <div key={index} className="info-section">
                                 <label>

@@ -54,7 +54,7 @@ export default function App() {
     <div className="app-container">
       <Routes>
         <Route path="/login" element={<LoginRegister />} />
-        <Route path="/scene/:id" element={<Scene />} />
+        <Route path="/scene/:id" element={<Scene user={userData} />} />
         <Route path="/" element={<Home user={userData} />} />
       </Routes>
     </div>
