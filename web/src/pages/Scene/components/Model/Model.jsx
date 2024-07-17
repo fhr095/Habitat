@@ -11,7 +11,7 @@ export default function Model({ glbFileUrl, fade, avt, resete, setResete }) {
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <Suspense fallback={<Html center>Loading...</Html>}>
-          <ModelContent glbFileUrl={glbFileUrl} fade={fade} avt={avt} resete={resete} setResete={setResete} />
+          <ModelContent glbFileUrl={glbFileUrl} object={fade} avt={avt} resete={resete} setResete={setResete} />
         </Suspense>
         <OrbitControls enableZoom={true} enableRotate={true} enablePan={true} />
       </Canvas>

@@ -4,16 +4,18 @@ import { useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import axios from "axios";
 
-export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete }) {
+export default function ModelContent({ glbFileUrl, object, avt, resete, setResete }) {
   const { camera, scene } = useThree();
   const [isAnimating, setIsAnimating] = useState(false);
   const [targetObject, setTargetObject] = useState(null);
+  const [labelObject, setLabelObject] = useState(null);
+  const [labelPosition, setLabelPosition] = useState(new THREE.Vector3());
   const [initialPosition] = useState(camera.position.clone());
   const [animationDuration, setAnimationDuration] = useState(2);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [showLabel, setShowLabel] = useState(false);
-  const [labelShown, setLabelShown] = useState(false);
   const [initialOpacities, setInitialOpacities] = useState({});
+  const [initialColors, setInitialColors] = useState({});
   const modelRef = useRef();
   const { scene: loadedScene } = useGLTF(glbFileUrl);
 
@@ -35,16 +37,14 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
 
         if (res.data && res.data.comandos.length > 0) {
           const targetName = res.data.comandos[0].fade; // Only the first item in the array
-          const object = loadedScene.getObjectByName(targetName);
-          if (object) {
-            setTargetObject(object);
-            setAnimationDuration(res.data.comandos[0].duration + 2); // Adding 2 seconds to the audio duration
-            setIsAnimating(true);
-            setElapsedTime(0);
-            if (!labelShown) {
-              setShowLabel(true);
-              setLabelShown(true);
-            }
+          const detectedObject = loadedScene.getObjectByName(targetName);
+          if (detectedObject) {
+            const worldPosition = new THREE.Vector3();
+            detectedObject.getWorldPosition(worldPosition);
+            console.log("Detected object world position:", worldPosition);
+            setLabelObject(detectedObject);
+            setLabelPosition(worldPosition);
+            setShowLabel(true);
           }
         }
       } catch (error) {
@@ -53,15 +53,18 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
     };
 
     detectObject();
-  }, [avt, loadedScene, labelShown]);
+  }, [avt, loadedScene]);
 
   useEffect(() => {
-    if (fade.length > 0 && loadedScene) {
-      const targetName = fade[0].fade; // Only the first item in the array
-      const object = loadedScene.getObjectByName(targetName);
-      if (object) {
-        setTargetObject(object);
-        setAnimationDuration(fade[0].duration + 2);
+    if (object.length > 0 && loadedScene) {
+      const targetName = object[0].fade; // Only the first item in the array
+      const fadeObject = loadedScene.getObjectByName(targetName);
+      if (fadeObject) {
+        const worldPosition = new THREE.Vector3();
+        fadeObject.getWorldPosition(worldPosition);
+        console.log("Target object world position:", worldPosition);
+        setTargetObject(fadeObject);
+        setAnimationDuration(object[0].duration + 2);
         setIsAnimating(true);
         setElapsedTime(0);
 
@@ -73,9 +76,11 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
           }
         });
         setInitialOpacities(opacities);
+      } else {
+        console.warn(`Object with name ${targetName} not found in scene`);
       }
     }
-  }, [fade, loadedScene]);
+  }, [object, loadedScene]);
 
   useEffect(() => {
     if (resete) {
@@ -90,6 +95,12 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
             child.material.opacity = initialOpacity;
             child.material.transparent = initialOpacity < 1;
           }
+
+          // Reset color if it was changed
+          const initialColor = initialColors[child.uuid];
+          if (initialColor !== undefined) {
+            child.material.color.copy(initialColor);
+          }
         }
       });
 
@@ -98,7 +109,7 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
       setShowLabel(false); // Hide label
       setResete(false); // Reset the resete state
     }
-  }, [resete, initialPosition, camera, loadedScene, initialOpacities, setResete]);
+  }, [resete, initialPosition, camera, loadedScene, initialOpacities, initialColors, setResete]);
 
   useFrame((state, delta) => {
     if (modelRef.current) {
@@ -110,15 +121,13 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
       const progress = elapsedTime / animationDuration;
 
       if (progress < 1) {
-        const angle = progress * Math.PI * 2; // Full circle for rotation
         const radius = 5; // Distance from the object
-        const targetPosition = new THREE.Vector3(
-          targetObject.position.x + radius * Math.sin(angle),
-          targetObject.position.y + 1, // Slightly above the object
-          targetObject.position.z + radius * Math.cos(angle)
-        );
 
-        camera.position.lerp(targetPosition, 0.1);
+        const cameraTargetPosition = new THREE.Vector3();
+        targetObject.getWorldPosition(cameraTargetPosition);
+        cameraTargetPosition.z += radius;
+
+        camera.position.lerp(cameraTargetPosition, 0.1);
         camera.lookAt(targetObject.position);
 
         loadedScene.traverse(child => {
@@ -145,6 +154,12 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
                 child.material.opacity = initialOpacity;
                 child.material.transparent = initialOpacity < 1;
               }
+
+              // Reset color if it was changed
+              const initialColor = initialColors[child.uuid];
+              if (initialColor !== undefined) {
+                child.material.color.copy(initialColor);
+              }
             }
           });
           camera.position.copy(initialPosition);
@@ -155,9 +170,9 @@ export default function ModelContent({ glbFileUrl, fade, avt, resete, setResete 
 
   return (
     <primitive object={loadedScene} ref={modelRef}>
-      {showLabel && targetObject && (
+      {showLabel && labelObject && (
         <Html
-          position={[targetObject.position.x, targetObject.position.y + 2, targetObject.position.z]}
+          position={labelPosition.toArray()}
           center
         >
           <div className="label">
