@@ -21,6 +21,7 @@
     "bootstrap": "^5.3.3",
     "face-api.js": "^0.22.2",
     "firebase": "^10.11.1",
+    "idb-keyval": "^6.2.1",
     "leaflet": "^1.9.4",
     "mapbox-gl": "^3.4.0",
     "react": "^18.2.0",
@@ -40,7 +41,8 @@
     "react-spinners": "^0.13.8",
     "react-toastify": "^10.0.5",
     "sass": "^1.77.0",
-    "three": "^0.164.1"
+    "three": "^0.164.1",
+    "use-async-memo": "^1.2.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

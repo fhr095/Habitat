@@ -1,8 +1,43 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useGLTF, Html } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import axios from "axios";
+
+const openDB = (name, version) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, version);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("models")) {
+        db.createObjectStore("models");
+      }
+    };
+  });
+};
+
+const getFromDB = (db, storeName, key) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const request = store.get(key);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
+
+const saveToDB = (db, storeName, key, value) => {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readwrite");
+    const store = transaction.objectStore(storeName);
+    const request = store.put(value, key);
+    request.onsuccess = () => resolve();
+    request.onerror = (event) => reject(event.target.error);
+  });
+};
 
 export default function ModelContent({ glbFileUrl, object, avt, resete, setResete }) {
   const { camera, scene } = useThree();
@@ -17,15 +52,51 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
   const [initialOpacities, setInitialOpacities] = useState({});
   const [initialColors, setInitialColors] = useState({});
   const modelRef = useRef();
-  const { scene: loadedScene } = useGLTF(glbFileUrl);
+  const [cachedModel, setCachedModel] = useState(null);
 
   useEffect(() => {
-    scene.add(loadedScene);
-
-    return () => {
-      scene.remove(loadedScene);
+    const loadModel = async () => {
+      try {
+        const db = await openDB("ModelCache", 1);
+        const cached = await getFromDB(db, "models", glbFileUrl);
+        if (cached) {
+          console.log("Carregando modelo a partir do cache");
+          const loader = new THREE.ObjectLoader();
+          const model = loader.parse(cached);
+          setCachedModel(model);
+        } else {
+          console.log("Carregando modelo pela primeira vez");
+          const loader = new GLTFLoader();
+          loader.load(
+            glbFileUrl,
+            async (gltf) => {
+              const model = gltf.scene;
+              setCachedModel(model);
+              const jsonModel = model.toJSON();
+              await saveToDB(db, "models", glbFileUrl, jsonModel);
+            },
+            undefined,
+            (error) => {
+              console.error("Error loading model:", error);
+            }
+          );
+        }
+      } catch (error) {
+        console.error("Error loading model from IndexedDB:", error);
+      }
     };
-  }, [loadedScene, scene]);
+
+    loadModel();
+  }, [glbFileUrl]);
+
+  useEffect(() => {
+    if (cachedModel) {
+      scene.add(cachedModel);
+      return () => {
+        scene.remove(cachedModel);
+      };
+    }
+  }, [cachedModel, scene]);
 
   useEffect(() => {
     const detectObject = async () => {
@@ -36,14 +107,13 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
         });
 
         if (res.data && res.data.comandos.length > 0) {
-          const targetName = res.data.comandos[0].fade; // Only the first item in the array
-          const detectedObject = loadedScene.getObjectByName(targetName);
+          const targetName = res.data.comandos[0].fade;
+          const detectedObject = cachedModel.getObjectByName(targetName);
           if (detectedObject) {
-            const worldPosition = new THREE.Vector3();
-            detectedObject.getWorldPosition(worldPosition);
-            console.log("Detected object world position:", worldPosition);
+            const boundingBox = new THREE.Box3().setFromObject(detectedObject);
+            const center = boundingBox.getCenter(new THREE.Vector3());
             setLabelObject(detectedObject);
-            setLabelPosition(worldPosition);
+            setLabelPosition(center);
             setShowLabel(true);
           }
         }
@@ -52,25 +122,45 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
       }
     };
 
-    detectObject();
-  }, [avt, loadedScene]);
+    if (cachedModel) {
+      detectObject();
+    }
+  }, [avt, cachedModel]);
 
   useEffect(() => {
-    if (object.length > 0 && loadedScene) {
-      const targetName = object[0].fade; // Only the first item in the array
-      const fadeObject = loadedScene.getObjectByName(targetName);
+    if (object.length > 0 && cachedModel) {
+      const targetName = object[0].fade;
+      const fadeObject = cachedModel.getObjectByName(targetName);
       if (fadeObject) {
-        const worldPosition = new THREE.Vector3();
-        fadeObject.getWorldPosition(worldPosition);
-        console.log("Target object world position:", worldPosition);
-        setTargetObject(fadeObject);
+        const boundingBox = new THREE.Box3().setFromObject(fadeObject);
+        const center = boundingBox.getCenter(new THREE.Vector3());
+        const size = boundingBox.getSize(new THREE.Vector3());
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = camera.fov * (Math.PI / 180);
+        const aspect = camera.aspect;
+        let cameraZ = maxDim / (2 * Math.tan(fov / 2));
+
+        cameraZ = cameraZ / Math.min(1, aspect);
+
+        const newCameraPosition = new THREE.Vector3(
+          center.x,
+          center.y + cameraZ * 0.5,
+          center.z + cameraZ
+        );
+
+        setTargetObject({
+          fadeObject,
+          newCameraPosition,
+          center
+        });
+
         setAnimationDuration(object[0].duration + 2);
         setIsAnimating(true);
         setElapsedTime(0);
 
-        // Save initial opacities
         const opacities = {};
-        loadedScene.traverse(child => {
+        cachedModel.traverse(child => {
           if (child.isMesh && child.material) {
             opacities[child.uuid] = child.material.opacity;
           }
@@ -80,15 +170,14 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
         console.warn(`Object with name ${targetName} not found in scene`);
       }
     }
-  }, [object, loadedScene]);
+  }, [object, cachedModel]);
 
   useEffect(() => {
-    if (resete) {
-      // Reset camera position and object opacity
+    if (resete && cachedModel) {
       camera.position.copy(initialPosition);
-      camera.lookAt(new THREE.Vector3(0, 0, 0)); // Adjust as needed to look at the center
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-      loadedScene.traverse(child => {
+      cachedModel.traverse(child => {
         if (child.isMesh && child.material) {
           const initialOpacity = initialOpacities[child.uuid];
           if (initialOpacity !== undefined) {
@@ -96,7 +185,6 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
             child.material.transparent = initialOpacity < 1;
           }
 
-          // Reset color if it was changed
           const initialColor = initialColors[child.uuid];
           if (initialColor !== undefined) {
             child.material.color.copy(initialColor);
@@ -104,50 +192,44 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
         }
       });
 
-      setIsAnimating(false); // Stop any ongoing animation
-      setElapsedTime(0); // Reset elapsed time
-      setShowLabel(false); // Hide label
-      setResete(false); // Reset the resete state
+      setIsAnimating(false);
+      setElapsedTime(0);
+      setShowLabel(false);
+      setResete(false);
     }
-  }, [resete, initialPosition, camera, loadedScene, initialOpacities, initialColors, setResete]);
+  }, [resete, initialPosition, camera, cachedModel, initialOpacities, initialColors, setResete]);
 
   useFrame((state, delta) => {
     if (modelRef.current) {
-      modelRef.current.rotation.y += 0.001; // Adjust the rotation speed as needed
+      modelRef.current.rotation.y += 0.001;
     }
 
-    if (isAnimating && targetObject) {
+    if (isAnimating && targetObject && cachedModel) {
+      const { fadeObject, newCameraPosition, center } = targetObject;
       setElapsedTime(prevTime => prevTime + delta);
       const progress = elapsedTime / animationDuration;
 
       if (progress < 1) {
-        const radius = 5; // Distance from the object
+        camera.position.lerp(newCameraPosition, 0.1);
+        camera.lookAt(center);
 
-        const cameraTargetPosition = new THREE.Vector3();
-        targetObject.getWorldPosition(cameraTargetPosition);
-        cameraTargetPosition.z += radius;
-
-        camera.position.lerp(cameraTargetPosition, 0.1);
-        camera.lookAt(targetObject.position);
-
-        loadedScene.traverse(child => {
+        cachedModel.traverse(child => {
           if (child.isMesh && child.material) {
-            if (child === targetObject) {
+            if (child === fadeObject) {
               child.material.opacity = 1;
             } else {
-              child.material.opacity = 0.2; // Make other objects transparent
+              child.material.opacity = 0.2;
             }
             child.material.transparent = true;
           }
         });
       } else {
-        // Reset camera position and object opacity
         camera.position.lerp(initialPosition, 0.1);
 
         if (elapsedTime > animationDuration + 2) {
           setIsAnimating(false);
-          setElapsedTime(0); // Reset elapsed time
-          loadedScene.traverse(child => {
+          setElapsedTime(0);
+          cachedModel.traverse(child => {
             if (child.isMesh && child.material) {
               const initialOpacity = initialOpacities[child.uuid];
               if (initialOpacity !== undefined) {
@@ -155,7 +237,6 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
                 child.material.transparent = initialOpacity < 1;
               }
 
-              // Reset color if it was changed
               const initialColor = initialColors[child.uuid];
               if (initialColor !== undefined) {
                 child.material.color.copy(initialColor);
@@ -169,17 +250,20 @@ export default function ModelContent({ glbFileUrl, object, avt, resete, setReset
   });
 
   return (
-    <primitive object={loadedScene} ref={modelRef}>
-      {showLabel && labelObject && (
-        <Html
-          position={labelPosition.toArray()}
-          center
-        >
-          <div className="label">
-            Você está aqui
-          </div>
-        </Html>
-      )}
-    </primitive>
+    cachedModel ? (
+      <primitive object={cachedModel} ref={modelRef}>
+        {showLabel && labelObject && (
+          <Html position={labelPosition.toArray()} center>
+            <div className="label">
+              Você está aqui
+            </div>
+          </Html>
+        )}
+      </primitive>
+    ) : (
+      <Html center>
+        <div>Loading...</div>
+      </Html>
+    )
   );
 }
