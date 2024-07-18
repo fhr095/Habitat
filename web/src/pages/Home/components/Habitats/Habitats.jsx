@@ -46,8 +46,9 @@ export default function Habitats({ user, setHabitat }) {
     fetchHabitats();
   }, [user.email]);
 
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
+  const toggleCreateModal = () => {
+    setIsCreateModalOpen(prevState => !prevState);
+    setIsListModalOpen(false);
   };
 
   const closeCreateModal = () => {
@@ -106,7 +107,7 @@ export default function Habitats({ user, setHabitat }) {
 
       <div className="divider" />
 
-      <div className="buttons" onClick={openCreateModal}>
+      <div className="buttons" onClick={toggleCreateModal}>
         <FaPlus size={20} />
       </div>
       <div className="buttons button-map" onClick={toggleListModal}>

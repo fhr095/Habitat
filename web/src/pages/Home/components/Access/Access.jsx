@@ -10,18 +10,22 @@ import ModalAddBots from "../ModalAddBots/ModalAddBots";
 import ModalEditMember from "../ModalEditMember/ModalEditMember";
 import ModalEditGroup from "../ModalEditGroup/ModalEditGroup";
 import ModalEditBot from "../ModalEditBot/ModalEditBot";
+import Rating from "../Rating/Rating";
 
-import './Access.scss';
+import "./Access.scss";
 
 export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) {
   const navigate = useNavigate();
-  const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
-  const [isGroupsModalOpen, setIsGroupsModalOpen] = useState(false);
-  const [isBotsModalOpen, setIsBotsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
-  const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState(false);
-  const [isEditBotModalOpen, setIsEditBotModalOpen] = useState(false);
+  const [modals, setModals] = useState({
+    members: false,
+    groups: false,
+    bots: false,
+    edit: false,
+    editMember: false,
+    editGroup: false,
+    editBot: false,
+    rating: false,
+  });
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
@@ -33,7 +37,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   useEffect(() => {
     const fetchMembers = () => {
       const q = query(collection(db, `habitats/${habitat.id}/members`));
-      const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      return onSnapshot(q, async (querySnapshot) => {
         const membersData = [];
         for (const memberDoc of querySnapshot.docs) {
           const memberData = memberDoc.data();
@@ -51,31 +55,22 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         }
         setMembers(membersData);
       });
-      return () => unsubscribe();
     };
 
     const fetchGroups = () => {
       const q = query(collection(db, `habitats/${habitat.id}/groups`), where("users", "array-contains", userEmail));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const groupsData = [];
-        querySnapshot.forEach((doc) => {
-          groupsData.push({ id: doc.id, ...doc.data() });
-        });
+      return onSnapshot(q, (querySnapshot) => {
+        const groupsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setGroups(groupsData);
       });
-      return () => unsubscribe();
     };
 
     const fetchBots = () => {
       const q = query(collection(db, `habitats/${habitat.id}/avatars`));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const botsData = [];
-        querySnapshot.forEach((doc) => {
-          botsData.push({ id: doc.id, ...doc.data() });
-        });
+      return onSnapshot(q, (querySnapshot) => {
+        const botsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setBots(botsData);
       });
-      return () => unsubscribe();
     };
 
     const unsubscribeMembers = fetchMembers();
@@ -83,69 +78,17 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     const unsubscribeBots = fetchBots();
 
     return () => {
-      unsubscribeMembers();
-      unsubscribeGroups();
-      unsubscribeBots();
+      if (unsubscribeMembers) unsubscribeMembers();
+      if (unsubscribeGroups) unsubscribeGroups();
+      if (unsubscribeBots) unsubscribeBots();
     };
   }, [habitat.id, userEmail]);
 
-  const openMembersModal = () => {
-    setIsMembersModalOpen(true);
-  };
-
-  const closeMembersModal = () => {
-    setIsMembersModalOpen(false);
-  };
-
-  const openGroupsModal = () => {
-    setIsGroupsModalOpen(true);
-  };
-
-  const closeGroupsModal = () => {
-    setIsGroupsModalOpen(false);
-  };
-
-  const openBotsModal = () => {
-    setIsBotsModalOpen(true);
-  };
-
-  const closeBotsModal = () => {
-    setIsBotsModalOpen(false);
-  };
-
-  const openEditModal = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-  };
-
-  const openEditMemberModal = (memberId) => {
-    setSelectedMember(memberId);
-    setIsEditMemberModalOpen(true);
-  };
-
-  const closeEditMemberModal = () => {
-    setIsEditMemberModalOpen(false);
-  };
-
-  const openEditGroupModal = (groupId) => {
-    setSelectedGroup(groupId);
-    setIsEditGroupModalOpen(true);
-  };
-
-  const closeEditGroupModal = () => {
-    setIsEditGroupModalOpen(false);
-  };
-
-  const openEditBotModal = (botAvt) => {
-    setSelectedBot(botAvt);
-    setIsEditBotModalOpen(true);
-  };
-
-  const closeEditBotModal = () => {
-    setIsEditBotModalOpen(false);
+  const toggleModal = (modalName, value) => {
+    setModals(prevModals => ({
+      ...prevModals,
+      [modalName]: value,
+    }));
   };
 
   const toggleContextMenu = () => {
@@ -246,7 +189,8 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
               {habitat.createdBy === userEmail && (
                 <>
                   <button onClick={handleViewScene}>Visualizar</button>
-                  <button onClick={openEditModal}>Editar Habitat</button>
+                  <button onClick={() => toggleModal("rating", true)}>Avaliações</button>
+                  <button onClick={() => toggleModal("edit", true)}>Editar Habitat</button>
                   <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
                 </>
               )}
@@ -254,8 +198,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                 <>
                   <button onClick={handleViewScene}>Visualizar</button>
                   <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
-                </> 
-
+                </>
               )}
             </div>
           )}
@@ -267,7 +210,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         <header>
           <div className="text">Membros</div>
           {habitat.createdBy === userEmail && (
-            <button onClick={openMembersModal}>
+            <button onClick={() => toggleModal("members", true)}>
               <FaPlus size={15} />
             </button>
           )}
@@ -282,11 +225,9 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                   <span style={{ color: member.color }}>{member.tag}</span>
                 </div>
                 {habitat.createdBy === userEmail && (
-                  <>
-                    <button className="edit-button" onClick={() => openEditMemberModal(member.id)}>
-                      <FaEllipsisV size={15} />
-                    </button>
-                  </>
+                  <button className="edit-button" onClick={() => { setSelectedMember(member.id); toggleModal("editMember", true); }}>
+                    <FaEllipsisV size={15} />
+                  </button>
                 )}
               </div>
             ))
@@ -300,9 +241,8 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       <div className="topics">
         <header>
           <div className="text">Grupos</div>
-
           {habitat.createdBy === userEmail && (
-            <button onClick={openGroupsModal}>
+            <button onClick={() => toggleModal("groups", true)}>
               <FaPlus size={15} />
             </button>
           )}
@@ -316,11 +256,9 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                   <div className="text">{group.name}</div>
                 </div>
                 {habitat.createdBy === userEmail && (
-                  <>
-                    <button className="edit-button" onClick={() => openEditGroupModal(group.id)}>
-                      <FaEllipsisV size={15} />
-                    </button>
-                  </>
+                  <button className="edit-button" onClick={() => { setSelectedGroup(group.id); toggleModal("editGroup", true); }}>
+                    <FaEllipsisV size={15} />
+                  </button>
                 )}
               </div>
             ))
@@ -334,9 +272,8 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       <div className="topics">
         <header>
           <div className="text">Bots e Assistentes</div>
-
           {habitat.createdBy === userEmail && (
-            <button onClick={openBotsModal}>
+            <button onClick={() => toggleModal("bots", true)}>
               <FaPlus size={15} />
             </button>
           )}
@@ -350,11 +287,9 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
                   <div className="text">{bot.name}</div>
                 </div>
                 {habitat.createdBy === userEmail && (
-                  <>
-                    <button className="edit-button" onClick={() => openEditBotModal(bot.avt)}>
-                      <FaEllipsisV size={15} />
-                    </button>
-                  </>
+                  <button className="edit-button" onClick={() => { setSelectedBot(bot.avt); toggleModal("editBot", true); }}>
+                    <FaEllipsisV size={15} />
+                  </button>
                 )}
               </div>
             ))
@@ -364,13 +299,14 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         </div>
       </div>
 
-      {isMembersModalOpen && <ModalAddMembers onClose={closeMembersModal} habitatId={habitat.id} />}
-      {isGroupsModalOpen && <ModalAddGroups onClose={closeGroupsModal} habitatId={habitat.id} userEmail={userEmail} />}
-      {isBotsModalOpen && <ModalAddBots onClose={closeBotsModal} habitatId={habitat.id} />}
-      {isEditModalOpen && <ModalEditHabitat habitatId={habitat.id} onClose={closeEditModal} />}
-      {isEditMemberModalOpen && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={closeEditMemberModal} />}
-      {isEditGroupModalOpen && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={closeEditGroupModal} />}
-      {isEditBotModalOpen && <ModalEditBot selectedBot={selectedBot} glbFileUrl={habitat.glbFileUrl} onClose={closeEditBotModal} />}
+      {modals.members && <ModalAddMembers onClose={() => toggleModal("members", false)} habitatId={habitat.id} />}
+      {modals.groups && <ModalAddGroups onClose={() => toggleModal("groups", false)} habitatId={habitat.id} userEmail={userEmail} />}
+      {modals.bots && <ModalAddBots onClose={() => toggleModal("bots", false)} habitatId={habitat.id} />}
+      {modals.edit && <ModalEditHabitat habitatId={habitat.id} onClose={() => toggleModal("edit", false)} />}
+      {modals.editMember && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={() => toggleModal("editMember", false)} />}
+      {modals.editGroup && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={() => toggleModal("editGroup", false)} />}
+      {modals.editBot && <ModalEditBot selectedBot={selectedBot} glbFileUrl={habitat.glbFileUrl} onClose={() => toggleModal("editBot", false)} />}
+      {modals.rating && <Rating habitatId={habitat.id} onClose={() => toggleModal("rating", false)} />}
     </div>
   );
 }
