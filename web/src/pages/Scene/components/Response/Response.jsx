@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { doc, setDoc, collection } from "firebase/firestore";
+import { db } from "../../../../firebase";
+import { BiSolidLike, BiSolidDislike  } from "react-icons/bi";
 
 import botImage from "../../../../assets/images/avatar.png";
 import "./Response.scss";
 
-export default function Response({ avt, transcript, setTranscript, setFade }) {
+export default function Response({ habitatId, avt, transcript, setTranscript, setFade }) {
     const [response, setResponse] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [showFeedback, setShowFeedback] = useState(false);
 
     useEffect(() => {
         const sendTranscript = async () => {
@@ -55,10 +59,30 @@ export default function Response({ avt, transcript, setTranscript, setFade }) {
                 playAudioSequentially(index + 1);
             }
         } else {
-            // Clean up response and transcript after all audios are played
-            setResponse([]);
-            setTranscript("");
+            setShowFeedback(true);
+            setTimeout(() => {
+                setShowFeedback(false);
+                setResponse([]);
+                setTranscript("");
+            }, 7000); // Increased the time to 7 seconds
         }
+    };
+
+    const handleFeedback = async (type) => {
+        const feedbackData = {
+            question: transcript,
+            response: response.map(r => r.texto).join(" "), // Combine all response texts
+            feedback: type
+        };
+
+        try {
+            const feedbackRef = doc(collection(db, `habitats/${habitatId}/feedback`));
+            await setDoc(feedbackRef, feedbackData);
+        } catch (error) {
+            console.error("Erro ao enviar feedback: ", error);
+        }
+
+        setShowFeedback(false);
     };
 
     return (
@@ -79,6 +103,22 @@ export default function Response({ avt, transcript, setTranscript, setFade }) {
                             <img src={botImage} alt="Bot" className="bot-image" />
                             <div className="response-text">
                                 <p>{response[currentIndex]?.texto}</p>
+                                {showFeedback && (
+                                    <div className="feedback-container">
+                                        <button
+                                            onClick={() => handleFeedback("like")}
+                                            className="like"
+                                        >
+                                            <BiSolidLike color="#333" size={20}/>
+                                        </button>
+                                        <button
+                                            onClick={() => handleFeedback("dislike")}
+                                            className="dislike"
+                                        >
+                                            <BiSolidDislike color="#333" size={20}/>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

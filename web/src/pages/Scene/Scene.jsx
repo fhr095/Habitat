@@ -47,7 +47,7 @@ export default function Scene({ user }) {
 
       <Buttons setTranscript={setTranscript} setResete={setResete} />
 
-      <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
+      <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 
       {user && user.email === createdBy && (
         <ConfigWelcome habitatId={id} />
