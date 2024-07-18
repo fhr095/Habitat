@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -16,6 +16,7 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -32,15 +33,18 @@ export default function App() {
           navigate("/");
         }
       } else {
-        setIsAuthenticated(false);
-        navigate("/login");
+        // Allow access to /scene/:id without authentication
+        if (!location.pathname.startsWith("/scene/")) {
+          setIsAuthenticated(false);
+          navigate("/login");
+        }
       }
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, [navigate, location]);
 
-  if (isAuthenticated === null) {
+  if (isAuthenticated === null && !location.pathname.startsWith("/scene/")) {
     return (
       <div className="loading-page">
         <div className="spinner-border text-primary" role="status">

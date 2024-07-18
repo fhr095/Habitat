@@ -9,7 +9,7 @@ import './Habitats.scss';
 
 export default function Habitats({ user, setHabitat }) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(true);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [habitats, setHabitats] = useState([]);
 

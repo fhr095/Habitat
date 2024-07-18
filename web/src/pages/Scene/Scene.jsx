@@ -41,21 +41,19 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
-  if(user){
-    return (
-      <div className="scene-container">
-        {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} resete={resete} setResete={setResete} /> : <p>Loading...</p>}
+  return (
+    <div className="scene-container">
+      {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} resete={resete} setResete={setResete} /> : <p>Loading...</p>}
 
-        <Buttons setTranscript={setTranscript} setResete={setResete}/>
+      <Buttons setTranscript={setTranscript} setResete={setResete} />
 
-        <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade}/>
+      <Response avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 
-        {user.email == createdBy && (
-          <ConfigWelcome habitatId={id}/>
-        )}
+      {user && user.email === createdBy && (
+        <ConfigWelcome habitatId={id} />
+      )}
 
-        <Welcome habitatId={id} transcript={transcript} />
-      </div>
-    );
-  }
+      <Welcome habitatId={id} transcript={transcript} />
+    </div>
+  );
 }

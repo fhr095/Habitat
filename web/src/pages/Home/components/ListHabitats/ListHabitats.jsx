@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
+import Select from "react-select";
 import mapboxgl from "mapbox-gl";
-import { collection, getDocs, doc, updateDoc, arrayUnion, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./ListHabitats.scss";
 import MapboxGeocoder from "@mapbox/mapbox-sdk/services/geocoding";
 
-// Insira o seu token do Mapbox aqui
 const MAPBOX_TOKEN = "pk.eyJ1IjoiYXBwaWF0ZWNoIiwiYSI6ImNseGw5NDBscDA3dTEyaW9wcGpzNWh2a24ifQ.J3_X8omVDBHK-QAisBUP1w";
-
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
 const geocoder = MapboxGeocoder({ accessToken: MAPBOX_TOKEN });
@@ -16,38 +15,38 @@ const geocoder = MapboxGeocoder({ accessToken: MAPBOX_TOKEN });
 export default function ListHabitats({ onClose, userEmail }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng, setLng] = useState(-43.9352); // Longitude de Belo Horizonte
-  const [lat, setLat] = useState(-19.9208); // Latitude de Belo Horizonte
-  const [zoom, setZoom] = useState(12); // Zoom inicial para mostrar Belo Horizonte
-  const [pitch, setPitch] = useState(45); // Inclinação do mapa
-  const [bearing, setBearing] = useState(-17.6); // Rotação do mapa
+  const [lng, setLng] = useState(-43.9352);
+  const [lat, setLat] = useState(-19.9208);
+  const [zoom, setZoom] = useState(12);
+  const [pitch, setPitch] = useState(45);
+  const [bearing, setBearing] = useState(-17.6);
   const [publicHabitats, setPublicHabitats] = useState([]);
+  const [selectedHabitat, setSelectedHabitat] = useState(null);
 
   useEffect(() => {
-    if (map.current) return; // Inicialize apenas uma vez
+    if (map.current) return;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v10", // Usar estilo claro para um visual branco
+      style: "mapbox://styles/mapbox/light-v10",
       center: [lng, lat],
       zoom: zoom,
       pitch: pitch,
       bearing: bearing,
-      interactive: true, // Permitir interações
+      interactive: true,
       scrollZoom: true,
       boxZoom: true,
-      dragRotate: false, // Desabilitar a rotação do mapa
+      dragRotate: false,
       dragPan: true,
       keyboard: false,
       doubleClickZoom: true,
       touchZoomRotate: {
         zoom: true,
-        rotate: false // Desabilitar a rotação do mapa em dispositivos de toque
+        rotate: false
       }
     });
 
     map.current.on("load", () => {
-      // Adicione camada de edificações 3D com cor branca
       map.current.addLayer({
         id: "3d-buildings",
         source: "composite",
@@ -79,7 +78,6 @@ export default function ListHabitats({ onClose, userEmail }) {
         },
       });
 
-      // Função para buscar habitats do Firestore e adicionar pontos no mapa
       const fetchPublicHabitats = async () => {
         const querySnapshot = await getDocs(collection(db, "habitats"));
         const habitatsData = querySnapshot.docs.map((doc) => ({
@@ -110,12 +108,11 @@ export default function ListHabitats({ onClose, userEmail }) {
                     const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
                       `<h3>${habitat.name}</h3><p>${habitat.address}</p><button id="join-${habitat.id}">Entrar no Habitat</button>`
                     );
-                    const marker = new mapboxgl.Marker({ color: "#004736" }) // Cor do marcador
+                    const marker = new mapboxgl.Marker({ color: "#004736" })
                       .setLngLat(coordinates)
                       .setPopup(popup)
                       .addTo(map.current);
                     
-                    // Adicionar evento de clique ao botão quando o popup for exibido
                     popup.on('open', () => {
                       const button = document.getElementById(`join-${habitat.id}`);
                       if (button) {
@@ -134,14 +131,13 @@ export default function ListHabitats({ onClose, userEmail }) {
 
       fetchPublicHabitats();
 
-      // Adiciona animação de zoom ao carregar o mapa
       map.current.flyTo({
         center: [lng, lat],
         zoom: 14,
         speed: 0.5,
         curve: 1,
         easing: (t) => t,
-        essential: true, // Esse parâmetro garante que a animação de zoom seja realizada
+        essential: true,
       });
     });
 
@@ -156,6 +152,13 @@ export default function ListHabitats({ onClose, userEmail }) {
 
     try {
       const memberDocRef = doc(db, `habitats/${habitat.id}/members/${userEmail}`);
+      const memberDoc = await getDoc(memberDocRef);
+
+      if (memberDoc.exists()) {
+        alert("Você já é membro deste habitat.");
+        return;
+      }
+
       await setDoc(memberDocRef, {
         email: userEmail,
         color: "#000000",
@@ -170,8 +173,72 @@ export default function ListHabitats({ onClose, userEmail }) {
     }
   };
 
+  const handleJoinSelectedHabitat = () => {
+    if (selectedHabitat) {
+      handleJoinHabitat({
+        id: selectedHabitat.value,
+        createdBy: publicHabitats.find(habitat => habitat.id === selectedHabitat.value).createdBy,
+      });
+    } else {
+      alert("Por favor, selecione um habitat.");
+    }
+  };
+
+  const handleSelectChange = (selectedOption) => {
+    setSelectedHabitat(selectedOption);
+    if (selectedOption) {
+      geocoder
+        .forwardGeocode({
+          query: selectedOption.address,
+          limit: 1,
+        })
+        .send()
+        .then((response) => {
+          if (
+            response &&
+            response.body &&
+            response.body.features &&
+            response.body.features.length
+          ) {
+            const coordinates =
+              response.body.features[0].geometry.coordinates;
+            if (!isNaN(coordinates[0]) && !isNaN(coordinates[1])) {
+              map.current.flyTo({
+                center: coordinates,
+                zoom: 14,
+                speed: 0.5,
+                curve: 1,
+                easing: (t) => t,
+                essential: true,
+              });
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Erro ao geocodificar endereço:", error);
+        });
+    }
+  };
+
+  const habitatOptions = publicHabitats
+    .filter(habitat => habitat.isPublic)
+    .map(habitat => ({
+      value: habitat.id,
+      label: habitat.name,
+      address: habitat.address
+    }));
+
   return (
     <div className="map-container">
+      <div className="search-bar">
+        <Select
+          options={habitatOptions}
+          onChange={handleSelectChange}
+          placeholder="Procurar habitats públicos..."
+          isClearable
+        />
+        <button onClick={handleJoinSelectedHabitat}>Entrar no Habitat</button>
+      </div>
       <div ref={mapContainer} className="mapbox-map" />
     </div>
   );

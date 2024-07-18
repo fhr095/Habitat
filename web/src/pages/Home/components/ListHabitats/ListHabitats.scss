@@ -12,4 +12,34 @@
     width: 100%;
     height: 100%;
   }
+
+  .search-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    z-index: 4000;
+    gap: 10px;
+
+    .react-select__control {
+      background-color: $white;
+      border: 1px solid $gray;
+      width: 300px; // Ajuste a largura conforme necessário
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background-color: $primary-color;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
 }
