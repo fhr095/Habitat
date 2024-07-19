@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import * as faceapi from "face-api.js";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 import { db } from "../../../../firebase"; // Certifique-se de importar corretamente seu Firebase
 
 import botImg from "../../../../assets/images/avatar.png";
@@ -67,6 +68,36 @@ export default function Welcome({ habitatId, transcript }) {
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (welcomeData?.active && isPersonDetected && transcript === "") {
+      speakText(welcomeData?.text);
+    }
+  }, [welcomeData, isPersonDetected, transcript]);
+
+  const speakText = (text) => {
+    const speechConfig = sdk.SpeechConfig.fromSubscription(
+      import.meta.env.VITE_APP_AZURE_SPEECH_KEY1,
+      import.meta.env.VITE_APP_AZURE_REGION
+    );
+    const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
+
+    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+
+    synthesizer.speakTextAsync(text,
+      result => {
+        if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+          console.log("Synthesis finished.");
+        } else {
+          console.error("Speech synthesis canceled, " + result.errorDetails);
+        }
+        synthesizer.close();
+      },
+      error => {
+        console.error(error);
+        synthesizer.close();
+      });
+  };
 
   return (
     <>
