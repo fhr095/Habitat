@@ -305,7 +305,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
       {modals.edit && <ModalEditHabitat habitatId={habitat.id} onClose={() => toggleModal("edit", false)} />}
       {modals.editMember && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={() => toggleModal("editMember", false)} />}
       {modals.editGroup && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={() => toggleModal("editGroup", false)} />}
-      {modals.editBot && <ModalEditBot selectedBot={selectedBot} glbFileUrl={habitat.glbFileUrl} onClose={() => toggleModal("editBot", false)} />}
+      {modals.editBot && <ModalEditBot selectedBot={selectedBot} ifcFileUrl={habitat.ifcFileUrl} onClose={() => toggleModal("editBot", false)} />}
       {modals.rating && <Rating habitatId={habitat.id} onClose={() => toggleModal("rating", false)} />}
     </div>
   );

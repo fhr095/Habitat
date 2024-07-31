@@ -69,8 +69,8 @@ export default function Home({ user }) {
           <ChatBots habitatId={habitat.id} user={user} bot={chatBot} setChatBot={handleSetChatBot} setFade={setFade} />
         )}
 
-        {habitat.glbFileUrl && (
-          <Scene key={sceneKey} glbFileUrl={habitat.glbFileUrl} fade={fade} setFade={setFade} />
+        {habitat.ifcFileUrl && (
+          <Scene key={sceneKey} ifcFileUrl={habitat.ifcFileUrl} fade={fade} setFade={setFade} />
         )}
       </div>
     );

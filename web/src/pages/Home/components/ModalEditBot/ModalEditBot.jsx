@@ -1,25 +1,26 @@
-import React, { useEffect, useState, Suspense, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaTimes } from "react-icons/fa";
-import { Canvas, useLoader, useFrame } from "@react-three/fiber";
-import { OrbitControls, Loader } from "@react-three/drei";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import "./ModalEditBot.scss";
+import Scene from "./Scene";
 
 const username = "habitat";
 const password = "lobomau";
 
-export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
+export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
     const [botData, setBotData] = useState({
         name: "",
         personality: "",
         creativity: 1,
         context: "",
         avt: selectedBot,
-        data: [{ info: "", fade: "" }]
+        data: [{ info: "", fade: "", name: "" }]
     });
-    const [modelParts, setModelParts] = useState([]);
-    const [highlightedPart, setHighlightedPart] = useState("");
+    const [fade, setFade] = useState({});
+
+    useEffect(() => {
+        console.log("fade", fade);
+    }, [fade]);
 
     useEffect(() => {
         const fetchBotData = async () => {
@@ -38,6 +39,15 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
 
         fetchBotData();
     }, [selectedBot]);
+
+    useEffect(() => {
+        if (fade.id) {
+            setBotData((prevData) => ({
+                ...prevData,
+                data: [...prevData.data, { info: "", fade: fade.id, name: fade.name }]
+            }));
+        }
+    }, [fade]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,97 +72,14 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
         setBotData({ ...botData, data: newData });
     };
 
-    const handleAddInfo = () => {
-        setBotData({ ...botData, data: [...botData.data, { info: "", fade: "" }] });
-    };
-
     const handleRemoveInfo = (index) => {
         const newData = botData.data.filter((_, i) => i !== index);
         setBotData({ ...botData, data: newData });
     };
 
-    const handlePartSelect = (part) => {
-        setHighlightedPart(part);
-    };
-
     const handleClose = () => {
-        setHighlightedPart(""); // Reseta a parte destacada ao fechar
         onClose();
     };
-
-    function Model({ url, highlightedPart }) {
-        const gltf = useLoader(GLTFLoader, url);
-        const modelRef = useRef();
-        const [materials, setMaterials] = useState([]);
-
-        useFrame(() => {
-            if (modelRef.current) {
-                modelRef.current.rotation.y += 0.01; // Ajuste a velocidade de rotação conforme necessário
-            }
-        });
-
-        useEffect(() => {
-            setModelParts(Object.keys(gltf.nodes));
-
-            // Salva os materiais originais
-            const originalMaterials = Object.keys(gltf.nodes).reduce((acc, part) => {
-                const material = gltf.nodes[part].material;
-                if (material) {
-                    acc[part] = {
-                        color: material.color.clone(),
-                        transparent: material.transparent,
-                        opacity: material.opacity,
-                    };
-                }
-                return acc;
-            }, {});
-            setMaterials(originalMaterials);
-
-            // Ajusta a rotação inicial do modelo
-            if (modelRef.current) {
-                modelRef.current.rotation.x = Math.PI; // Rotaciona o modelo em 180 graus no eixo X
-            }
-        }, [gltf]);
-
-        useEffect(() => {
-            // Restaura os materiais ao desmontar o componente
-            return () => {
-                Object.keys(gltf.nodes).forEach(part => {
-                    const material = gltf.nodes[part].material;
-                    if (material && materials[part]) {
-                        material.color.copy(materials[part].color);
-                        material.transparent = materials[part].transparent;
-                        material.opacity = materials[part].opacity;
-                    }
-                });
-            };
-        }, [gltf, materials]);
-
-        return (
-            <group ref={modelRef}>
-                {Object.keys(gltf.nodes).map((part) => {
-                    const material = gltf.nodes[part].material;
-                    if (material) {
-                        const clonedMaterial = material.clone();
-                        clonedMaterial.transparent = true;
-                        clonedMaterial.opacity = highlightedPart === part ? 1 : 0.2;
-                        if (highlightedPart === part) {
-                            clonedMaterial.color.set("red");
-                        }
-                        return (
-                            <mesh
-                                key={part}
-                                geometry={gltf.nodes[part].geometry}
-                                material={clonedMaterial}
-                            />
-                        );
-                    } else {
-                        return null;
-                    }
-                })}
-            </group>
-        );
-    }
 
     return (
         <div className="edit-bot-page">
@@ -165,7 +92,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                             Nome do Bot:
                             <input
                                 type="text"
-                                value={botData.name}
+                                value={botData.name || ""}
                                 onChange={(e) => setBotData({ ...botData, name: e.target.value })}
                                 required
                             />
@@ -174,7 +101,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                             Personalidade:
                             <input
                                 type="text"
-                                value={botData.personality}
+                                value={botData.personality || ""}
                                 onChange={(e) => setBotData({ ...botData, personality: e.target.value })}
                                 required
                             />
@@ -183,7 +110,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                             Criatividade:
                             <input
                                 type="number"
-                                value={botData.creativity}
+                                value={botData.creativity || 1}
                                 onChange={(e) => setBotData({ ...botData, creativity: parseInt(e.target.value) })}
                                 required
                             />
@@ -191,7 +118,7 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                         <label>
                             Contexto:
                             <textarea
-                                value={botData.context}
+                                value={botData.context || ""}
                                 onChange={(e) => setBotData({ ...botData, context: e.target.value })}
                                 required
                             />
@@ -205,41 +132,25 @@ export default function ModalEditBot({ selectedBot, glbFileUrl, onClose }) {
                                     Info:
                                     <input
                                         type="text"
-                                        value={item.info}
+                                        value={item.info || ""}
                                         onChange={(e) => handleInfoChange(index, "info", e.target.value)}
                                         required
                                     />
                                 </label>
                                 <label>
-                                    Fade:
-                                    <select
-                                        value={item.fade}
-                                        onChange={(e) => {
-                                            handleInfoChange(index, "fade", e.target.value);
-                                            handlePartSelect(e.target.value);
-                                        }}
-                                        required
-                                    >
-                                        <option value="">Selecione uma parte</option>
-                                        {modelParts.map((part, i) => (
-                                            <option key={i} value={part}>{part}</option>
-                                        ))}
-                                    </select>
+                                    Nome do Fade:
+                                    <input
+                                        type="text"
+                                        value={item.name || ""}
+                                        readOnly
+                                    />
                                 </label>
                                 <button type="button" onClick={() => handleRemoveInfo(index)}>Remover</button>
                             </div>
                         ))}
-                        <button className="info-button" type="button" onClick={handleAddInfo}>Adicionar Info</button>
                     </div>
                     <div className="model-viewer">
-                        <Suspense fallback={<Loader />}>
-                            <Canvas>
-                                <ambientLight intensity={0.5} />
-                                <directionalLight position={[10, 10, 5]} intensity={1} />
-                                <Model url={glbFileUrl} highlightedPart={highlightedPart} />
-                                <OrbitControls enableZoom={true} enablePan={true} />
-                            </Canvas>
-                        </Suspense>
+                        <Scene ifcFileUrl={ifcFileUrl} setFade={setFade} />
                     </div>
                     <button type="submit">Atualizar Bot</button>
                 </form>

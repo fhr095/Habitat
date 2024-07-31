@@ -14,7 +14,7 @@ import "./Scene.scss";
 
 export default function Scene({ user }) {
   const { id } = useParams();
-  const [glbFileUrl, setGlbFileUrl] = useState(null);
+  const [ifcFileUrl, setIfcFileUrl] = useState(null);
   const [createdBy, setCreatedBy] = useState("");
   const [transcript, setTranscript] = useState("");
   const [fade, setFade] = useState([]);
@@ -28,7 +28,7 @@ export default function Scene({ user }) {
 
         if (habitatDoc.exists()) {
           const habitatData = habitatDoc.data();
-          setGlbFileUrl(habitatData.glbFileUrl);
+          setIfcFileUrl(habitatData.ifcFileUrl);
           setCreatedBy(habitatData.createdBy);
         } else {
           console.error("No such document!");
@@ -43,7 +43,7 @@ export default function Scene({ user }) {
 
   return (
     <div className="scene-container">
-      {glbFileUrl ? <Model glbFileUrl={glbFileUrl} fade={fade} avt={id} resete={resete} setResete={setResete} /> : <p>Loading...</p>}
+      {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
       <Buttons setTranscript={setTranscript} setResete={setResete} />
 

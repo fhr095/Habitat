@@ -8,7 +8,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [image, setImage] = useState(null);
-  const [glbFile, setGlbFile] = useState(null);
+  const [ifcFile, setIfcFile] = useState(null);
   const [isPublic, setIsPublic] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,23 +18,23 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
     setIsSubmitting(true);
 
     try {
-      const glbFileRef = ref(storage, `habitats/${glbFile.name}`);
+      const ifcFileRef = ref(storage, `habitats/${ifcFile.name}`);
       const imageRef = image ? ref(storage, `habitats/images/${image.name}`) : null;
 
-      const uploadGlbTask = uploadBytesResumable(glbFileRef, glbFile);
+      const uploadIfcTask = uploadBytesResumable(ifcFileRef, ifcFile);
 
-      uploadGlbTask.on(
+      uploadIfcTask.on(
         "state_changed",
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setUploadProgress(progress);
         },
         (error) => {
-          console.error("Falha no upload do GLB", error);
+          console.error("Falha no upload do arquivo IFC", error);
           setIsSubmitting(false);
         },
         async () => {
-          const glbFileUrl = await getDownloadURL(uploadGlbTask.snapshot.ref);
+          const ifcFileUrl = await getDownloadURL(uploadIfcTask.snapshot.ref);
 
           if (imageRef) {
             const uploadImageTask = uploadBytesResumable(imageRef, image);
@@ -56,7 +56,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
                   name,
                   address,
                   imageUrl,
-                  glbFileUrl,
+                  ifcFileUrl,
                   isPublic,
                   createdBy: userEmail,
                 });
@@ -69,7 +69,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
                   color: "#004736",
                 });
 
-                console.log("Habitat criado com imagem e arquivo GLB");
+                console.log("Habitat criado com imagem e arquivo IFC");
                 setIsSubmitting(false);
                 onClose();
               }
@@ -79,7 +79,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               name,
               address,
               imageUrl: null,
-              glbFileUrl,
+              ifcFileUrl,
               isPublic,
               createdBy: userEmail,
             });
@@ -92,7 +92,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               color: "#004736",
             });
 
-            console.log("Habitat criado com arquivo GLB");
+            console.log("Habitat criado com arquivo IFC");
             setIsSubmitting(false);
             onClose();
           }
@@ -104,7 +104,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
     }
   };
 
-  const isFormValid = name && glbFile;
+  const isFormValid = name && ifcFile;
 
   return (
     <div className="modal-create-habitat">
@@ -138,11 +138,11 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
             />
           </label>
           <label>
-            Arquivo GLB:
+            Arquivo IFC:
             <input
               type="file"
-              accept=".glb"
-              onChange={(e) => setGlbFile(e.target.files[0])}
+              accept=".ifc"
+              onChange={(e) => setIfcFile(e.target.files[0])}
               required
             />
           </label>
