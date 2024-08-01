@@ -70,7 +70,7 @@ export default function Home({ user }) {
         )}
 
         {habitat.ifcFileUrl && (
-          <Scene key={sceneKey} ifcFileUrl={habitat.ifcFileUrl} fade={fade} setFade={setFade} />
+          <Scene key={sceneKey} ifcFileUrl={habitat.ifcFileUrl} fade={fade} />
         )}
       </div>
     );

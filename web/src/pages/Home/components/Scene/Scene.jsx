@@ -3,8 +3,11 @@ import * as THREE from "three";
 import * as OBC from "@thatopen/components";
 import "./Scene.scss";
 
-export default function Scene({ ifcFileUrl, fade, setFade }) {
+export default function Scene({ ifcFileUrl, fade }) {
   const containerRef = useRef();
+  const [camera, setCamera] = useState(null);
+  const [arrayName, setArrayName] = useState([])
+
   let components = new OBC.Components();
   let worlds = components.get(OBC.Worlds);
   let world = worlds.create();
@@ -14,6 +17,32 @@ export default function Scene({ ifcFileUrl, fade, setFade }) {
       init();
     }
   }, [ifcFileUrl]);
+
+  useEffect(() => {
+    if(fade != "" && arrayName.length > 0){
+      arrayName.map((obejct) => {
+        if(obejct.element.isMesh){
+          const originalMaterial = obejct.element.material;
+          if(obejct.name == fade){
+            obejct.element.material = new THREE.MeshStandardMaterial({ color: "#ff0000" });
+            camera.fit([obejct.element], 0.5);
+            setTimeout(() => {
+              camera.controls.setLookAt(10, 10, 10, 0, 0, 0)
+              obejct.element.material = originalMaterial;
+            }, 10000);
+          }else{
+            obejct.element.material = new THREE.MeshStandardMaterial({ 
+              opacity: 0.1,
+              transparent: true,
+            });
+            setTimeout(() => {
+              obejct.element.material = originalMaterial;
+            }, 10000);
+          }
+        }
+      });
+    }
+  }, [fade]);
 
   async function init(){
     components = new OBC.Components();
@@ -37,6 +66,8 @@ export default function Scene({ ifcFileUrl, fade, setFade }) {
       grid.fade = projection === "Perspective";
     });
 
+    setCamera(world.camera);
+
     loadIfc(components, world);
   }
 
@@ -50,12 +81,64 @@ export default function Scene({ ifcFileUrl, fade, setFade }) {
     world.scene.three.add(model);
 
     function rotate(){
-      model.rotation.y += 0.0001;
+      model.rotation.y += 0.0005;
     }
 
     world.renderer.onBeforeUpdate.add(rotate);
+
+    const arrayData = [];
+
+    for (const element of model.children) {
+      const idsSet = element.fragment.ids;
+      const fragmentIdMap = {};
+      idsSet.forEach((id) => {
+        if (!fragmentIdMap[element.fragment.id]) {
+          fragmentIdMap[element.fragment.id] = new Set();
+        }
+        fragmentIdMap[element.fragment.id].add(id);
+      });
+      const properties = await fetchProperties(components, fragmentIdMap);
+
+      arrayData.push({
+        name: properties[Array.from(idsSet)[0]].attributes.Name.value,
+        element: element
+      });
+    }
+
+    setArrayName(arrayData)
   }
 
+  async function fetchProperties(components, fragmentIdMap) {
+    const indexer = components.get(OBC.IfcRelationsIndexer);
+    const fragments = components.get(OBC.FragmentsManager);
+    const properties = {};
+
+    for (const fragID in fragmentIdMap) {
+      const fragment = fragments.list.get(fragID);
+      if (!(fragment && fragment.group)) continue;
+      const model = fragment.group;
+
+      for (const expressID of fragmentIdMap[fragID]) {
+        const elementAttrs = await model.getProperties(expressID);
+        if (!elementAttrs) continue;
+
+        const elementProps = {
+          id: expressID,
+          attributes: elementAttrs,
+        };
+
+        const elementRelations =
+          indexer.relationMaps[model.uuid]?.get(expressID);
+        if (elementRelations) {
+          elementProps.relations = elementRelations;
+        }
+
+        properties[expressID] = elementProps;
+      }
+    }
+
+    return properties;
+  }
 
   return (
     <div ref={containerRef} className="scene">
