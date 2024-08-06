@@ -76,7 +76,7 @@ export default function Welcome({ habitatId, transcript }) {
       setIsCooldown(true);
       setTimeout(() => {
         setIsCooldown(false);
-      }, 30000); // 30 segundos de espera
+      }, 300000); // 5 minutos
     }
   }, [welcomeData, isPersonDetected, transcript, isCooldown]);
 
