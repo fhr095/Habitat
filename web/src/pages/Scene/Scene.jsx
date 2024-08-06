@@ -10,6 +10,7 @@ import Response from "./components/Response/Response";
 import ConfigWelcome from "./components/ConfigWelcome/ConfigWelcome";
 import Transcript from "./components/Transcript/Transcript";
 import Welcome from "./components/Welcome/Welcome";
+import WebCan from "./components/WebCan/WebCan";
 
 import "./Scene.scss";
 
@@ -20,6 +21,7 @@ export default function Scene({ user }) {
   const [transcript, setTranscript] = useState("");
   const [fade, setFade] = useState([]);
   const [resete, setResete] = useState(false);
+  const [isPersonDetected, setIsPersonDetected] = useState(false);
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -55,9 +57,11 @@ export default function Scene({ user }) {
         <ConfigWelcome habitatId={id} />
       )}
 
-      {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} />}
+      {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />}
 
-      <Welcome habitatId={id} transcript={transcript} />
+      <Welcome habitatId={id} transcript={transcript} isPersonDetected={isPersonDetected} />
+
+      <WebCan setIsPersonDetected={setIsPersonDetected}/>
     </div>
   );
 }
