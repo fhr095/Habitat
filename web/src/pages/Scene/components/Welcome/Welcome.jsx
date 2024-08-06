@@ -10,6 +10,7 @@ import "./Welcome.scss";
 export default function Welcome({ habitatId, transcript }) {
   const [welcomeData, setWelcomeData] = useState(null);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
+  const [isCooldown, setIsCooldown] = useState(false);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -70,10 +71,14 @@ export default function Welcome({ habitatId, transcript }) {
   }, []);
 
   useEffect(() => {
-    if (welcomeData?.active && isPersonDetected && transcript === "") {
+    if (welcomeData?.active && isPersonDetected && transcript === "" && !isCooldown) {
       speakText(welcomeData?.text);
+      setIsCooldown(true);
+      setTimeout(() => {
+        setIsCooldown(false);
+      }, 30000); // 30 segundos de espera
     }
-  }, [welcomeData, isPersonDetected, transcript]);
+  }, [welcomeData, isPersonDetected, transcript, isCooldown]);
 
   const speakText = (text) => {
     const speechConfig = sdk.SpeechConfig.fromSubscription(

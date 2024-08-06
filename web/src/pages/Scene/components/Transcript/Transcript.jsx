@@ -64,11 +64,19 @@ export default function Transcript({ transcript, setTranscript }) {
 
     recognizer.recognizeOnceAsync(result => {
       if (result.reason === sdk.ResultReason.RecognizedSpeech) {
+        console.log("Recognized: ", result.text);
         setTranscript(result.text);
+      } else if (result.reason === sdk.ResultReason.NoMatch) {
+        console.warn("No speech recognized, trying again...");
+        startListening(); // Tenta novamente
       } else {
-        console.error("Speech recognition canceled, " + result.errorDetails);
+        console.error("Speech recognition canceled: ", result.errorDetails);
       }
       recognizer.close();
+    }, error => {
+      console.error("Error recognizing speech: ", error);
+      recognizer.close();
+      startListening(); // Tenta novamente em caso de erro
     });
   };
 

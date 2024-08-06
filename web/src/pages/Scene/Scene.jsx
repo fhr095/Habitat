@@ -42,6 +42,7 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
+
   return (
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
