@@ -5,10 +5,11 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase"; 
 
 import Model from "./components/Model/Model";
-import Buttons from "./components/Buttons/Buttons.jsx";
+import Buttons from "./components/Buttons/Buttons";
 import Response from "./components/Response/Response";
-import ConfigWelcome from "./components/ConfigWelcome/ConfigWelcome.jsx";
-import Welcome from "./components/Welcome/Welcome.jsx";
+import ConfigWelcome from "./components/ConfigWelcome/ConfigWelcome";
+import Transcript from "./components/Transcript/Transcript";
+import Welcome from "./components/Welcome/Welcome";
 
 import "./Scene.scss";
 
@@ -52,6 +53,8 @@ export default function Scene({ user }) {
       {user && user.email === createdBy && (
         <ConfigWelcome habitatId={id} />
       )}
+
+      {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} />}
 
       <Welcome habitatId={id} transcript={transcript} />
     </div>

@@ -64,7 +64,7 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
                 setShowFeedback(false);
                 setResponse([]);
                 setTranscript("");
-            }, 7000); // Increased the time to 7 seconds
+            }, 5000); // Increased the time to 7 seconds
         }
     };
 

@@ -28,7 +28,6 @@ export default function Model({ ifcFileUrl, fade, avt }) {
           const originalMaterial = obejct.element.material;
           if(obejct.name == fade[0].fade){
             obejct.element.material = new THREE.MeshStandardMaterial({ color: "#ff0000" });
-            console.log("teste")
             camera.fit([obejct.element], 0.5);
             setTimeout(() => {
               camera.controls.setLookAt(10, 10, 10, 0, 0, 0)
