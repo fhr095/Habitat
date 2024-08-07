@@ -102,41 +102,6 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   const handleDeleteHabitat = async () => {
     try {
       const habitatRef = doc(db, "habitats", habitat.id);
-  
-      // Deletar subcoleção de membros
-      const membersCollection = collection(habitatRef, "members");
-      const membersSnapshot = await getDocs(membersCollection);
-      const deleteMembersPromises = membersSnapshot.docs.map(member => deleteDoc(member.ref));
-      await Promise.all(deleteMembersPromises);
-  
-      // Deletar subcoleção de grupos e suas subcoleções de mensagens
-      const groupsCollection = collection(habitatRef, "groups");
-      const groupsSnapshot = await getDocs(groupsCollection);
-      const deleteGroupsPromises = groupsSnapshot.docs.map(async (group) => {
-        const messagesCollection = collection(group.ref, "messages");
-        const messagesSnapshot = await getDocs(messagesCollection);
-        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
-        await Promise.all(deleteMessagesPromises);
-        return deleteDoc(group.ref);
-      });
-      await Promise.all(deleteGroupsPromises);
-  
-      // Deletar subcoleção de conversas e suas subcoleções de mensagens
-      const conversationsCollection = collection(habitatRef, "conversations");
-      const conversationsSnapshot = await getDocs(conversationsCollection);
-      const deleteConversationsPromises = conversationsSnapshot.docs.map(async (conversation) => {
-        const messagesCollection = collection(conversation.ref, "messages");
-        const messagesSnapshot = await getDocs(messagesCollection);
-        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
-        await Promise.all(deleteMessagesPromises);
-        return deleteDoc(conversation.ref);
-      });
-      await Promise.all(deleteConversationsPromises);
-  
-      // Deletar o arquivo GLB do Storage
-      const glbFileRef = ref(storage, habitat.glbFileUrl);
-      await deleteObject(glbFileRef);
-  
       // Deletar o documento do habitat do Firestore
       await deleteDoc(habitatRef);
   
@@ -217,7 +182,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         items={members}
         onAdd={() => toggleModal("members", true)}
         onItemClick={handleMemberClick}
-        onEditClick={(id) => { setSelectedMember(id); toggleModal("editMember", true); }}
+        onEditClick={(user) => { setSelectedMember(user.id); toggleModal("editMember", true); }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />
@@ -229,7 +194,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         items={groups}
         onAdd={() => toggleModal("groups", true)}
         onItemClick={handleGroupClick}
-        onEditClick={(id) => { setSelectedGroup(id); toggleModal("editGroup", true); }}
+        onEditClick={(group) => { setSelectedGroup(group.id); toggleModal("editGroup", true); }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />
@@ -241,7 +206,7 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         items={bots}
         onAdd={() => toggleModal("bots", true)}
         onItemClick={handleBotClick}
-        onEditClick={(id) => { setSelectedBot(id); toggleModal("editBot", true); }}
+        onEditClick={(bot) => { setSelectedBot(bot.avt); toggleModal("editBot", true); }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />

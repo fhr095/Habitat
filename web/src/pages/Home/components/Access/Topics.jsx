@@ -23,7 +23,7 @@ export default function Topics({ title, items, onAdd, onItemClick, onEditClick, 
                 {item.tag && <span style={{ color: item.color }}>{item.tag}</span>}
               </div>
               {createdBy === userEmail && (
-                <button className="edit-button" onClick={() => onEditClick(item.id)}>
+                <button className="edit-button" onClick={() => onEditClick(item)}>
                   <FaEllipsisV size={15} />
                 </button>
               )}
