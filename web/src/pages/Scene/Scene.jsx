@@ -46,18 +46,13 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
-  // useEffect(() => {
-  //   console.log("Emotion: ", emotion);
-  //   console.log("Gender: ", gender);
-  // }, [emotion, gender]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
       <Buttons setTranscript={setTranscript} setResete={setResete} />
 
-      <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
+      <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} emotion={emotion} gender={gender} />
 
       {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />}
 

@@ -7,7 +7,7 @@ import { BiSolidLike, BiSolidDislike  } from "react-icons/bi";
 import botImage from "../../../../assets/images/avatar.png";
 import "./Response.scss";
 
-export default function Response({ habitatId, avt, transcript, setTranscript, setFade }) {
+export default function Response({ habitatId, avt, transcript, setTranscript, setFade, emotion, gender }) {
     const [response, setResponse] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -72,7 +72,9 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
         const feedbackData = {
             question: transcript,
             response: response.map(r => r.texto).join(" "), // Combine all response texts
-            feedback: type
+            feedback: type,
+            gender: gender,
+            emotion: emotion,
         };
 
         try {
