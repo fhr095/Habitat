@@ -1,5 +1,7 @@
+// Access.js
 import React, { useState, useEffect } from "react";
-import { doc, updateDoc, arrayRemove, deleteDoc, getDoc } from "firebase/firestore";
+import { FaAngleDown } from "react-icons/fa";
+import { collection, query, where, doc, updateDoc, arrayRemove, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useNavigate } from "react-router-dom";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
@@ -10,19 +12,12 @@ import ModalEditMember from "../ModalEditMember/ModalEditMember";
 import ModalEditGroup from "../ModalEditGroup/ModalEditGroup";
 import ModalEditBot from "../ModalEditBot/ModalEditBot";
 import Rating from "../Rating/Rating";
-import Equipe from "../Equipe/Equipe";
+import Topics from "./Topics";
 import ConfigWelcome from "../ConfigWelcome/ConfigWelcome";
-import ContextMenu from "./ContextMenu";
+
 import "./Access.scss";
 
-// Objeto de configuração para mapeamento de componentes
-const componentConfig = {
-  equipe: { label: "Equipe", component: Equipe, adminOnly: false },
-  configWelcome: { label: "Configurar Boas-vindas", component: ConfigWelcome, adminOnly: false },
-  // Adicione mais componentes aqui conforme necessário
-};
-
-export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot, setSelectedMember, setSelectedGroup, setSelectedBot }) {
+export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) {
   const navigate = useNavigate();
   const [modals, setModals] = useState({
     members: false,
@@ -33,21 +28,64 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     editGroup: false,
     editBot: false,
     rating: false,
+    configWelcome: false,
   });
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [activeComponent, setActiveComponent] = useState("equipe"); // Novo estado
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [bots, setBots] = useState([]);
+  const [selectedMember, setSelectedMember] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedBot, setSelectedBot] = useState("");
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      const habitatDoc = await getDoc(doc(db, "habitats", habitat.id));
-      if (habitatDoc.exists()) {
-        const habitatData = habitatDoc.data();
-        setIsAdmin(habitatData.createdBy === userEmail);
-      }
+    const fetchMembers = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/members`));
+      return onSnapshot(q, async (querySnapshot) => {
+        const membersData = [];
+        for (const memberDoc of querySnapshot.docs) {
+          const memberData = memberDoc.data();
+          const userQuery = query(collection(db, "users"), where("email", "==", memberData.email));
+          const userDocSnapshot = await getDocs(userQuery);
+          if (!userDocSnapshot.empty) {
+            const userData = userDocSnapshot.docs[0].data();
+            membersData.push({
+              id: memberDoc.id,
+              ...memberData,
+              profileImageUrl: userData.profileImageUrl,
+              name: userData.name,
+            });
+          }
+        }
+        setMembers(membersData);
+      });
     };
 
-    checkAdmin();
+    const fetchGroups = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/groups`), where("users", "array-contains", userEmail));
+      return onSnapshot(q, (querySnapshot) => {
+        const groupsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setGroups(groupsData);
+      });
+    };
+
+    const fetchBots = () => {
+      const q = query(collection(db, `habitats/${habitat.id}/avatars`));
+      return onSnapshot(q, (querySnapshot) => {
+        const botsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setBots(botsData);
+      });
+    };
+
+    const unsubscribeMembers = fetchMembers();
+    const unsubscribeGroups = fetchGroups();
+    const unsubscribeBots = fetchBots();
+
+    return () => {
+      if (unsubscribeMembers) unsubscribeMembers();
+      if (unsubscribeGroups) unsubscribeGroups();
+      if (unsubscribeBots) unsubscribeBots();
+    };
   }, [habitat.id, userEmail]);
 
   const toggleModal = (modalName, value) => {
@@ -61,23 +99,54 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     setIsContextMenuOpen(prevState => !prevState);
   };
 
-  const handleShowComponent = (componentKey) => {
-    setActiveComponent(componentKey);
-    setIsContextMenuOpen(false);
-  };
-
   const handleDeleteHabitat = async () => {
     try {
       const habitatRef = doc(db, "habitats", habitat.id);
-      // Implement delete logic here
+  
+      // Deletar subcoleção de membros
+      const membersCollection = collection(habitatRef, "members");
+      const membersSnapshot = await getDocs(membersCollection);
+      const deleteMembersPromises = membersSnapshot.docs.map(member => deleteDoc(member.ref));
+      await Promise.all(deleteMembersPromises);
+  
+      // Deletar subcoleção de grupos e suas subcoleções de mensagens
+      const groupsCollection = collection(habitatRef, "groups");
+      const groupsSnapshot = await getDocs(groupsCollection);
+      const deleteGroupsPromises = groupsSnapshot.docs.map(async (group) => {
+        const messagesCollection = collection(group.ref, "messages");
+        const messagesSnapshot = await getDocs(messagesCollection);
+        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
+        await Promise.all(deleteMessagesPromises);
+        return deleteDoc(group.ref);
+      });
+      await Promise.all(deleteGroupsPromises);
+  
+      // Deletar subcoleção de conversas e suas subcoleções de mensagens
+      const conversationsCollection = collection(habitatRef, "conversations");
+      const conversationsSnapshot = await getDocs(conversationsCollection);
+      const deleteConversationsPromises = conversationsSnapshot.docs.map(async (conversation) => {
+        const messagesCollection = collection(conversation.ref, "messages");
+        const messagesSnapshot = await getDocs(messagesCollection);
+        const deleteMessagesPromises = messagesSnapshot.docs.map(message => deleteDoc(message.ref));
+        await Promise.all(deleteMessagesPromises);
+        return deleteDoc(conversation.ref);
+      });
+      await Promise.all(deleteConversationsPromises);
+  
+      // Deletar o arquivo GLB do Storage
+      const glbFileRef = ref(storage, habitat.glbFileUrl);
+      await deleteObject(glbFileRef);
+  
+      // Deletar o documento do habitat do Firestore
       await deleteDoc(habitatRef);
+  
       alert("Habitat deletado com sucesso.");
       window.location.reload();
     } catch (error) {
       console.error("Erro ao deletar habitat: ", error);
     }
   };
-
+  
   const handleLeaveHabitat = async () => {
     try {
       const habitatRef = doc(db, "habitats", habitat.id);
@@ -93,54 +162,99 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     }
   };
 
+  const handleMemberClick = (member) => {
+    if (member.email !== userEmail) {
+      setChatMember(member);
+    }
+  };
+
+  const handleGroupClick = (group) => {
+    setChatGroup(group);
+  };
+
+  const handleBotClick = (bot) => {
+    setChatBot(bot);
+  };
+
   const handleViewScene = () => {
     navigate(`/scene/${habitat.id}`);
   };
-
-  const ComponentToRender = componentConfig[activeComponent].component;
 
   return (
     <div className="access-container">
       <header>
         <div className="text">{habitat.name}</div>
-        <ContextMenu
-          isContextMenuOpen={isContextMenuOpen}
-          toggleContextMenu={toggleContextMenu}
-          handleShowComponent={handleShowComponent}
-          handleViewScene={handleViewScene}
-          handleDeleteHabitat={handleDeleteHabitat}
-          handleLeaveHabitat={handleLeaveHabitat}
-          habitat={habitat}
-          userEmail={userEmail}
-          componentConfig={componentConfig}
-          isAdmin={isAdmin}
-        />
+        <div className="context-menu">
+          <button onClick={toggleContextMenu} className="context-menu-toggle">
+            <FaAngleDown size={20} />
+          </button>
+          {isContextMenuOpen && (
+            <div className="context-menu-items">
+              {habitat.createdBy === userEmail && (
+                <>
+                  <button onClick={handleViewScene}>Visualizar</button>
+                  <button onClick={() => toggleModal("configWelcome", false)}>Equipe</button>
+                  <button onClick={() => toggleModal("configWelcome", true)}>Configurar Chamado</button>
+                  <button onClick={() => toggleModal("rating", true)}>Avaliações</button>
+                  <button onClick={() => toggleModal("edit", true)}>Editar Habitat</button>
+                  <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
+                </>
+              )}
+              {habitat.createdBy !== userEmail && (
+                <>
+                  <button onClick={handleViewScene}>Visualizar</button>
+                  <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </header>
       <div className="divider" />
 
-      {ComponentToRender && (
-        <ComponentToRender
-          habitat={habitat}
-          userEmail={userEmail}
-          setChatMember={setChatMember}
-          setChatGroup={setChatGroup}
-          setChatBot={setChatBot}
-          toggleModal={toggleModal}
-          setSelectedMember={setSelectedMember}
-          setSelectedGroup={setSelectedGroup}
-          setSelectedBot={setSelectedBot}
-          isAdmin={isAdmin}
-        />
-      )}
+      <Topics
+        title="Membros"
+        items={members}
+        onAdd={() => toggleModal("members", true)}
+        onItemClick={handleMemberClick}
+        onEditClick={(id) => { setSelectedMember(id); toggleModal("editMember", true); }}
+        userEmail={userEmail}
+        createdBy={habitat.createdBy}
+      />
+
+      <div className="divider" />
+      
+      <Topics
+        title="Grupos"
+        items={groups}
+        onAdd={() => toggleModal("groups", true)}
+        onItemClick={handleGroupClick}
+        onEditClick={(id) => { setSelectedGroup(id); toggleModal("editGroup", true); }}
+        userEmail={userEmail}
+        createdBy={habitat.createdBy}
+      />
+
+      <div className="divider" />
+      
+      <Topics
+        title="Bots e Assistentes"
+        items={bots}
+        onAdd={() => toggleModal("bots", true)}
+        onItemClick={handleBotClick}
+        onEditClick={(id) => { setSelectedBot(id); toggleModal("editBot", true); }}
+        userEmail={userEmail}
+        createdBy={habitat.createdBy}
+      />
 
       {modals.members && <ModalAddMembers onClose={() => toggleModal("members", false)} habitatId={habitat.id} />}
       {modals.groups && <ModalAddGroups onClose={() => toggleModal("groups", false)} habitatId={habitat.id} userEmail={userEmail} />}
       {modals.bots && <ModalAddBots onClose={() => toggleModal("bots", false)} habitatId={habitat.id} />}
       {modals.edit && <ModalEditHabitat habitatId={habitat.id} onClose={() => toggleModal("edit", false)} />}
-      {modals.editMember && <ModalEditMember habitatId={habitat.id} selectedMember={setSelectedMember} onClose={() => toggleModal("editMember", false)} />}
-      {modals.editGroup && <ModalEditGroup habitatId={habitat.id} selectedGroup={setSelectedGroup} onClose={() => toggleModal("editGroup", false)} />}
-      {modals.editBot && <ModalEditBot selectedBot={setSelectedBot} ifcFileUrl={habitat.ifcFileUrl} onClose={() => toggleModal("editBot", false)} />}
+      {modals.editMember && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={() => toggleModal("editMember", false)} />}
+      {modals.editGroup && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={() => toggleModal("editGroup", false)} />}
+      {modals.editBot && <ModalEditBot selectedBot={selectedBot} ifcFileUrl={habitat.ifcFileUrl} onClose={() => toggleModal("editBot", false)} />}
       {modals.rating && <Rating habitatId={habitat.id} onClose={() => toggleModal("rating", false)} />}
+      {modals.configWelcome && <ConfigWelcome habitat={habitat} />}
     </div>
   );
 }

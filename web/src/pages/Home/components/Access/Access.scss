@@ -111,26 +111,20 @@
       }
     }
 
-    .members-list,
-    .groups-list,
-    .bots-list {
+    .items-list {
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 10px;
       overflow: auto;
 
-      .member-container,
-      .group-container,
-      .bot-container {
+      .item-container {
         width: 100%;
         display: flex;
         align-items: center;
         position: relative; /* Add position relative to member-container */
 
-        .member-item,
-        .group-item,
-        .bot-item {
+        .item {
           position: relative;
           width: calc(100% - 30px);
           display: flex;
