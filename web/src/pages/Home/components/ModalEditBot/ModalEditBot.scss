@@ -1,0 +1,154 @@
+@import "../../../../styles/variables.scss";
+
+.edit-bot-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: $white;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1200;
+    overflow-y: auto; // Adiciona a rolagem vertical
+
+    .page-content {
+        background-color: $white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 100%;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: $gray;
+            cursor: pointer;
+
+            &:hover,
+            &:focus {
+                color: $primary-color;
+            }
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: $primary-color;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+
+            .form-section {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+
+                label {
+                    font-size: 16px;
+                    color: $text;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+
+                    input[type="text"],
+                    input[type="number"],
+                    select {
+                        padding: 10px;
+                        border: 1px solid $gray;
+                        border-radius: 5px;
+                        font-size: 16px;
+                    }
+
+                    textarea {
+                        padding: 10px;
+                        border: 1px solid $gray;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        resize: none;
+                    }
+                }
+
+                .info-section {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    justify-content: center;
+
+                    button {
+                        padding: 5px 10px;
+                        background-color: red;
+                        color: $white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+
+                        &:hover {
+                            transform: scale(1.05);
+                        }
+                    }
+                }
+
+                .info-button{
+                    padding: 5px 10px;
+                        background-color: $primary-color;
+                        color: $white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+
+                        &:hover {
+                            transform: scale(1.05);
+                        }
+                }
+            }
+
+            .model-viewer {
+                position: relative;
+                width: 100%;
+                height: 400px;
+                background-color: $light-gray;
+                border-radius: 10px;
+                display: flex;
+                justify-content: center;
+                align-self: center;
+
+                div{
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 1000;
+                }
+            }
+
+            button[type="submit"] {
+                padding: 10px;
+                background-color: $primary-color;
+                color: $white;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    transform: scale(1.05);
+                }
+            }
+        }
+    }
+}

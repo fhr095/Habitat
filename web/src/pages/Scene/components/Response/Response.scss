@@ -1,0 +1,155 @@
+@import "../../../../styles/variables.scss";
+
+.response-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .question,
+  .loading-response,
+  .response {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    color: $text;
+    max-width: 300px; /* Ajuste conforme necessário */
+    animation-duration: 0.5s;
+    animation-timing-function: ease-out;
+    position: relative;
+  }
+
+  .question {
+    background-color: $primary-color;
+    color: $white;
+    align-self: flex-end;
+    animation-name: slideInFromRight;
+
+    &:after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -9px; /* Ajuste conforme necessário */
+      width: 0;
+      height: 0;
+      border-left: 10px solid $primary-color;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      transform: translateY(-50%);
+    }
+  }
+
+  .loading-response {
+    background-color: $light-gray;
+    color: $text;
+    align-self: center;
+  }
+
+  .response {
+    align-self: flex-start;
+    animation-name: slideInFromLeft;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .bot-image {
+      width: 40px; /* Ajuste o tamanho conforme necessário */
+      height: 40px;
+      border-radius: 50%;
+      background-color: $light-gray;
+    }
+
+    .response-text {
+      background-color: $light-gray;
+      padding: 10px;
+      border-radius: 10px;
+      color: $text;
+      max-width: 300px; /* Ajuste conforme necessário */
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      &:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: -9px; /* Ajuste conforme necessário */
+        width: 0;
+        height: 0;
+        border-right: 10px solid $light-gray;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        transform: translateY(-50%);
+      }
+
+      .feedback-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 20px;
+
+        button {
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          cursor: pointer;
+
+          .like{
+            :hover{
+              color: green;
+            }
+          }
+
+          .dislike{
+            :hover{
+              color: red;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOutToLeft {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+
+  .response-exit {
+    animation-name: slideOutToLeft;
+  }
+}

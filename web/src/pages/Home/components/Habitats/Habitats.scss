@@ -1,0 +1,58 @@
+@import "../../../../styles/variables.scss";
+
+.habitats-sidebar {
+  width: 70px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  padding: 5px;
+  gap: 10px;
+  position: relative;
+
+  .buttons {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: $light-gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.5);
+    background-position: cover;
+    background-size: cover;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      border-radius: 5px;
+    }
+  }
+
+  .dropdown {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    background-color: $white;
+    border: 1px solid $light-gray;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    width: 150px;
+  
+    .dropdown-item {
+      background: none;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      color: $text;
+  
+      &:hover {
+        background-color: $secondary-color;
+      }
+    }
+  }
+}

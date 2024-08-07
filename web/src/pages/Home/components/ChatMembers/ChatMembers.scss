@@ -1,0 +1,135 @@
+@import "../../../../styles/variables.scss";
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.chat-members {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 900;
+  animation: slideInRight 0.3s ease-out;
+
+  header {
+    border-radius: 5px 5px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: $primary-color;
+    color: $white;
+    font-size: 1rem;
+    font-weight: 500;
+
+    .chat-member-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+
+      img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
+    }
+
+    button {
+      background-color: transparent;
+      border: none;
+      color: $white;
+      cursor: pointer;
+    }
+  }
+
+  .messages {
+    padding: 10px;
+    background-color: $white;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .message {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      p {
+        margin: 0;
+        padding: 5px;
+        border-radius: 5px;
+      }
+
+      &.sent {
+        justify-content: flex-end;
+
+        p {
+          background-color: $primary-color;
+          color: $white;
+        }
+      }
+
+      &.received {
+        justify-content: flex-start;
+
+        p {
+          background-color: $light-gray;
+          color: $text;
+        }
+      }
+
+      .profile-img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
+    }
+  }
+
+  footer {
+    border-radius: 0 0 5px 5px;
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background-color: $light-gray;
+    color: $white;
+
+    input {
+      padding: 5px;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    button {
+      width: 40px;
+      height: 40px;
+      background-color: $primary-color;
+      color: $white;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}
