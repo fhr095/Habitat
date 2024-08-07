@@ -22,6 +22,8 @@ export default function Scene({ user }) {
   const [fade, setFade] = useState([]);
   const [resete, setResete] = useState(false);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
+  const [emotion, setEmotion] = useState("");   
+  const [gender, setGender] = useState("");
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -44,12 +46,16 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
+  // useEffect(() => {
+  //   console.log("Emotion: ", emotion);
+  //   console.log("Gender: ", gender);
+  // }, [emotion, gender]);
 
   return (
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
-      {/* <Buttons setTranscript={setTranscript} setResete={setResete} /> */}
+      <Buttons setTranscript={setTranscript} setResete={setResete} />
 
       <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 
@@ -57,7 +63,7 @@ export default function Scene({ user }) {
 
       <Welcome habitatId={id} transcript={transcript} isPersonDetected={isPersonDetected} />
 
-      <WebCan setIsPersonDetected={setIsPersonDetected}/>
+      <WebCan setIsPersonDetected={setIsPersonDetected} setEmotion={setEmotion} setGender={setGender}/>
     </div>
   );
 }
