@@ -53,7 +53,7 @@ export default function Scene({ user }) {
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
-      <Buttons setTranscript={setTranscript} setResete={setResete} />
+      {/* <Buttons setTranscript={setTranscript} setResete={setResete} /> */}
 
       <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 

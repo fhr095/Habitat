@@ -5,49 +5,69 @@ import * as OBF from "@thatopen/components-front";
 
 import "./Model.scss";
 
-export default function Model({ ifcFileUrl, fade, avt }) {
+export default function Model({ ifcFileUrl, fade }) {
   const containerRef = useRef();
-  // const [children, setChildren] = useState([]);
   const [camera, setCamera] = useState(null);
-  const [arrayName, setArrayName] = useState([])
+  const [arrayName, setArrayName] = useState([]);
+  const originalMaterials = useRef(new Map()); // Usando useRef para armazenar materiais originais
 
   let components = new OBC.Components();
   let worlds = components.get(OBC.Worlds);
   let world = worlds.create();
 
   useEffect(() => {
-    if(ifcFileUrl){
+    if (ifcFileUrl) {
       init();
     }
   }, [ifcFileUrl]);
 
   useEffect(() => {
-    if(fade.length > 0 && arrayName){
-      arrayName.map((obejct) => {
-        if(obejct.element.isMesh){
-          const originalMaterial = obejct.element.material;
-          if(obejct.name == fade[0].fade){
-            obejct.element.material = new THREE.MeshStandardMaterial({ color: "#ff0000" });
-            camera.fit([obejct.element], 0.5);
-            setTimeout(() => {
-              camera.controls.setLookAt(10, 10, 10, 0, 0, 0)
-              obejct.element.material = originalMaterial;
-            }, fade[0].duration * 1000);
-          }else{
-            obejct.element.material = new THREE.MeshStandardMaterial({ 
-              opacity: 0.1,
-              transparent: true,
-            });
-            setTimeout(() => {
-              obejct.element.material = originalMaterial;
-            }, fade[0].duration * 1000);
-          }
+    if (fade.length > 0 && arrayName.length > 0) {
+      const applyFadeEffect = (index) => {
+        if (index >= fade.length) {
+          // Restore all materials to original after all fades
+          arrayName.forEach((object) => {
+            if (object.element.isMesh) {
+              object.element.material = originalMaterials.current.get(object.element);
+            }
+          });
+          return;
         }
-      });
-    }
-  }, [fade]);
 
-  async function init(){
+        const fadeElement = fade[index];
+        arrayName.forEach((object) => {
+          if (object.element.isMesh) {
+            const originalMaterial = originalMaterials.current.get(object.element);
+            if (!originalMaterial) {
+              originalMaterials.current.set(object.element, object.element.material);
+            }
+
+            if (object.name === fadeElement.fade) {
+              object.element.material = new THREE.MeshStandardMaterial({ color: "#ff0000" });
+              camera.fit([object.element], 0.5);
+              setTimeout(() => {
+                camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
+                object.element.material = originalMaterials.current.get(object.element);
+                applyFadeEffect(index + 1); // Move to the next fade element
+              }, fadeElement.duration * 1000);
+            } else {
+              object.element.material = new THREE.MeshStandardMaterial({
+                opacity: 0.1,
+                transparent: true,
+              });
+              setTimeout(() => {
+                object.element.material = originalMaterials.current.get(object.element);
+              }, fadeElement.duration * 1000);
+            }
+          }
+        });
+      };
+
+      applyFadeEffect(0);
+    }
+  }, [fade, arrayName, camera]);
+
+  async function init() {
     components = new OBC.Components();
     worlds = components.get(OBC.Worlds);
     world = worlds.create();
@@ -74,7 +94,7 @@ export default function Model({ ifcFileUrl, fade, avt }) {
     loadIfc(components, world);
   }
 
-  async function loadIfc(components, world){
+  async function loadIfc(components, world) {
     const ifcLoader = components.get(OBC.IfcLoader);
     await ifcLoader.setup();
     const file = await fetch(ifcFileUrl);
@@ -83,7 +103,7 @@ export default function Model({ ifcFileUrl, fade, avt }) {
     const model = await ifcLoader.load(typedArray);
     world.scene.three.add(model);
 
-    function rotate(){
+    function rotate() {
       model.rotation.y += 0.0001;
     }
 
@@ -104,11 +124,11 @@ export default function Model({ ifcFileUrl, fade, avt }) {
 
       arrayData.push({
         name: properties[Array.from(idsSet)[0]].attributes.Name.value,
-        element: element
+        element: element,
       });
     }
 
-    setArrayName(arrayData)
+    setArrayName(arrayData);
   }
 
   async function fetchProperties(components, fragmentIdMap) {
@@ -144,8 +164,6 @@ export default function Model({ ifcFileUrl, fade, avt }) {
   }
 
   return (
-    <div ref={containerRef} className="model-container">
-      
-    </div>
+    <div ref={containerRef} className="model-container"></div>
   );
 }
