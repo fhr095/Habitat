@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import * as faceapi from "face-api.js";
 
-export default function WebCam({ setIsPersonDetected, setEmotion, setGender }) {
+export default function WebCam({ setIsPersonDetected, setPersons }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -45,15 +45,15 @@ export default function WebCam({ setIsPersonDetected, setEmotion, setGender }) {
         setIsPersonDetected(detections.length > 0);
 
         if (detections.length > 0) {
-          const expressions = detections[0].expressions;
-          const maxValue = Math.max(...Object.values(expressions));
-          const emotion = Object.keys(expressions).filter(
-            item => expressions[item] === maxValue
-          );
-          setEmotion(emotion[0]);
+          const persons = detections.map(person => {
+            return {
+              emotion: person.expressions.asSortedArray()[0].expression,
+              age: Math.floor(person.age),
+              gender: person.gender
+            };
+          });
 
-          const { gender } = detections[0];
-          setGender(gender);
+          setPersons(persons);
         }
       }
     };
@@ -62,7 +62,7 @@ export default function WebCam({ setIsPersonDetected, setEmotion, setGender }) {
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
-  }, [setIsPersonDetected, setEmotion, setGender]);
+  }, [setIsPersonDetected, setPersons]);
 
   return (
     <video ref={videoRef} autoPlay muted style={{ position: 'absolute', top: '-9999px', left: '-9999px' }} />
