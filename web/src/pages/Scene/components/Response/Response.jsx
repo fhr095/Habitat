@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { doc, setDoc, collection } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { BiSolidLike, BiSolidDislike  } from "react-icons/bi";
+import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
 
-import botImage from "../../../../assets/images/avatar.png";
+import Avatar from "./Avatar";
 import "./Response.scss";
 
 export default function Response({ habitatId, avt, transcript, setTranscript, setFade }) {
@@ -12,6 +12,7 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
+    const [animation, setAnimation] = useState("pensando");
 
     useEffect(() => {
         const sendTranscript = async () => {
@@ -24,6 +25,7 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
 
                 setResponse(res.data.comandos);
                 setLoading(false);
+                setAnimation("falando-sorrindo"); // Muda a animação quando começa a resposta
             } catch (error) {
                 console.error("Error sending transcript: ", error);
                 setLoading(false);
@@ -32,6 +34,7 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
 
         if (transcript !== "") {
             sendTranscript();
+            setAnimation("pensando"); // Muda a animação para "pensando" enquanto carrega
         }
     }, [transcript, avt, setFade]);
 
@@ -64,7 +67,8 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
                 setShowFeedback(false);
                 setResponse([]);
                 setTranscript("");
-            }, 5000); // Increased the time to 7 seconds
+                setAnimation("pensando"); // Volta para a animação "pensando" ao final da interação
+            }, 5000); // Increased the time to 5 seconds
         }
     };
 
@@ -94,13 +98,16 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
             )}
             {loading ? (
                 <div className="loading-response">
-                    <p>Loading response...</p>
+                    <Avatar animation={animation} /> 
+                    <div className="loading-response-text">
+                        <p>Carregando Resposta...</p>
+                    </div>
                 </div>
             ) : (
                 <div className={`response ${response.length === 0 ? "response-exit" : ""}`}>
                     {response.length > 0 && (
                         <>
-                            <img src={botImage} alt="Bot" className="bot-image" />
+                            <Avatar animation={animation} />
                             <div className="response-text">
                                 <p>{response[currentIndex]?.texto}</p>
                                 {showFeedback && (

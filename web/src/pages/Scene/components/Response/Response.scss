@@ -16,7 +16,7 @@
     padding: 10px;
     border-radius: 10px;
     color: $text;
-    max-width: 300px; /* Ajuste conforme necessário */
+    max-width: 500px; /* Ajuste conforme necessário */
     animation-duration: 0.5s;
     animation-timing-function: ease-out;
     position: relative;
@@ -43,9 +43,41 @@
   }
 
   .loading-response {
-    background-color: $light-gray;
-    color: $text;
-    align-self: center;
+    align-self: flex-start;
+    animation-name: slideInFromLeft;
+    display: flex;
+    align-items: center;
+
+    canvas {
+      width: 100%; /* Largura do canvas do avatar */
+      height: 100%; /* Altura do canvas do avatar */
+    }
+
+    .loading-response-text{
+      background-color: $light-gray;
+      padding: 10px;
+      border-radius: 10px;
+      color: $text;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      &:after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: -9px; /* Ajuste conforme necessário */
+        width: 0;
+        height: 0;
+        border-right: 10px solid $light-gray;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        transform: translateY(-50%);
+      }
+    }
   }
 
   .response {
@@ -53,13 +85,10 @@
     animation-name: slideInFromLeft;
     display: flex;
     align-items: center;
-    gap: 20px;
 
-    .bot-image {
-      width: 40px; /* Ajuste o tamanho conforme necessário */
-      height: 40px;
-      border-radius: 50%;
-      background-color: $light-gray;
+    canvas {
+      width: 100%; /* Largura do canvas do avatar */
+      height: 100%; /* Altura do canvas do avatar */
     }
 
     .response-text {
@@ -67,7 +96,7 @@
       padding: 10px;
       border-radius: 10px;
       color: $text;
-      max-width: 300px; /* Ajuste conforme necessário */
+      max-width: 70%; /* Ajuste conforme necessário */
       position: relative;
       display: flex;
       flex-direction: column;
