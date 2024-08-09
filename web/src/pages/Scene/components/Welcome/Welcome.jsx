@@ -1,74 +1,70 @@
-import React, { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import * as sdk from "microsoft-cognitiveservices-speech-sdk";
-import { db } from "../../../../firebase"; // Certifique-se de importar corretamente seu Firebase
-
-import botImg from "../../../../assets/images/avatar.png";
+import React, { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import * as THREE from "three";
 import "./Welcome.scss";
 
-export default function Welcome({ habitatId, transcript, isPersonDetected }) {
-  const [welcomeData, setWelcomeData] = useState(null);
-  const [isCooldown, setIsCooldown] = useState(false);
+// Componente para carregar e animar o modelo GLB
+const AnimatedModel = ({ url }) => {
+  const [gltf, setGltf] = useState(null);
+  const mixer = useRef(null);
+  const modelRef = useRef();
 
   useEffect(() => {
-    const fetchWelcomeData = () => {
-      const welcomeRef = doc(db, `habitats/${habitatId}/welcome/welcomeData`);
-      const unsubscribe = onSnapshot(welcomeRef, (doc) => {
-        if (doc.exists()) {
-          setWelcomeData(doc.data());
-        } else {
-          console.log("No such document!");
-        }
+    const loader = new GLTFLoader();
+    loader.load(url, (gltf) => {
+      setGltf(gltf);
+    });
+  }, [url]);
+
+  useEffect(() => {
+    if (gltf && gltf.animations.length) {
+      mixer.current = new THREE.AnimationMixer(gltf.scene);
+      gltf.animations.forEach((clip) => {
+        const action = mixer.current.clipAction(clip);
+        action.play();
       });
-
-      return () => unsubscribe();
-    };
-
-    fetchWelcomeData();
-  }, [habitatId]);
-
-  useEffect(() => {
-    if (welcomeData?.active && isPersonDetected && transcript === "" && !isCooldown) {
-      speakText(welcomeData?.text);
-      setIsCooldown(true);
-      setTimeout(() => {
-        setIsCooldown(false);
-      }, 30000); // 30 segundos
     }
-  }, [welcomeData, isPersonDetected, transcript, isCooldown]);
+  }, [gltf]);
 
-  const speakText = (text) => {
-    const speechConfig = sdk.SpeechConfig.fromSubscription(
-      import.meta.env.VITE_APP_AZURE_SPEECH_KEY1,
-      import.meta.env.VITE_APP_AZURE_REGION
-    );
-    const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
+  useFrame((state, delta) => {
+    mixer.current?.update(delta);
+    if (modelRef.current) {
+        modelRef.current.rotation.y = -1.55; // Rotaciona o modelo 180 graus para deixá-lo de frente
+        modelRef.current.position.y = -0.75; // Ajuste a posição Y para mover o modelo para baixo
+      }
+  });
 
-    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+  return gltf ? <primitive object={gltf.scene} ref={modelRef} /> : null;
+};
 
-    synthesizer.speakTextAsync(text,
-      result => {
-        if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-          console.log("Synthesis finished.");
-        } else {
-          console.error("Speech synthesis canceled, " + result.errorDetails);
-        }
-        synthesizer.close();
-      },
-      error => {
-        console.error(error);
-        synthesizer.close();
-      });
-  };
+// Componente principal da cena
+export default function Welcome({ isPersonDetected, transcript }) {
+  const [currentModel, setCurrentModel] = useState("/Avatar/chegando.glb");
+
+  useEffect(() => {
+    if (isPersonDetected) {
+      setCurrentModel("/Avatar/acenando.glb");
+    } else {
+      const timer = setTimeout(() => {
+        setCurrentModel("/Avatar/conversando-feliz.glb");
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isPersonDetected]);
+
+  const containerClass = transcript !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
-    <>
-      {transcript === "" && welcomeData?.active && isPersonDetected && (
-        <div className="welcome-container">
-          <img src={botImg} alt="Bot" />
-          <div className="welcome-text">{welcomeData?.text}</div>
-        </div>
-      )}
-    </>
+    <div className={containerClass}>
+      <Canvas camera={{ position: [0, 0.2, 2], fov: 50 }}>
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[10, 10, 5]} intensity={1} />
+        <AnimatedModel url={currentModel} />
+        <OrbitControls />
+      </Canvas>
+    </div>
   );
 }
