@@ -45,8 +45,8 @@ export default function Scene({ user }) {
   }, [id]);
 
   // useEffect(() => {
-  //   console.log("Persons: ", persons);
-  // }, [persons]);
+  //   console.log("Persons: ", transcript);
+  // }, [transcript]);
 
   return (
     <div className="scene-container">
@@ -58,7 +58,7 @@ export default function Scene({ user }) {
 
       {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />}
 
-      <Welcome isPersonDetected={isPersonDetected} transcript={transcript} />
+      {/* <Welcome isPersonDetected={isPersonDetected} transcript={transcript} /> */}
 
       <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons}/>
     </div>

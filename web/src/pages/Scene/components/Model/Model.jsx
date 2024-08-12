@@ -3,13 +3,16 @@ import * as THREE from "three";
 import * as OBC from "@thatopen/components";
 import * as OBF from "@thatopen/components-front";
 
+import Avatar from "./Avatar";
+
 import "./Model.scss";
 
 export default function Model({ ifcFileUrl, fade }) {
   const containerRef = useRef();
   const [camera, setCamera] = useState(null);
   const [arrayName, setArrayName] = useState([]);
-  const originalMaterials = useRef(new Map()); // Usando useRef para armazenar materiais originais
+  const originalMaterials = useRef(new Map());
+  const [screenPosition, setScreenPosition] = useState({ x: 0, y: 0 });
 
   let components = new OBC.Components();
   let worlds = components.get(OBC.Worlds);
@@ -22,10 +25,9 @@ export default function Model({ ifcFileUrl, fade }) {
   }, [ifcFileUrl]);
 
   useEffect(() => {
-    if (fade.length > 0 && arrayName.length > 0) {
+    if (fade.length > 0 && arrayName.length > 0 && camera) {
       const applyFadeEffect = (index) => {
         if (index >= fade.length) {
-          // Restore all materials to original after all fades
           arrayName.forEach((object) => {
             if (object.element.isMesh) {
               object.element.material = originalMaterials.current.get(object.element);
@@ -44,11 +46,31 @@ export default function Model({ ifcFileUrl, fade }) {
 
             if (object.name === fadeElement.fade) {
               object.element.material = new THREE.MeshStandardMaterial({ color: "#ff0000" });
+
+              const box = new THREE.Box3().setFromObject(object.element);
+              const center = new THREE.Vector3();
+              box.getCenter(center);
               camera.fit([object.element], 0.5);
+
               setTimeout(() => {
-                camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
+                center.project(camera.three);
+
+                const widthHalf = window.innerWidth / 2;
+                const heightHalf = window.innerHeight / 2;
+
+                const calculatedPosition = {
+                  x: center.x * widthHalf + widthHalf,
+                  y: -(center.y * heightHalf) + heightHalf,
+                };
+
+                setScreenPosition(calculatedPosition);
+              }, 1000);
+
+              setTimeout(() => {
                 object.element.material = originalMaterials.current.get(object.element);
-                applyFadeEffect(index + 1); // Move to the next fade element
+                camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
+                setScreenPosition({ x: 0, y: 0 });
+                applyFadeEffect(index + 1);
               }, fadeElement.duration * 1000);
             } else {
               object.element.material = new THREE.MeshStandardMaterial({
@@ -164,6 +186,10 @@ export default function Model({ ifcFileUrl, fade }) {
   }
 
   return (
-    <div ref={containerRef} className="model-container"></div>
+    <div ref={containerRef} className="model-container">
+      {screenPosition.x !== 0 && screenPosition.y !== 0 && (
+        <Avatar position={screenPosition} />
+      )}
+    </div>
   );
 }
