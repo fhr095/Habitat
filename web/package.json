@@ -24,6 +24,7 @@
     "bootstrap": "^5.3.3",
     "face-api.js": "^0.22.2",
     "firebase": "^10.11.1",
+    "idb": "^8.0.0",
     "idb-keyval": "^6.2.1",
     "leaflet": "^1.9.4",
     "mapbox-gl": "^3.4.0",

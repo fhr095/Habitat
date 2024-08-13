@@ -5,7 +5,6 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase"; 
 
 import Model from "./components/Model/Model";
-import Buttons from "./components/Buttons/Buttons";
 import Response from "./components/Response/Response";
 import Transcript from "./components/Transcript/Transcript";
 import Welcome from "./components/Welcome/Welcome";
@@ -44,21 +43,15 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
-  // useEffect(() => {
-  //   console.log("Persons: ", transcript);
-  // }, [transcript]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
-
-      {/* <Buttons setTranscript={setTranscript} setResete={setResete} /> */}
 
       <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 
       {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />}
 
-      {/* <Welcome isPersonDetected={isPersonDetected} transcript={transcript} /> */}
+      <Welcome isPersonDetected={isPersonDetected} transcript={transcript} />
 
       <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons}/>
     </div>
