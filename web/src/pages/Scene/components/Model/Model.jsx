@@ -64,7 +64,7 @@ export default function Model({ ifcFileUrl, fade }) {
                 };
 
                 setScreenPosition(calculatedPosition);
-              }, 1000);
+              }, 500);
 
               setTimeout(() => {
                 object.element.material = originalMaterials.current.get(object.element);

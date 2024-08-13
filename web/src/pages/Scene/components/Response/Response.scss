@@ -6,7 +6,6 @@
   right: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
 
   .question,
   .loading-response,
@@ -16,7 +15,7 @@
     padding: 10px;
     border-radius: 10px;
     color: $text;
-    max-width: 500px; /* Ajuste conforme necessário */
+    max-width: 400px; /* Ajuste conforme necessário */
     animation-duration: 0.5s;
     animation-timing-function: ease-out;
     position: relative;
@@ -96,7 +95,7 @@
       padding: 10px;
       border-radius: 10px;
       color: $text;
-      max-width: 70%; /* Ajuste conforme necessário */
+      max-width: 100%; /* Ajuste conforme necessário */
       position: relative;
       display: flex;
       flex-direction: column;
