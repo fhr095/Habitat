@@ -3,7 +3,7 @@ import * as faceapi from "face-api.js";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 
-export default function WebCam({ setIsPersonDetected, setPersons, habitatId }) {
+export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognized, habitatId }) {
   const videoRef = useRef(null);
   const labeledFaceDescriptors = useRef([]);
 
@@ -71,15 +71,18 @@ export default function WebCam({ setIsPersonDetected, setPersons, habitatId }) {
 
         if (detections.length > 0) {
           const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors.current, 0.6);
+          let recognized = false;
 
           detections.forEach(detection => {
             const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
             if (bestMatch.label !== 'unknown') {
-              console.log(`Person detected: ${bestMatch.label}`);
+              recognized = true;
             } else {
               console.log('Person not recognized');
             }
           });
+
+          setIsRecognized(recognized);
 
           const persons = detections.map(person => {
             return {
@@ -90,6 +93,8 @@ export default function WebCam({ setIsPersonDetected, setPersons, habitatId }) {
           });
 
           setPersons(persons);
+        } else {
+          setIsRecognized(false);
         }
       }
     };
@@ -98,7 +103,7 @@ export default function WebCam({ setIsPersonDetected, setPersons, habitatId }) {
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
-  }, [setIsPersonDetected, setPersons, habitatId]);
+  }, [setIsPersonDetected, setPersons, setIsRecognized, habitatId]);
 
   return (
     <video ref={videoRef} autoPlay muted style={{ position: 'absolute', top: '-9999px', left: '-9999px' }} />

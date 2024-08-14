@@ -1,4 +1,3 @@
-// Access.js
 import React, { useState, useEffect } from "react";
 import { FaAngleDown } from "react-icons/fa";
 import {
@@ -131,35 +130,24 @@ export default function Access({
   const handleDeleteHabitat = async () => {
     const habitatId = habitat.id;
     try {
-      // Verificação do tipo de habitatId
       if (typeof habitatId !== "string") {
         throw new Error(`Expected habitatId to be a string, but got ${typeof habitatId}`);
       }
   
       const habitatRef = doc(db, "habitats", habitatId);
   
-      console.log("Deleting habitat with ID:", habitatId);
-      console.log("Document reference:", habitatRef);
-  
-      // Função para deletar todas as subcoleções recursivamente
       const deleteSubcollectionsRecursively = async (docRef) => {
         const subcollectionsSnapshot = await getDocs(collectionGroup(db, docRef.id));
   
         for (const subcollectionDoc of subcollectionsSnapshot.docs) {
           const subDocRef = subcollectionDoc.ref;
-          console.log("Deleting document in subcollection:", subDocRef.path);
-  
-          // Recursivamente deletar subcoleções aninhadas
           await deleteSubcollectionsRecursively(subDocRef);
-          // Deleta o documento
           await deleteDoc(subDocRef);
         }
       };
   
-      // Deleta todas as subcoleções dentro do habitat
       await deleteSubcollectionsRecursively(habitatRef);
   
-      // Deleta o documento do habitat
       await deleteDoc(habitatRef);
   
       alert("Habitat deletado com sucesso.");
@@ -202,6 +190,21 @@ export default function Access({
     navigate(`/scene/${habitat.id}`);
   };
 
+  const toggleDataCollection = async () => {
+    try {
+      const habitatRef = doc(db, "habitats", habitat.id);
+      const newStatus = !habitat.dataCollectionEnabled;
+      await updateDoc(habitatRef, { dataCollectionEnabled: newStatus });
+      alert(
+        newStatus
+          ? "Coleta de dados ativada."
+          : "Coleta de dados desativada."
+      );
+    } catch (error) {
+      console.error("Erro ao alterar status da coleta de dados: ", error);
+    }
+  };
+
   return (
     <div className="access-container">
       <header>
@@ -226,6 +229,11 @@ export default function Access({
                   </button>
                   <button onClick={() => toggleModal("edit", true)}>
                     Editar Habitat
+                  </button>
+                  <button onClick={toggleDataCollection}>
+                    {habitat.dataCollectionEnabled
+                      ? "Desativar Coleta de Dados"
+                      : "Ativar Coleta de Dados"}
                   </button>
                   <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
                 </>

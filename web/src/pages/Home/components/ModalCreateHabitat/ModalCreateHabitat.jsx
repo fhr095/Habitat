@@ -10,6 +10,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
   const [image, setImage] = useState(null);
   const [ifcFile, setIfcFile] = useState(null);
   const [isPublic, setIsPublic] = useState(false);
+  const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false); // Nova variável booleana
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,6 +59,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
                   imageUrl,
                   ifcFileUrl,
                   isPublic,
+                  dataCollectionEnabled, // Adicionando a variável booleana ao documento
                   createdBy: userEmail,
                 });
 
@@ -81,6 +83,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
               imageUrl: null,
               ifcFileUrl,
               isPublic,
+              dataCollectionEnabled, // Adicionando a variável booleana ao documento
               createdBy: userEmail,
             });
 

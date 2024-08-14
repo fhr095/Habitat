@@ -22,6 +22,8 @@ export default function Scene({ user }) {
   const [resete, setResete] = useState(false);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
+  const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
+  const [isRecognized, setIsRecognized] = useState(false);
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -33,6 +35,7 @@ export default function Scene({ user }) {
           const habitatData = habitatDoc.data();
           setIfcFileUrl(habitatData.ifcFileUrl);
           setCreatedBy(habitatData.createdBy);
+          setDataCollectionEnabled(habitatData.dataCollectionEnabled || false);
         } else {
           console.error("No such document!");
         }
@@ -44,23 +47,19 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
-  useEffect(() => {
-    console.log("Persons: ", persons);
-  }, [persons]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
 
       <Response habitatId={id} avt={id} transcript={transcript} setTranscript={setTranscript} setFade={setFade} />
 
-      {isPersonDetected && <Button habitatId={id}/>} 
+      {isPersonDetected && dataCollectionEnabled && !isRecognized && <Button habitatId={id} />} 
 
       {/* {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />} */}
 
       {/* <Welcome isPersonDetected={isPersonDetected} transcript={transcript} /> */}
 
-      <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons} habitatId={id}/>
+      <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons} setIsRecognized={setIsRecognized} habitatId={id}/>
     </div>
   );
 }
