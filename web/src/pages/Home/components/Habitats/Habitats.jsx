@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaCompass } from "react-icons/fa";
-import { collection, query, where, getDocs, doc } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../../../../firebase";
 import ModalCreateHabitat from "../ModalCreateHabitat/ModalCreateHabitat";
@@ -14,36 +14,44 @@ export default function Habitats({ user, setHabitat }) {
   const [habitats, setHabitats] = useState([]);
 
   useEffect(() => {
-    const fetchHabitats = async () => {
-      try {
-        const habitatsCreatedQuery = query(collection(db, "habitats"), where("createdBy", "==", user.email));
-        const habitatsCollectionSnapshot = await getDocs(collection(db, "habitats"));
+    const habitatsMap = new Map();
 
-        const habitatsMap = new Map();
+    const fetchHabitatsRealTime = () => {
+      // Query para habitats criados pelo usuário
+      const habitatsCreatedQuery = query(
+        collection(db, "habitats"),
+        where("createdBy", "==", user.email)
+      );
 
-        // Adicionar habitats criados pelo usuário
-        const createdSnapshot = await getDocs(habitatsCreatedQuery);
-        createdSnapshot.forEach((doc) => {
+      // Listener para habitats criados pelo usuário
+      const unsubscribeCreated = onSnapshot(habitatsCreatedQuery, (snapshot) => {
+        snapshot.forEach((doc) => {
           habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
         });
-
-        // Verificar habitats onde o usuário é membro
-        for (const habitatDoc of habitatsCollectionSnapshot.docs) {
-          const memberDoc = await getDocs(collection(db, `habitats/${habitatDoc.id}/members`));
-          memberDoc.forEach((doc) => {
-            if (doc.id === user.email) {
-              habitatsMap.set(habitatDoc.id, { id: habitatDoc.id, ...habitatDoc.data() });
-            }
-          });
-        }
-
         setHabitats(Array.from(habitatsMap.values()));
-      } catch (error) {
-        console.error("Erro ao buscar habitats: ", error);
-      }
+      });
+
+      // Listener para habitats onde o usuário é membro
+      const unsubscribeMembers = onSnapshot(collection(db, "habitats"), (snapshot) => {
+        snapshot.forEach(async (habitatDoc) => {
+          const memberSnapshot = await onSnapshot(collection(db, `habitats/${habitatDoc.id}/members`), (membersSnapshot) => {
+            membersSnapshot.forEach((memberDoc) => {
+              if (memberDoc.id === user.email) {
+                habitatsMap.set(habitatDoc.id, { id: habitatDoc.id, ...habitatDoc.data() });
+                setHabitats(Array.from(habitatsMap.values()));
+              }
+            });
+          });
+        });
+      });
+
+      return () => {
+        unsubscribeCreated();
+        unsubscribeMembers();
+      };
     };
 
-    fetchHabitats();
+    fetchHabitatsRealTime();
   }, [user.email]);
 
   const toggleCreateModal = () => {
@@ -89,21 +97,11 @@ export default function Habitats({ user, setHabitat }) {
         </div>
       )}
       
-      {habitats.length > 0 ? (
-        <div className="divider"/>
-      ) : (
-        <></>
-      )
-      }
-      
+      {habitats.length > 0 && <div className="divider" />}
 
-      {habitats.length > 0 ? (
-        habitats.map(habitat => (
-          <div onClick={handleHabitatClick(habitat)} key={habitat.id} className="buttons habitat-item" style={{ backgroundImage: `url(${habitat.imageUrl})` }} />
-        ))
-      ) : (
-        <></>
-      )}
+      {habitats.length > 0 && habitats.map(habitat => (
+        <div onClick={handleHabitatClick(habitat)} key={habitat.id} className="buttons habitat-item" style={{ backgroundImage: `url(${habitat.imageUrl})` }} />
+      ))}
 
       <div className="divider" />
 

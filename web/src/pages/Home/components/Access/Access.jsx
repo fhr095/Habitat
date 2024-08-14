@@ -1,7 +1,18 @@
 // Access.js
 import React, { useState, useEffect } from "react";
 import { FaAngleDown } from "react-icons/fa";
-import { collection, query, where, doc, updateDoc, arrayRemove, deleteDoc, onSnapshot, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  doc,
+  updateDoc,
+  arrayRemove,
+  deleteDoc,
+  onSnapshot,
+  getDocs,
+  collectionGroup,
+} from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { useNavigate } from "react-router-dom";
 import ModalEditHabitat from "../ModalEditHabitat/ModalEditHabitat";
@@ -17,7 +28,13 @@ import ConfigWelcome from "../ConfigWelcome/ConfigWelcome";
 
 import "./Access.scss";
 
-export default function Access({ habitat, userEmail, setChatMember, setChatGroup, setChatBot }) {
+export default function Access({
+  habitat,
+  userEmail,
+  setChatMember,
+  setChatGroup,
+  setChatBot,
+}) {
   const navigate = useNavigate();
   const [modals, setModals] = useState({
     members: false,
@@ -45,7 +62,10 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         const membersData = [];
         for (const memberDoc of querySnapshot.docs) {
           const memberData = memberDoc.data();
-          const userQuery = query(collection(db, "users"), where("email", "==", memberData.email));
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", memberData.email)
+          );
           const userDocSnapshot = await getDocs(userQuery);
           if (!userDocSnapshot.empty) {
             const userData = userDocSnapshot.docs[0].data();
@@ -62,9 +82,15 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     };
 
     const fetchGroups = () => {
-      const q = query(collection(db, `habitats/${habitat.id}/groups`), where("users", "array-contains", userEmail));
+      const q = query(
+        collection(db, `habitats/${habitat.id}/groups`),
+        where("users", "array-contains", userEmail)
+      );
       return onSnapshot(q, (querySnapshot) => {
-        const groupsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const groupsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setGroups(groupsData);
       });
     };
@@ -72,7 +98,10 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     const fetchBots = () => {
       const q = query(collection(db, `habitats/${habitat.id}/avatars`));
       return onSnapshot(q, (querySnapshot) => {
-        const botsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const botsData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setBots(botsData);
       });
     };
@@ -89,20 +118,48 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
   }, [habitat.id, userEmail]);
 
   const toggleModal = (modalName, value) => {
-    setModals(prevModals => ({
+    setModals((prevModals) => ({
       ...prevModals,
       [modalName]: value,
     }));
   };
 
   const toggleContextMenu = () => {
-    setIsContextMenuOpen(prevState => !prevState);
+    setIsContextMenuOpen((prevState) => !prevState);
   };
 
   const handleDeleteHabitat = async () => {
+    const habitatId = habitat.id;
     try {
-      const habitatRef = doc(db, "habitats", habitat.id);
-      // Deletar o documento do habitat do Firestore
+      // Verificação do tipo de habitatId
+      if (typeof habitatId !== "string") {
+        throw new Error(`Expected habitatId to be a string, but got ${typeof habitatId}`);
+      }
+  
+      const habitatRef = doc(db, "habitats", habitatId);
+  
+      console.log("Deleting habitat with ID:", habitatId);
+      console.log("Document reference:", habitatRef);
+  
+      // Função para deletar todas as subcoleções recursivamente
+      const deleteSubcollectionsRecursively = async (docRef) => {
+        const subcollectionsSnapshot = await getDocs(collectionGroup(db, docRef.id));
+  
+        for (const subcollectionDoc of subcollectionsSnapshot.docs) {
+          const subDocRef = subcollectionDoc.ref;
+          console.log("Deleting document in subcollection:", subDocRef.path);
+  
+          // Recursivamente deletar subcoleções aninhadas
+          await deleteSubcollectionsRecursively(subDocRef);
+          // Deleta o documento
+          await deleteDoc(subDocRef);
+        }
+      };
+  
+      // Deleta todas as subcoleções dentro do habitat
+      await deleteSubcollectionsRecursively(habitatRef);
+  
+      // Deleta o documento do habitat
       await deleteDoc(habitatRef);
   
       alert("Habitat deletado com sucesso.");
@@ -110,13 +167,13 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
     } catch (error) {
       console.error("Erro ao deletar habitat: ", error);
     }
-  };
-  
+  };  
+
   const handleLeaveHabitat = async () => {
     try {
       const habitatRef = doc(db, "habitats", habitat.id);
       await updateDoc(habitatRef, {
-        members: arrayRemove(userEmail)
+        members: arrayRemove(userEmail),
       });
 
       alert("Você saiu do habitat.");
@@ -158,10 +215,18 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
               {habitat.createdBy === userEmail && (
                 <>
                   <button onClick={handleViewScene}>Visualizar</button>
-                  <button onClick={() => toggleModal("configWelcome", false)}>Equipe</button>
-                  <button onClick={() => toggleModal("configWelcome", true)}>Configurar Chamado</button>
-                  <button onClick={() => toggleModal("rating", true)}>Avaliações</button>
-                  <button onClick={() => toggleModal("edit", true)}>Editar Habitat</button>
+                  <button onClick={() => toggleModal("configWelcome", false)}>
+                    Equipe
+                  </button>
+                  <button onClick={() => toggleModal("configWelcome", true)}>
+                    Configurar Chamado
+                  </button>
+                  <button onClick={() => toggleModal("rating", true)}>
+                    Avaliações
+                  </button>
+                  <button onClick={() => toggleModal("edit", true)}>
+                    Editar Habitat
+                  </button>
                   <button onClick={handleDeleteHabitat}>Deletar Habitat</button>
                 </>
               )}
@@ -182,43 +247,96 @@ export default function Access({ habitat, userEmail, setChatMember, setChatGroup
         items={members}
         onAdd={() => toggleModal("members", true)}
         onItemClick={handleMemberClick}
-        onEditClick={(user) => { setSelectedMember(user.id); toggleModal("editMember", true); }}
+        onEditClick={(user) => {
+          setSelectedMember(user.id);
+          toggleModal("editMember", true);
+        }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />
 
       <div className="divider" />
-      
+
       <Topics
         title="Grupos"
         items={groups}
         onAdd={() => toggleModal("groups", true)}
         onItemClick={handleGroupClick}
-        onEditClick={(group) => { setSelectedGroup(group.id); toggleModal("editGroup", true); }}
+        onEditClick={(group) => {
+          setSelectedGroup(group.id);
+          toggleModal("editGroup", true);
+        }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />
 
       <div className="divider" />
-      
+
       <Topics
         title="Bots e Assistentes"
         items={bots}
         onAdd={() => toggleModal("bots", true)}
         onItemClick={handleBotClick}
-        onEditClick={(bot) => { setSelectedBot(bot.avt); toggleModal("editBot", true); }}
+        onEditClick={(bot) => {
+          setSelectedBot(bot.avt);
+          toggleModal("editBot", true);
+        }}
         userEmail={userEmail}
         createdBy={habitat.createdBy}
       />
 
-      {modals.members && <ModalAddMembers onClose={() => toggleModal("members", false)} habitatId={habitat.id} />}
-      {modals.groups && <ModalAddGroups onClose={() => toggleModal("groups", false)} habitatId={habitat.id} userEmail={userEmail} />}
-      {modals.bots && <ModalAddBots onClose={() => toggleModal("bots", false)} habitatId={habitat.id} />}
-      {modals.edit && <ModalEditHabitat habitatId={habitat.id} onClose={() => toggleModal("edit", false)} />}
-      {modals.editMember && <ModalEditMember habitatId={habitat.id} selectedMember={selectedMember} onClose={() => toggleModal("editMember", false)} />}
-      {modals.editGroup && <ModalEditGroup habitatId={habitat.id} selectedGroup={selectedGroup} onClose={() => toggleModal("editGroup", false)} />}
-      {modals.editBot && <ModalEditBot selectedBot={selectedBot} ifcFileUrl={habitat.ifcFileUrl} onClose={() => toggleModal("editBot", false)} />}
-      {modals.rating && <Rating habitatId={habitat.id} onClose={() => toggleModal("rating", false)} />}
+      {modals.members && (
+        <ModalAddMembers
+          onClose={() => toggleModal("members", false)}
+          habitatId={habitat.id}
+        />
+      )}
+      {modals.groups && (
+        <ModalAddGroups
+          onClose={() => toggleModal("groups", false)}
+          habitatId={habitat.id}
+          userEmail={userEmail}
+        />
+      )}
+      {modals.bots && (
+        <ModalAddBots
+          onClose={() => toggleModal("bots", false)}
+          habitatId={habitat.id}
+        />
+      )}
+      {modals.edit && (
+        <ModalEditHabitat
+          habitatId={habitat.id}
+          onClose={() => toggleModal("edit", false)}
+        />
+      )}
+      {modals.editMember && (
+        <ModalEditMember
+          habitatId={habitat.id}
+          selectedMember={selectedMember}
+          onClose={() => toggleModal("editMember", false)}
+        />
+      )}
+      {modals.editGroup && (
+        <ModalEditGroup
+          habitatId={habitat.id}
+          selectedGroup={selectedGroup}
+          onClose={() => toggleModal("editGroup", false)}
+        />
+      )}
+      {modals.editBot && (
+        <ModalEditBot
+          selectedBot={selectedBot}
+          ifcFileUrl={habitat.ifcFileUrl}
+          onClose={() => toggleModal("editBot", false)}
+        />
+      )}
+      {modals.rating && (
+        <Rating
+          habitatId={habitat.id}
+          onClose={() => toggleModal("rating", false)}
+        />
+      )}
       {modals.configWelcome && <ConfigWelcome habitat={habitat} />}
     </div>
   );
