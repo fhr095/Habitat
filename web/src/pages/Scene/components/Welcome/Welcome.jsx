@@ -3,6 +3,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
+import axios from "axios";
 import "./Welcome.scss";
 
 // Componente para carregar e animar o modelo GLB
@@ -31,17 +32,23 @@ const AnimatedModel = ({ url }) => {
   useFrame((state, delta) => {
     mixer.current?.update(delta);
     if (modelRef.current) {
-        modelRef.current.rotation.y = -1.55; // Rotaciona o modelo 180 graus para deixá-lo de frente
-        modelRef.current.position.y = -0.75; // Ajuste a posição Y para mover o modelo para baixo
-      }
+      modelRef.current.rotation.y = -1.55; // Rotaciona o modelo 180 graus para deixá-lo de frente
+      modelRef.current.position.y = -0.75; // Ajuste a posição Y para mover o modelo para baixo
+    }
   });
 
   return gltf ? <primitive object={gltf.scene} ref={modelRef} /> : null;
 };
 
 // Componente principal da cena
-export default function Welcome({ isPersonDetected, transcript }) {
+export default function Welcome({
+  isPersonDetected,
+  transcript,
+  avt,
+  persons,
+}) {
   const [currentModel, setCurrentModel] = useState("/Avatar/chegando.glb");
+  const [isCooldown, setIsCooldown] = useState(false);
 
   useEffect(() => {
     if (isPersonDetected) {
@@ -55,7 +62,35 @@ export default function Welcome({ isPersonDetected, transcript }) {
     }
   }, [isPersonDetected]);
 
-  const containerClass = transcript !== "" ? "welcome-container minimized" : "welcome-container";
+  // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
+  useEffect(() => {
+    if (isPersonDetected && persons.length > 0 && !isCooldown) {
+      const postData = async () => {
+        try {
+          const res = await axios.post(
+            "https://roko.flowfuse.cloud/talkwithifc",
+            {
+              avt: avt,
+              persons: persons,
+            }
+          );
+          console.log("Response from server:", res.data);
+        } catch (error) {
+          console.error("Error sending data:", error);
+        }
+      };
+      // Inicia o cooldown de 30 segundos após o envio dos dados
+      setIsCooldown(true);
+      setTimeout(() => {
+        setIsCooldown(false);
+      }, 30000); // 30 segundos
+
+      postData();
+    }
+  }, [isPersonDetected, persons, avt, isCooldown]);
+
+  const containerClass =
+    transcript !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>

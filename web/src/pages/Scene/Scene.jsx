@@ -57,7 +57,7 @@ export default function Scene({ user }) {
 
       {/* {transcript == "" && <Transcript transcript={transcript} setTranscript={setTranscript} isPersonDetected={isPersonDetected} />} */}
 
-      {/* <Welcome isPersonDetected={isPersonDetected} transcript={transcript} /> */}
+      <Welcome isPersonDetected={isPersonDetected} transcript={transcript} avt={id} persons={persons} />
 
       <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons} setIsRecognized={setIsRecognized} habitatId={id}/>
     </div>
