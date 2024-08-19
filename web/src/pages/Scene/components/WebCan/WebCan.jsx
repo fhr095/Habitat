@@ -1,12 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../../../firebase";
+import { v4 as uuidv4 } from "uuid"; // Para gerar IDs únicos
 
-export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognized, habitatId }) {
+export default function WebCam({ setIsPersonDetected, setPersons, setCurrentPerson }) {
   const videoRef = useRef(null);
-  const labeledFaceDescriptors = useRef([]);
-  const previousBestMatch = useRef(""); // Para armazenar o melhor match anterior
+  const [personId, setPersonId] = useState(""); // ID da pessoa atual
 
   useEffect(() => {
     const loadModels = async () => {
@@ -18,30 +16,9 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
         console.log('Models loaded successfully');
-        await loadLabeledImages();
       } catch (error) {
         console.error('Error loading models: ', error);
       }
-    };
-
-    const loadLabeledImages = async () => {
-      const facesCollection = collection(db, `habitats/${habitatId}/faces`);
-      const facesSnapshot = await getDocs(facesCollection);
-      
-      const labeledDescriptorsPromises = facesSnapshot.docs.map(async (doc) => {
-        const data = doc.data();
-        const img = await faceapi.fetchImage(data.imageUrl);
-        const detections = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-
-        if (detections) {
-          return new faceapi.LabeledFaceDescriptors(data.name, [detections.descriptor]);
-        } else {
-          console.warn(`No faces detected for ${data.name}`);
-          return null;
-        }
-      });
-
-      labeledFaceDescriptors.current = (await Promise.all(labeledDescriptorsPromises)).filter(Boolean);
     };
 
     const startVideo = () => {
@@ -56,7 +33,7 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
     };
 
     const detectFace = async () => {
-      if (videoRef.current && videoRef.current.readyState === 4 && labeledFaceDescriptors.current.length > 0) {
+      if (videoRef.current && videoRef.current.readyState === 4) {
         const options = new faceapi.TinyFaceDetectorOptions({
           inputSize: 320,
           scoreThreshold: 0.5,
@@ -65,30 +42,26 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
         const detections = await faceapi.detectAllFaces(videoRef.current, options)
           .withFaceLandmarks()
           .withFaceExpressions()
-          .withAgeAndGender()
-          .withFaceDescriptors();
+          .withAgeAndGender();
 
         setIsPersonDetected(detections.length > 0);
 
         if (detections.length > 0) {
-          const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors.current, 0.6);
-          let recognized = false;
-          let bestMatchLabel = "unknown";
+          if (!personId) {
+            // Gera um novo ID para a nova pessoa
+            const newPersonId = uuidv4();
+            setPersonId(newPersonId);
 
-          detections.forEach(detection => {
-            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-            bestMatchLabel = bestMatch.label;
-            if (bestMatchLabel !== 'unknown') {
-              recognized = true;
-            } else {
-              console.log('Person not recognized');
-            }
-          });
+            // Captura um print da pessoa
+            const canvas = document.createElement("canvas");
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const context = canvas.getContext("2d");
+            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL("image/png");
 
-          // Se a pessoa reconhecida mudar, redefine previousBestMatch e atualize isRecognized
-          if (previousBestMatch.current !== bestMatchLabel) {
-            previousBestMatch.current = bestMatchLabel;
-            setIsRecognized(recognized && bestMatchLabel !== 'unknown');
+            setCurrentPerson({ id: newPersonId, image: imageData });
+            console.log("Person detected with ID:", newPersonId);
           }
 
           const persons = detections.map(person => {
@@ -101,7 +74,11 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
 
           setPersons(persons);
         } else {
-          setIsRecognized(false);
+          if (personId) {
+            console.log("Person left the frame. Deleting data for ID:", personId);
+            setPersonId(""); // Reseta o ID da pessoa
+            setCurrentPerson(null); // Remove o print da pessoa
+          }
         }
       }
     };
@@ -110,7 +87,7 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
-  }, [setIsPersonDetected, setPersons, setIsRecognized, habitatId]);
+  }, [setIsPersonDetected, setPersons, personId]);
 
   return (
     <video ref={videoRef} autoPlay muted style={{ position: 'absolute', top: '-9999px', left: '-9999px' }} />

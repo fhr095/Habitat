@@ -49,6 +49,7 @@
     "sass": "^1.77.0",
     "three": "^0.164.1",
     "use-async-memo": "^1.2.5",
+    "uuid": "^10.0.0",
     "web-ifc": "^0.0.56"
   },
   "devDependencies": {

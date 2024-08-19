@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 
-import { db } from "../../firebase"; 
+import { db } from "../../firebase";
 
 import Model from "./components/Model/Model";
 import Response from "./components/Response/Response";
@@ -22,8 +22,8 @@ export default function Scene({ user }) {
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
   const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
-  const [isRecognized, setIsRecognized] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
+  const [currentPerson, setCurrentPerson] = useState(null); // Armazena o ID e o print da pessoa atual
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -49,10 +49,10 @@ export default function Scene({ user }) {
 
   useEffect(() => {
     // Limpa o array de perguntas quando a pessoa não é mais detectada ou muda de pessoa
-    if (!isRecognized) {
+    if (!currentPerson) {
       setTranscripts([]);
     }
-  }, [isRecognized]);
+  }, [currentPerson]);
 
   useEffect(() => {
     console.log("Transcripts: ", transcripts);
@@ -60,17 +60,35 @@ export default function Scene({ user }) {
 
   return (
     <div className="scene-container">
-      {ifcFileUrl ? <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} /> : <p>Loading...</p>}
+      {ifcFileUrl ? (
+        <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} />
+      ) : (
+        <p>Loading...</p>
+      )}
 
-      <Response habitatId={id} avt={id} transcripts={transcripts} setFade={setFade} showQuestion={showQuestion} setShowQuestion={setShowQuestion}/>
-
-      {/* {isPersonDetected && dataCollectionEnabled && !isRecognized && <Button habitatId={id} />}  */}
+      <Response
+        habitatId={id}
+        avt={id}
+        transcripts={transcripts}
+        setFade={setFade}
+        showQuestion={showQuestion}
+        setShowQuestion={setShowQuestion}
+      />
 
       {!showQuestion && <Transcript setTranscripts={setTranscripts} />}
 
-      <Welcome isPersonDetected={isPersonDetected} transcripts={transcripts} avt={id} persons={persons} />
+      <Welcome
+        isPersonDetected={isPersonDetected}
+        transcripts={transcripts}
+        avt={id}
+        persons={persons}
+      />
 
-      <WebCan setIsPersonDetected={setIsPersonDetected} setPersons={setPersons} setIsRecognized={setIsRecognized} habitatId={id}/>
+      <WebCan
+        setIsPersonDetected={setIsPersonDetected}
+        setPersons={setPersons}
+        setCurrentPerson={setCurrentPerson}
+      />
     </div>
   );
 }
