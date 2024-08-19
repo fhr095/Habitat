@@ -24,6 +24,7 @@ import ModalEditBot from "../ModalEditBot/ModalEditBot";
 import Rating from "../Rating/Rating";
 import Topics from "./Topics";
 import ConfigWelcome from "../ConfigWelcome/ConfigWelcome";
+import ModalFaceData from "../ModalFaceData/ModalFaceData.jsx";
 
 import "./Access.scss";
 
@@ -45,6 +46,7 @@ export default function Access({
     editBot: false,
     rating: false,
     configWelcome: false,
+    faceData: false,
   });
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
   const [members, setMembers] = useState([]);
@@ -53,8 +55,20 @@ export default function Access({
   const [selectedMember, setSelectedMember] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedBot, setSelectedBot] = useState("");
+  const [isFaceRegistered, setIsFaceRegistered] = useState(false); // Novo estado para verificar se o rosto já foi registrado
 
   useEffect(() => {
+    const checkFaceRegistration = async () => {
+      const q = query(
+        collection(db, `habitats/${habitat.id}/faces`),
+        where("user", "==", userEmail)
+      );
+      const querySnapshot = await getDocs(q);
+      setIsFaceRegistered(!querySnapshot.empty);
+    };
+
+    checkFaceRegistration();
+
     const fetchMembers = () => {
       const q = query(collection(db, `habitats/${habitat.id}/members`));
       return onSnapshot(q, async (querySnapshot) => {
@@ -131,31 +145,35 @@ export default function Access({
     const habitatId = habitat.id;
     try {
       if (typeof habitatId !== "string") {
-        throw new Error(`Expected habitatId to be a string, but got ${typeof habitatId}`);
+        throw new Error(
+          `Expected habitatId to be a string, but got ${typeof habitatId}`
+        );
       }
-  
+
       const habitatRef = doc(db, "habitats", habitatId);
-  
+
       const deleteSubcollectionsRecursively = async (docRef) => {
-        const subcollectionsSnapshot = await getDocs(collectionGroup(db, docRef.id));
-  
+        const subcollectionsSnapshot = await getDocs(
+          collectionGroup(db, docRef.id)
+        );
+
         for (const subcollectionDoc of subcollectionsSnapshot.docs) {
           const subDocRef = subcollectionDoc.ref;
           await deleteSubcollectionsRecursively(subDocRef);
           await deleteDoc(subDocRef);
         }
       };
-  
+
       await deleteSubcollectionsRecursively(habitatRef);
-  
+
       await deleteDoc(habitatRef);
-  
+
       alert("Habitat deletado com sucesso.");
       window.location.reload();
     } catch (error) {
       console.error("Erro ao deletar habitat: ", error);
     }
-  };  
+  };
 
   const handleLeaveHabitat = async () => {
     try {
@@ -196,9 +214,7 @@ export default function Access({
       const newStatus = !habitat.dataCollectionEnabled;
       await updateDoc(habitatRef, { dataCollectionEnabled: newStatus });
       alert(
-        newStatus
-          ? "Coleta de dados ativada."
-          : "Coleta de dados desativada."
+        newStatus ? "Coleta de dados ativada." : "Coleta de dados desativada."
       );
     } catch (error) {
       console.error("Erro ao alterar status da coleta de dados: ", error);
@@ -221,9 +237,11 @@ export default function Access({
                   <button onClick={() => toggleModal("configWelcome", false)}>
                     Equipe
                   </button>
-                  <button onClick={() => toggleModal("configWelcome", true)}>
-                    Configurar Chamado
-                  </button>
+                  {!isFaceRegistered && (
+                    <button onClick={() => toggleModal("faceData", true)}>
+                      Configurar Dados Faciais
+                    </button>
+                  )}
                   <button onClick={() => toggleModal("rating", true)}>
                     Avaliações
                   </button>
@@ -241,6 +259,11 @@ export default function Access({
               {habitat.createdBy !== userEmail && (
                 <>
                   <button onClick={handleViewScene}>Visualizar</button>
+                  {!isFaceRegistered && (
+                    <button onClick={() => toggleModal("faceData", true)}>
+                      Configurar Dados Faciais
+                    </button>
+                  )}
                   <button onClick={handleLeaveHabitat}>Sair do Habitat</button>
                 </>
               )}
@@ -346,6 +369,13 @@ export default function Access({
         />
       )}
       {modals.configWelcome && <ConfigWelcome habitat={habitat} />}
+      {modals.faceData && (
+        <ModalFaceData
+          habitatId={habitat.id}
+          user={userEmail}
+          onClose={() => toggleModal("faceData", false)}
+        />
+      )}
     </div>
   );
 }
