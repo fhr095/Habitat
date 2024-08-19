@@ -6,6 +6,7 @@ import { db } from "../../../../firebase";
 export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognized, habitatId }) {
   const videoRef = useRef(null);
   const labeledFaceDescriptors = useRef([]);
+  const previousBestMatch = useRef(""); // Para armazenar o melhor match anterior
 
   useEffect(() => {
     const loadModels = async () => {
@@ -72,17 +73,23 @@ export default function WebCam({ setIsPersonDetected, setPersons, setIsRecognize
         if (detections.length > 0) {
           const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors.current, 0.6);
           let recognized = false;
+          let bestMatchLabel = "unknown";
 
           detections.forEach(detection => {
             const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-            if (bestMatch.label !== 'unknown') {
+            bestMatchLabel = bestMatch.label;
+            if (bestMatchLabel !== 'unknown') {
               recognized = true;
             } else {
               console.log('Person not recognized');
             }
           });
 
-          setIsRecognized(recognized);
+          // Se a pessoa reconhecida mudar, redefine previousBestMatch e atualize isRecognized
+          if (previousBestMatch.current !== bestMatchLabel) {
+            previousBestMatch.current = bestMatchLabel;
+            setIsRecognized(recognized && bestMatchLabel !== 'unknown');
+          }
 
           const persons = detections.map(person => {
             return {

@@ -43,7 +43,7 @@ const AnimatedModel = ({ url }) => {
 // Componente principal da cena
 export default function Welcome({
   isPersonDetected,
-  transcript,
+  transcripts,
   avt,
   persons,
 }) {
@@ -90,7 +90,7 @@ export default function Welcome({
   }, [isPersonDetected, persons, avt, isCooldown]);
 
   const containerClass =
-    transcript !== "" ? "welcome-container minimized" : "welcome-container";
+    transcripts.length > 0 ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>

@@ -7,7 +7,7 @@ import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import Avatar from "./Avatar";
 import "./Response.scss";
 
-export default function Response({ habitatId, avt, transcript, setTranscript, setFade }) {
+export default function Response({ habitatId, avt, transcripts, setFade, showQuestion, setShowQuestion }) {
     const [response, setResponse] = useState([]);
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -15,8 +15,9 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
     const [animation, setAnimation] = useState("pensando");
 
     useEffect(() => {
-        const sendTranscript = async () => {
+        const sendTranscript = async (transcript) => { // Recebe o último texto do array como argumento
             setLoading(true);
+            setShowQuestion(true); // Mostra a pergunta quando começa o envio
             try {
                 const res = await axios.post("https://roko.flowfuse.cloud/talkwithifc", {
                     msg: transcript,
@@ -32,11 +33,15 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
             }
         };
 
-        if (transcript !== "") {
-            sendTranscript();
-            setAnimation("pensando"); // Muda a animação para "pensando" enquanto carrega
+        if (transcripts.length > 0) {
+            const lastTranscript = transcripts[transcripts.length - 1]; // Pega o último texto do array
+            console.log("Last transcript: ", lastTranscript);
+            if (lastTranscript !== "") {
+                sendTranscript(lastTranscript);
+                setAnimation("pensando"); // Muda a animação para "pensando" enquanto carrega
+            }
         }
-    }, [transcript, avt, setFade]);
+    }, [transcripts, avt, setFade]); // Agora observa o array transcripts em vez de transcript
 
     useEffect(() => {
         if (!loading && response.length > 0) {
@@ -66,15 +71,15 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
             setTimeout(() => {
                 setShowFeedback(false);
                 setResponse([]);
-                setTranscript("");
                 setAnimation("pensando"); // Volta para a animação "pensando" ao final da interação
+                setShowQuestion(false); // Esconde a pergunta após a resposta
             }, 5000); // Increased the time to 5 seconds
         }
     };
 
     const handleFeedback = async (type) => {
         const feedbackData = {
-            question: transcript,
+            question: transcripts.join(" "), // Usando todas as transcrições combinadas
             response: response.map(r => r.texto).join(" "), // Combine all response texts
             feedback: type,
         };
@@ -91,9 +96,9 @@ export default function Response({ habitatId, avt, transcript, setTranscript, se
 
     return (
         <div className="response-container">
-            {transcript !== "" && (
+            {showQuestion && transcripts.length > 0 && (
                 <div className="question">
-                    <p>{transcript}</p>
+                    <p>{transcripts[transcripts.length - 1]}</p> {/* Exibe a última transcrição */}
                 </div>
             )}
             {loading ? (
