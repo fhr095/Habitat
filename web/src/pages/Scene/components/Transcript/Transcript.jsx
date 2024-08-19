@@ -22,12 +22,10 @@ export default function Transcript({ setTranscripts }) {
     };
 
     recognition.onstart = () => {
-      console.log("Recognition started");
       setIsListening(true);
     };
 
     recognition.onend = () => {
-      console.log("Recognition ended");
       setIsListening(false);
     };
 

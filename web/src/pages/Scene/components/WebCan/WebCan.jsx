@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 import { v4 as uuidv4 } from "uuid"; // Para gerar IDs únicos
 
-export default function WebCam({ setIsPersonDetected, setPersons, setCurrentPerson }) {
+export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPerson }) {
   const videoRef = useRef(null);
   const [personId, setPersonId] = useState(""); // ID da pessoa atual
+  const [detectionTimeout, setDetectionTimeout] = useState(null); // Timeout para verificar se a pessoa saiu
 
   useEffect(() => {
     const loadModels = async () => {
@@ -73,11 +74,26 @@ export default function WebCam({ setIsPersonDetected, setPersons, setCurrentPers
           });
 
           setPersons(persons);
+
+          // Reseta o timeout se uma pessoa é detectada
+          if (detectionTimeout) {
+            clearTimeout(detectionTimeout);
+            setDetectionTimeout(null);
+          }
+
         } else {
           if (personId) {
-            console.log("Person left the frame. Deleting data for ID:", personId);
-            setPersonId(""); // Reseta o ID da pessoa
-            setCurrentPerson(null); // Remove o print da pessoa
+            // Inicia um timeout de 2 segundos para verificar se a pessoa realmente saiu do quadro
+            if (!detectionTimeout) {
+              const timeout = setTimeout(() => {
+                console.log("Person left the frame. Deleting data for ID:", personId);
+                setPersonId(""); // Reseta o ID da pessoa
+                setCurrentPerson(null); // Remove o print da pessoa
+                setDetectionTimeout(null);
+              }, 2000);
+
+              setDetectionTimeout(timeout);
+            }
           }
         }
       }
@@ -87,7 +103,7 @@ export default function WebCam({ setIsPersonDetected, setPersons, setCurrentPers
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
-  }, [setIsPersonDetected, setPersons, personId]);
+  }, [setIsPersonDetected, setPersons, personId, detectionTimeout]);
 
   return (
     <video ref={videoRef} autoPlay muted style={{ position: 'absolute', top: '-9999px', left: '-9999px' }} />

@@ -75,7 +75,7 @@ export default function Scene({ user }) {
         setShowQuestion={setShowQuestion}
       />
 
-      {!showQuestion && <Transcript setTranscripts={setTranscripts} />}
+      {!showQuestion && isPersonDetected && <Transcript setTranscripts={setTranscripts} />}
 
       <Welcome
         isPersonDetected={isPersonDetected}

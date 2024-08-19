@@ -35,7 +35,6 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
 
         if (transcripts.length > 0) {
             const lastTranscript = transcripts[transcripts.length - 1]; // Pega o último texto do array
-            console.log("Last transcript: ", lastTranscript);
             if (lastTranscript !== "") {
                 sendTranscript(lastTranscript);
                 setAnimation("pensando"); // Muda a animação para "pensando" enquanto carrega
