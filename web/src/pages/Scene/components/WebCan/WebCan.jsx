@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
-import { v4 as uuidv4 } from "uuid"; // Para gerar IDs únicos
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../../../firebase"; // Certifique-se de ter configurado corretamente o Firebase
 
-export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPerson }) {
+export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPerson, habitatId }) {
   const videoRef = useRef(null);
-  const [personId, setPersonId] = useState(""); // ID da pessoa atual
-  const [detectionTimeout, setDetectionTimeout] = useState(null); // Timeout para verificar se a pessoa saiu
+  const [labeledDescriptors, setLabeledDescriptors] = useState([]);
+  const [personId, setPersonId] = useState("");
+  const [detectionTimeout, setDetectionTimeout] = useState(null);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -16,9 +18,31 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // Carregar o modelo SsdMobilenetv1
         console.log('Models loaded successfully');
+        await loadLabeledImages();
+        startVideo();
       } catch (error) {
         console.error('Error loading models: ', error);
+      }
+    };
+
+    const loadLabeledImages = async () => {
+      try {
+        const facesCollection = collection(db, `habitats/${habitatId}/faces`);
+        const facesSnapshot = await getDocs(facesCollection);
+        const labeledDescriptors = await Promise.all(facesSnapshot.docs.map(async doc => {
+          const data = doc.data();
+          const img = await faceapi.fetchImage(data.imageUrl);
+          const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+          if (detections) {
+            return new faceapi.LabeledFaceDescriptors(data.user, [detections.descriptor]);
+          }
+          return null;
+        }));
+        setLabeledDescriptors(labeledDescriptors.filter(Boolean));
+      } catch (error) {
+        console.error("Error loading labeled images: ", error);
       }
     };
 
@@ -34,26 +58,30 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
     };
 
     const detectFace = async () => {
-      if (videoRef.current && videoRef.current.readyState === 4) {
-        const options = new faceapi.TinyFaceDetectorOptions({
-          inputSize: 320,
-          scoreThreshold: 0.5,
+      if (videoRef.current && videoRef.current.readyState === 4 && labeledDescriptors.length > 0) {
+        const options = new faceapi.SsdMobilenetv1Options({
+          minConfidence: 0.5,
         });
 
         const detections = await faceapi.detectAllFaces(videoRef.current, options)
           .withFaceLandmarks()
           .withFaceExpressions()
-          .withAgeAndGender();
+          .withAgeAndGender()
+          .withFaceDescriptors();
 
         setIsPersonDetected(detections.length > 0);
 
         if (detections.length > 0) {
-          if (!personId) {
-            // Gera um novo ID para a nova pessoa
+          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+          const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
+
+          if (bestMatch.label !== "unknown") {
+            setCurrentPerson({ id: bestMatch.label, image: detections[0] });
+            console.log("Recognized user:", bestMatch.label);
+          } else if (!personId) {
             const newPersonId = uuidv4();
             setPersonId(newPersonId);
 
-            // Captura um print da pessoa
             const canvas = document.createElement("canvas");
             canvas.width = videoRef.current.videoWidth;
             canvas.height = videoRef.current.videoHeight;
@@ -62,48 +90,41 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
             const imageData = canvas.toDataURL("image/png");
 
             setCurrentPerson({ id: newPersonId, image: imageData });
-            console.log("Person detected with ID:", newPersonId);
+            console.log("New person detected with ID:", newPersonId);
           }
 
-          const persons = detections.map(person => {
-            return {
-              emotion: person.expressions.asSortedArray()[0].expression,
-              age: Math.floor(person.age),
-              gender: person.gender,
-            };
-          });
+          const persons = detections.map(person => ({
+            emotion: person.expressions.asSortedArray()[0].expression,
+            age: Math.floor(person.age),
+            gender: person.gender,
+          }));
 
           setPersons(persons);
 
-          // Reseta o timeout se uma pessoa é detectada
           if (detectionTimeout) {
             clearTimeout(detectionTimeout);
             setDetectionTimeout(null);
           }
 
-        } else {
-          if (personId) {
-            // Inicia um timeout de 2 segundos para verificar se a pessoa realmente saiu do quadro
-            if (!detectionTimeout) {
-              const timeout = setTimeout(() => {
-                console.log("Person left the frame. Deleting data for ID:", personId);
-                setPersonId(""); // Reseta o ID da pessoa
-                setCurrentPerson(null); // Remove o print da pessoa
-                setDetectionTimeout(null);
-              }, 2000);
-
-              setDetectionTimeout(timeout);
-            }
+        } else if (personId) {
+          if (!detectionTimeout) {
+            const timeout = setTimeout(() => {
+              console.log("Person left the frame. Deleting data for ID:", personId);
+              setPersonId("");
+              setCurrentPerson(null);
+              setDetectionTimeout(null);
+            }, 2000);
+            setDetectionTimeout(timeout);
           }
         }
       }
     };
 
-    loadModels().then(startVideo);
+    loadModels();
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
-  }, [setIsPersonDetected, setPersons, personId, detectionTimeout]);
+  }, [setIsPersonDetected, setPersons, personId, detectionTimeout, labeledDescriptors]);
 
   return (
     <video ref={videoRef} autoPlay muted style={{ position: 'absolute', top: '-9999px', left: '-9999px' }} />

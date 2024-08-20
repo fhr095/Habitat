@@ -88,6 +88,7 @@ export default function Scene({ user }) {
         setIsPersonDetected={setIsPersonDetected}
         setPersons={setPersons}
         setCurrentPerson={setCurrentPerson}
+        habitatId={id}
       />
     </div>
   );
