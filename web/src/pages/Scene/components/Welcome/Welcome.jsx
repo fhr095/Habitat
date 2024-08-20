@@ -50,6 +50,9 @@ export default function Welcome({
   const [currentModel, setCurrentModel] = useState("/Avatar/chegando.glb");
   const [isCooldown, setIsCooldown] = useState(false);
 
+  // Ref for the audio element
+  const audioRef = useRef(null);
+
   useEffect(() => {
     if (isPersonDetected) {
       setCurrentModel("/Avatar/acenando.glb");
@@ -74,11 +77,16 @@ export default function Welcome({
               persons: persons,
             }
           );
-          console.log("Response from server:", res.data);
+          // Play the audio when response is received
+          if (res.data.comandos && res.data.comandos.audio) {
+            audioRef.current.src = res.data.comandos.audio;
+            audioRef.current.play();
+          }
         } catch (error) {
           console.error("Error sending data:", error);
         }
       };
+
       // Inicia o cooldown de 30 segundos após o envio dos dados
       setIsCooldown(true);
       setTimeout(() => {
@@ -100,6 +108,8 @@ export default function Welcome({
         <AnimatedModel url={currentModel} />
         <OrbitControls />
       </Canvas>
+      {/* Audio element to play the audio */}
+      <audio ref={audioRef} />
     </div>
   );
 }

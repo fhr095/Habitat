@@ -20,7 +20,6 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-        console.log('Models loaded successfully');
         await loadLabeledImages();
         startVideo();
       } catch (error) {
