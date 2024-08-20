@@ -13,11 +13,12 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
     const [animation, setAnimation] = useState("pensando");
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
-        const sendTranscript = async (transcript) => { // Recebe o último texto do array como argumento
+        const sendTranscript = async (transcript) => {
             setLoading(true);
-            setShowQuestion(true); // Mostra a pergunta quando começa o envio
+            setShowQuestion(true);
             try {
                 const res = await axios.post("https://roko.flowfuse.cloud/talkwithifc", {
                     msg: transcript,
@@ -26,7 +27,7 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
 
                 setResponse(res.data.comandos);
                 setLoading(false);
-                setAnimation("falando-sorrindo"); // Muda a animação quando começa a resposta
+                setAnimation("falando-sorrindo");
             } catch (error) {
                 console.error("Error sending transcript: ", error);
                 setLoading(false);
@@ -34,13 +35,13 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
         };
 
         if (transcripts.length > 0) {
-            const lastTranscript = transcripts[transcripts.length - 1]; // Pega o último texto do array
+            const lastTranscript = transcripts[transcripts.length - 1];
             if (lastTranscript !== "") {
                 sendTranscript(lastTranscript);
-                setAnimation("pensando"); // Muda a animação para "pensando" enquanto carrega
+                setAnimation("pensando");
             }
         }
-    }, [transcripts, avt, setFade]); // Agora observa o array transcripts em vez de transcript
+    }, [transcripts, avt, setFade]);
 
     useEffect(() => {
         if (!loading && response.length > 0) {
@@ -56,7 +57,7 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
             if (comando.audio) {
                 const audio = new Audio(comando.audio);
                 audio.onloadedmetadata = () => {
-                    setFade([{ fade: comando.fade, duration: audio.duration + 2 }]); // Adding 2 seconds to the audio duration
+                    setFade([{ fade: comando.fade, duration: audio.duration + 2 }]);
                 };
                 audio.play();
                 audio.onended = () => {
@@ -67,19 +68,32 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
             }
         } else {
             setShowFeedback(true);
+            startProgressBar();
             setTimeout(() => {
                 setShowFeedback(false);
                 setResponse([]);
-                setAnimation("pensando"); // Volta para a animação "pensando" ao final da interação
-                setShowQuestion(false); // Esconde a pergunta após a resposta
-            }, 5000); // Increased the time to 5 seconds
+                setAnimation("pensando");
+                setShowQuestion(false);
+                setProgress(0); // Reset progress bar
+            }, 5000);
         }
+    };
+
+    const startProgressBar = () => {
+        let progressValue = 0;
+        const interval = setInterval(() => {
+            progressValue += 1;
+            setProgress(progressValue);
+            if (progressValue >= 100) {
+                clearInterval(interval);
+            }
+        }, 50); // 50ms interval, resulting in 5 seconds to complete (100 steps)
     };
 
     const handleFeedback = async (type) => {
         const feedbackData = {
-            question: transcripts.join(" "), // Usando todas as transcrições combinadas
-            response: response.map(r => r.texto).join(" "), // Combine all response texts
+            question: transcripts.join(" "),
+            response: response.map(r => r.texto).join(" "),
             feedback: type,
         };
 
@@ -97,12 +111,12 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
         <div className="response-container">
             {showQuestion && transcripts.length > 0 && (
                 <div className="question">
-                    <p>{transcripts[transcripts.length - 1]}</p> {/* Exibe a última transcrição */}
+                    <p>{transcripts[transcripts.length - 1]}</p>
                 </div>
             )}
             {loading ? (
                 <div className="loading-response">
-                    <Avatar animation={animation} /> 
+                    <Avatar animation={animation} />
                     <div className="loading-response-text">
                         <p>Carregando Resposta...</p>
                     </div>
@@ -116,18 +130,26 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
                                 <p>{response[currentIndex]?.texto}</p>
                                 {showFeedback && (
                                     <div className="feedback-container">
-                                        <button
-                                            onClick={() => handleFeedback("like")}
-                                            className="like"
-                                        >
-                                            <BiSolidLike color="#333" size={20}/>
-                                        </button>
-                                        <button
-                                            onClick={() => handleFeedback("dislike")}
-                                            className="dislike"
-                                        >
-                                            <BiSolidDislike color="#333" size={20}/>
-                                        </button>
+                                        <div className="button-group">
+                                            <button
+                                                onClick={() => handleFeedback("like")}
+                                                className="like"
+                                            >
+                                                <BiSolidLike color="#333" size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleFeedback("dislike")}
+                                                className="dislike"
+                                            >
+                                                <BiSolidDislike color="#333" size={20} />
+                                            </button>
+                                        </div>
+                                        <div className="progress-bar">
+                                            <div
+                                                className="progress"
+                                                style={{ width: `${progress}%` }}
+                                            ></div>
+                                        </div>
                                     </div>
                                 )}
                             </div>

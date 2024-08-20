@@ -52,7 +52,7 @@
       height: 100%; /* Altura do canvas do avatar */
     }
 
-    .loading-response-text{
+    .loading-response-text {
       background-color: $light-gray;
       padding: 10px;
       border-radius: 10px;
@@ -118,26 +118,44 @@
       .feedback-container {
         width: 100%;
         display: flex;
-        justify-content: space-around;
+        flex-direction: column;
         align-items: center;
-        gap: 20px;
 
-        button {
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          cursor: pointer;
+        .button-group{
+          display: flex;
+          justify-content: space-around;
+          width: 100%;
+          margin-top: 10px;
 
-          .like{
-            :hover{
+          button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            margin-bottom: 10px; /* Espaço para a barra de progresso */
+  
+            &.like:hover {
               color: green;
             }
-          }
-
-          .dislike{
-            :hover{
+  
+            &.dislike:hover {
               color: red;
             }
+          }
+        }
+
+        .progress-bar {
+          width: 100%;
+          background-color: $light-gray;
+          border-radius: 5px;
+          overflow: hidden;
+          height: 5px;
+          margin-top: 5px;
+
+          .progress {
+            background-color: $primary-color;
+            height: 100%;
+            transition: width 0.5s linear;
           }
         }
       }

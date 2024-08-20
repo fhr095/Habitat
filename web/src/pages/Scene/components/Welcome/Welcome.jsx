@@ -67,7 +67,7 @@ export default function Welcome({
 
   // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
-    if (isPersonDetected && persons.length > 0 && !isCooldown) {
+    if (isPersonDetected && persons.length > 0 && !isCooldown && transcripts.length == 0) {
       const postData = async () => {
         try {
           const res = await axios.post(
@@ -87,15 +87,15 @@ export default function Welcome({
         }
       };
 
-      // Inicia o cooldown de 30 segundos após o envio dos dados
+      // Inicia o cooldown de 5 minutos após o envio dos dados
       setIsCooldown(true);
       setTimeout(() => {
         setIsCooldown(false);
-      }, 30000); // 30 segundos
+      }, 300000); // 5 minutos
 
       postData();
     }
-  }, [isPersonDetected, persons, avt, isCooldown]);
+  }, [isPersonDetected, persons, avt, isCooldown, transcripts]);
 
   const containerClass =
     transcripts.length > 0 ? "welcome-container minimized" : "welcome-container";

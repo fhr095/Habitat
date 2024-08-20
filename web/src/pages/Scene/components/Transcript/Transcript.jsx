@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 export default function Transcript({ setTranscripts }) {
   const [isListening, setIsListening] = useState(false);
-  let recognition;
+  const recognitionRef = useRef(null);
+  const isManuallyStopped = useRef(false); // Flag to avoid infinite restart loop
 
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -10,33 +11,52 @@ export default function Transcript({ setTranscripts }) {
       return;
     }
 
-    recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "pt-BR";
-    recognition.continuous = true;
-    recognition.interimResults = false;
+    const startRecognition = () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
+        setIsListening(true);
+      }
+    };
 
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim();
+    recognitionRef.current = new window.webkitSpeechRecognition();
+    recognitionRef.current.lang = "pt-BR";
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = false;
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript =
+        event.results[event.results.length - 1][0].transcript.trim();
       console.log("Recognized: ", transcript);
-      setTranscripts((prevTranscripts) => [...prevTranscripts, transcript]); // Adiciona a nova transcrição ao array
+      setTranscripts((prevTranscripts) => [...prevTranscripts, transcript]);
     };
 
-    recognition.onstart = () => {
+    recognitionRef.current.onstart = () => {
       setIsListening(true);
+      console.log("Recognition started");
     };
 
-    recognition.onend = () => {
+    recognitionRef.current.onend = () => {
       setIsListening(false);
+      console.log("Recognition ended");
+      if (!isManuallyStopped.current) {
+        console.log("Restarting recognition...");
+        startRecognition();
+      }
     };
 
-    recognition.onerror = (event) => {
+    recognitionRef.current.onerror = (event) => {
       console.error("Recognition error: ", event.error);
+      if (event.error === "no-speech" || event.error === "network") {
+        console.log("Error occurred, restarting recognition...");
+        startRecognition(); // Restart on specific errors
+      }
     };
 
-    recognition.start();
+    startRecognition();
 
     return () => {
-      recognition.stop();
+      isManuallyStopped.current = true; // Prevent restarting after unmount
+      recognitionRef.current.stop();
     };
   }, [setTranscripts]);
 
