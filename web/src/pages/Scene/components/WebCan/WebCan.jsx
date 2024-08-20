@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
+import { v4 as uuidv4 } from "uuid";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../../../firebase"; // Certifique-se de ter configurado corretamente o Firebase
+import { db } from "../../../../firebase";
 
 export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPerson, habitatId }) {
   const videoRef = useRef(null);
@@ -11,14 +12,14 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
 
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = '/models'; 
+      const MODEL_URL = '/models';
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
-        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL); // Carregar o modelo SsdMobilenetv1
+        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
         console.log('Models loaded successfully');
         await loadLabeledImages();
         startVideo();
@@ -57,10 +58,14 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
         .catch(err => console.error("Erro ao acessar a câmera: ", err));
     };
 
+    loadModels();
+  }, [habitatId]);
+
+  useEffect(() => {
     const detectFace = async () => {
       if (videoRef.current && videoRef.current.readyState === 4 && labeledDescriptors.length > 0) {
         const options = new faceapi.SsdMobilenetv1Options({
-          minConfidence: 0.5,
+          minConfidence: 0.7,  // Increase the minimum confidence for detections
         });
 
         const detections = await faceapi.detectAllFaces(videoRef.current, options)
@@ -72,10 +77,10 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
         setIsPersonDetected(detections.length > 0);
 
         if (detections.length > 0) {
-          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
+          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4); // Lower threshold for more strict matching
           const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
 
-          if (bestMatch.label !== "unknown") {
+          if (bestMatch.label !== "unknown" && bestMatch.distance < 0.4) {
             setCurrentPerson({ id: bestMatch.label, image: detections[0] });
             console.log("Recognized user:", bestMatch.label);
           } else if (!personId) {
@@ -119,8 +124,6 @@ export default function WebCan({ setIsPersonDetected, setPersons, setCurrentPers
         }
       }
     };
-
-    loadModels();
 
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
