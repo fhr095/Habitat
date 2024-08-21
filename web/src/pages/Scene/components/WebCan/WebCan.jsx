@@ -15,8 +15,11 @@ export default function WebCan({
   const videoRef = useRef(null);
   const [labeledDescriptors, setLabeledDescriptors] = useState([]);
   const [personId, setPersonId] = useState("");
+  const [lastDescriptor, setLastDescriptor] = useState(null); // To store the last person's descriptor
   const [detectionTimeout, setDetectionTimeout] = useState(null);
   const [lastSavedTranscript, setLastSavedTranscript] = useState(""); // Track the last saved transcript
+  const [lastPersonTimestamp, setLastPersonTimestamp] = useState(null); // To store the last detection timestamp
+  const [idExpirationTimeout, setIdExpirationTimeout] = useState(null); // To track ID expiration timeout
 
   useEffect(() => {
     const loadModels = async () => {
@@ -110,22 +113,57 @@ export default function WebCan({
         setIsPersonDetected(detections.length > 0);
 
         if (detections.length > 0) {
-          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4); // Lower threshold for more strict matching
-          const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
+          const detectedDescriptor = detections[0].descriptor;
+
+          if (
+            personId &&
+            lastDescriptor &&
+            faceapi.euclideanDistance(detectedDescriptor, lastDescriptor) < 0.4 &&
+            new Date() - lastPersonTimestamp < 60000
+          ) {
+            // Same person detected within 1 minute, retain the ID
+            setCurrentPerson({ id: personId, image: detections[0] });
+            console.log(`Retained existing ID: ${personId}`);
+            // Clear the existing expiration timeout
+            if (idExpirationTimeout) {
+              clearTimeout(idExpirationTimeout);
+              setIdExpirationTimeout(null);
+            }
+          } else {
+            // New person or more than 1 minute has passed
+            const newPersonId = uuidv4();
+            setPersonId(newPersonId);
+            setLastDescriptor(detectedDescriptor);
+            setCurrentPerson({ id: newPersonId, image: detections[0] });
+            console.log(`Created new ID: ${newPersonId}`);
+
+            // Set a timeout to expire the ID after 1 minute
+            const expirationTimeout = setTimeout(() => {
+              console.log(`ID ${newPersonId} expired after 1 minute`);
+              setPersonId("");
+              setLastDescriptor(null);
+              setCurrentPerson(null);
+              setLastSavedTranscript(""); // Reset lastSavedTranscript
+            }, 60000);
+            setIdExpirationTimeout(expirationTimeout);
+          }
+
+          // Update timestamp of last detection
+          setLastPersonTimestamp(new Date());
+
+          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4);
+          const bestMatch = faceMatcher.findBestMatch(detectedDescriptor);
 
           if (bestMatch.label !== "unknown" && bestMatch.distance < 0.4) {
             setCurrentPerson({ id: bestMatch.label, image: detections[0] });
-            // console.log("Recognized user:", bestMatch.label);
+            console.log(`Recognized user: ${bestMatch.label}`);
 
-            // Find the bot with the matching avt
             const botDoc = await findBotWithAvt();
-
-            // Ensure transcripts and response are valid arrays before using them
             if (
               botDoc &&
               transcripts.length > 0 &&
               response.length > 0 &&
-              transcripts[transcripts.length - 1] !== lastSavedTranscript // Only save if the transcript is new
+              transcripts[transcripts.length - 1] !== lastSavedTranscript
             ) {
               const userMessagesRef = collection(
                 db,
@@ -133,14 +171,12 @@ export default function WebCan({
               );
 
               try {
-                // Save the user's question if response contains information
                 await addDoc(userMessagesRef, {
                   sender: bestMatch.label,
-                  message: transcripts[transcripts.length - 1], // Last transcript
+                  message: transcripts[transcripts.length - 1],
                   timestamp: new Date(),
                 });
 
-                // Save the AI's response
                 for (const comando of response) {
                   await addDoc(userMessagesRef, {
                     sender: "bot",
@@ -148,31 +184,12 @@ export default function WebCan({
                     timestamp: new Date(),
                   });
                 }
-                // Update lastSavedTranscript after saving
+
                 setLastSavedTranscript(transcripts[transcripts.length - 1]);
               } catch (error) {
                 console.error("Error saving messages to Firestore:", error);
               }
             }
-          } else if (!personId) {
-            const newPersonId = uuidv4();
-            setPersonId(newPersonId);
-
-            const canvas = document.createElement("canvas");
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const context = canvas.getContext("2d");
-            context.drawImage(
-              videoRef.current,
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const imageData = canvas.toDataURL("image/png");
-
-            setCurrentPerson({ id: newPersonId, image: imageData });
-            // console.log("New person detected with ID:", newPersonId);
           }
 
           const persons = detections.map((person) => ({
@@ -191,13 +208,21 @@ export default function WebCan({
           if (!detectionTimeout) {
             const timeout = setTimeout(() => {
               console.log(
-                "Person left the frame. Deleting data for ID:",
+                "Person left the frame. Starting 60 seconds timer to delete ID:",
                 personId
               );
-              setPersonId("");
-              setCurrentPerson(null);
+
+              // Set a timeout to delete the ID after 60 seconds if no one reappears
+              const expirationTimeout = setTimeout(() => {
+                console.log(`ID ${personId} expired after 1 minute`);
+                setPersonId("");
+                setLastDescriptor(null);
+                setCurrentPerson(null);
+                setLastSavedTranscript(""); // Reset lastSavedTranscript
+              }, 60000);
+
+              setIdExpirationTimeout(expirationTimeout);
               setDetectionTimeout(null);
-              setLastSavedTranscript(""); // Reset lastSavedTranscript when the person leaves
             }, 2000);
             setDetectionTimeout(timeout);
           }
@@ -216,7 +241,10 @@ export default function WebCan({
     transcripts,
     response,
     habitatId,
-    lastSavedTranscript, // Include lastSavedTranscript in the dependencies
+    lastSavedTranscript,
+    lastDescriptor,
+    lastPersonTimestamp,
+    idExpirationTimeout,
   ]);
 
   return (
