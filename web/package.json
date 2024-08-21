@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-transcribe-streaming": "^3.635.0",
     "@mapbox/mapbox-sdk": "^0.16.0",
     "@react-leaflet/core": "^2.1.0",
     "@react-three/drei": "^9.109.5",
@@ -21,6 +22,7 @@
     "@tweenjs/tween.js": "^23.1.2",
     "annyang": "^2.6.1",
     "antd": "^5.18.1",
+    "aws-sdk": "^2.1679.0",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
     "face-api.js": "^0.22.2",
