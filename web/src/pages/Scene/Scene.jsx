@@ -19,6 +19,7 @@ export default function Scene({ user }) {
   const [createdBy, setCreatedBy] = useState("");
   const [transcripts, setTranscripts] = useState([]);
   const [fade, setFade] = useState([]);
+  const [response, setResponse] = useState([]);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
   const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
@@ -73,6 +74,8 @@ export default function Scene({ user }) {
         setFade={setFade}
         showQuestion={showQuestion}
         setShowQuestion={setShowQuestion}
+        response={response}
+        setResponse={setResponse}
       />
 
       {!showQuestion && isPersonDetected && <Transcript setTranscripts={setTranscripts} />}
@@ -89,6 +92,8 @@ export default function Scene({ user }) {
         setPersons={setPersons}
         setCurrentPerson={setCurrentPerson}
         habitatId={id}
+        transcripts={transcripts}
+        response={response}
       />
     </div>
   );

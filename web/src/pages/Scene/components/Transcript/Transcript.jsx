@@ -26,20 +26,16 @@ export default function Transcript({ setTranscripts }) {
     recognitionRef.current.onresult = (event) => {
       const transcript =
         event.results[event.results.length - 1][0].transcript.trim();
-      console.log("Recognized: ", transcript);
       setTranscripts((prevTranscripts) => [...prevTranscripts, transcript]);
     };
 
     recognitionRef.current.onstart = () => {
       setIsListening(true);
-      console.log("Recognition started");
     };
 
     recognitionRef.current.onend = () => {
       setIsListening(false);
-      console.log("Recognition ended");
       if (!isManuallyStopped.current) {
-        console.log("Restarting recognition...");
         startRecognition();
       }
     };

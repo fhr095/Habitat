@@ -7,8 +7,7 @@ import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import Avatar from "./Avatar";
 import "./Response.scss";
 
-export default function Response({ habitatId, avt, transcripts, setFade, showQuestion, setShowQuestion }) {
-    const [response, setResponse] = useState([]);
+export default function Response({ habitatId, avt, transcripts, setFade, showQuestion, setShowQuestion, response, setResponse }) {
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
