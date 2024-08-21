@@ -20,7 +20,7 @@ export default function Transcript({ setTranscripts }) {
 
     recognitionRef.current = new window.webkitSpeechRecognition();
     recognitionRef.current.lang = "pt-BR";
-    recognitionRef.current.continuous = true;
+    recognitionRef.current.continuous = true;  // Continuously listen for speech
     recognitionRef.current.interimResults = false;
 
     recognitionRef.current.onresult = (event) => {
@@ -36,7 +36,8 @@ export default function Transcript({ setTranscripts }) {
     recognitionRef.current.onend = () => {
       setIsListening(false);
       if (!isManuallyStopped.current) {
-        startRecognition();
+        console.log("Restarting recognition...");
+        startRecognition();  // Restart recognition automatically if it stops
       }
     };
 
@@ -44,7 +45,7 @@ export default function Transcript({ setTranscripts }) {
       console.error("Recognition error: ", event.error);
       if (event.error === "no-speech" || event.error === "network") {
         console.log("Error occurred, restarting recognition...");
-        startRecognition(); // Restart on specific errors
+        startRecognition();  // Restart on specific errors
       }
     };
 
@@ -56,5 +57,5 @@ export default function Transcript({ setTranscripts }) {
     };
   }, [setTranscripts]);
 
-  return <div></div>;
+  return <></>;
 }
