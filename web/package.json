@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-transcribe-streaming": "^3.635.0",
+    "@google-cloud/speech": "^6.7.0",
     "@mapbox/mapbox-sdk": "^0.16.0",
     "@react-leaflet/core": "^2.1.0",
     "@react-three/drei": "^9.109.5",
@@ -23,7 +24,7 @@
     "annyang": "^2.6.1",
     "antd": "^5.18.1",
     "aws-sdk": "^2.1679.0",
-    "axios": "^1.7.2",
+    "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
     "face-api.js": "^0.22.2",
     "firebase": "^10.11.1",

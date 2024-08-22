@@ -1,61 +1,58 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 
 export default function Transcript({ setTranscripts }) {
-  const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef(null);
-  const isManuallyStopped = useRef(false); // Flag to avoid infinite restart loop
+  const audioChunksRef = useRef([]);
 
   useEffect(() => {
-    if (!("webkitSpeechRecognition" in window)) {
-      console.error("Web Speech API is not supported by this browser.");
-      return;
-    }
+    const startRecognition = async () => {
+      try {
+        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
+          import.meta.env.VITE_AZURE_SPEECH_KEY,
+          import.meta.env.VITE_AZURE_SPEECH_REGION
+        );
 
-    const startRecognition = () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
-        setIsListening(true);
-      }
-    };
+        speechConfig.speechRecognitionLanguage = "pt-BR";
 
-    recognitionRef.current = new window.webkitSpeechRecognition();
-    recognitionRef.current.lang = "pt-BR";
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = false;
+        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+        const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
-    recognitionRef.current.onresult = (event) => {
-      const transcript =
-        event.results[event.results.length - 1][0].transcript.trim();
-      setTranscripts((prevTranscripts) => [...prevTranscripts, transcript]);
-    };
+        recognizer.recognizing = (s, e) => {
+          console.log(`Recognizing: ${e.result.text}`);
+        };
 
-    recognitionRef.current.onstart = () => {
-      setIsListening(true);
-    };
+        recognizer.recognized = (s, e) => {
+          if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+            console.log(`Recognized: ${e.result.text}`);
+            setTranscripts((prevTranscripts) => [...prevTranscripts, e.result.text]);
+          } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
+            console.log("No speech could be recognized.");
+          }
+        };
 
-    recognitionRef.current.onend = () => {
-      setIsListening(false);
-      if (!isManuallyStopped.current) {
-        console.log("Restarting recognition...");
-        startRecognition();
-      }
-    };
+        recognizer.canceled = (s, e) => {
+          console.error(`Canceled: ${e.reason}`);
+          recognizer.stopContinuousRecognitionAsync();
+        };
 
-    recognitionRef.current.onerror = (event) => {
-      console.error("Recognition error: ", event.error);
-      if (event.error === "no-speech" || event.error === "network") {
-        console.log("Error occurred, restarting recognition...");
-        startRecognition(); // Restart on specific errors
+        recognizer.sessionStopped = (s, e) => {
+          console.log("Session stopped.");
+          recognizer.stopContinuousRecognitionAsync();
+        };
+
+        recognizer.startContinuousRecognitionAsync();
+      } catch (error) {
+        console.error("Error starting recognition: ", error);
       }
     };
 
     startRecognition();
 
     return () => {
-      isManuallyStopped.current = true; // Prevent restarting after unmount
-      recognitionRef.current.stop();
+      // Ensure proper cleanup
+      audioChunksRef.current = [];
     };
   }, [setTranscripts]);
 
-  return <div></div>;
+  return null; // O componente não precisa renderizar nada
 }
