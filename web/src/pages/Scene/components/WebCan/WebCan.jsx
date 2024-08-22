@@ -118,12 +118,13 @@ export default function WebCan({
           if (
             personId &&
             lastDescriptor &&
-            faceapi.euclideanDistance(detectedDescriptor, lastDescriptor) < 0.4 &&
+            faceapi.euclideanDistance(detectedDescriptor, lastDescriptor) <
+              0.4 &&
             new Date() - lastPersonTimestamp < 60000
           ) {
             // Same person detected within 1 minute, retain the ID
             setCurrentPerson({ id: personId, image: detections[0] });
-            console.log(`Retained existing ID: ${personId}`);
+            // console.log(`Retained existing ID: ${personId}`);
             // Clear the existing expiration timeout
             if (idExpirationTimeout) {
               clearTimeout(idExpirationTimeout);
@@ -135,7 +136,7 @@ export default function WebCan({
             setPersonId(newPersonId);
             setLastDescriptor(detectedDescriptor);
             setCurrentPerson({ id: newPersonId, image: detections[0] });
-            console.log(`Created new ID: ${newPersonId}`);
+            // console.log(`Created new ID: ${newPersonId}`);
 
             // Set a timeout to expire the ID after 1 minute
             const expirationTimeout = setTimeout(() => {
@@ -156,7 +157,7 @@ export default function WebCan({
 
           if (bestMatch.label !== "unknown" && bestMatch.distance < 0.4) {
             setCurrentPerson({ id: bestMatch.label, image: detections[0] });
-            console.log(`Recognized user: ${bestMatch.label}`);
+            // console.log(`Recognized user: ${bestMatch.label}`);
 
             const botDoc = await findBotWithAvt();
             if (
@@ -207,14 +208,14 @@ export default function WebCan({
         } else if (personId) {
           if (!detectionTimeout) {
             const timeout = setTimeout(() => {
-              console.log(
-                "Person left the frame. Starting 60 seconds timer to delete ID:",
-                personId
-              );
+              // console.log(
+              //   "Person left the frame. Starting 60 seconds timer to delete ID:",
+              //   personId
+              // );
 
               // Set a timeout to delete the ID after 60 seconds if no one reappears
               const expirationTimeout = setTimeout(() => {
-                console.log(`ID ${personId} expired after 1 minute`);
+                // console.log(`ID ${personId} expired after 1 minute`);
                 setPersonId("");
                 setLastDescriptor(null);
                 setCurrentPerson(null);
