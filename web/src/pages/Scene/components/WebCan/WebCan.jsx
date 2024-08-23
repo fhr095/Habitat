@@ -11,6 +11,7 @@ export default function WebCan({
   habitatId,
   transcripts,
   response,
+  setIsMicEnabled, // Novo prop para controlar o microfone
 }) {
   const videoRef = useRef(null);
   const [labeledDescriptors, setLabeledDescriptors] = useState([]);
@@ -110,9 +111,13 @@ export default function WebCan({
           .withAgeAndGender()
           .withFaceDescriptors();
 
-        setIsPersonDetected(detections.length > 0);
+        const isDetected = detections.length > 0;
+        setIsPersonDetected(isDetected);
 
-        if (detections.length > 0) {
+        if (isDetected) {
+          // Se a pessoa for detectada, habilita o microfone
+          setIsMicEnabled(true);
+
           const detectedDescriptor = detections[0].descriptor;
 
           if (
@@ -122,34 +127,35 @@ export default function WebCan({
               0.4 &&
             new Date() - lastPersonTimestamp < 60000
           ) {
-            // Same person detected within 1 minute, retain the ID
+            // Se a mesma pessoa for detectada dentro de 1 minuto, mantém o ID
             setCurrentPerson({ id: personId, image: detections[0] });
-            // console.log(`Retained existing ID: ${personId}`);
+            console.log(`Retained existing ID: ${personId}`);
             // Clear the existing expiration timeout
             if (idExpirationTimeout) {
               clearTimeout(idExpirationTimeout);
               setIdExpirationTimeout(null);
             }
           } else {
-            // New person or more than 1 minute has passed
+            // Nova pessoa ou mais de 1 minuto se passou
             const newPersonId = uuidv4();
             setPersonId(newPersonId);
             setLastDescriptor(detectedDescriptor);
             setCurrentPerson({ id: newPersonId, image: detections[0] });
-            // console.log(`Created new ID: ${newPersonId}`);
+            console.log(`Created new ID: ${newPersonId}`);
 
-            // Set a timeout to expire the ID after 1 minute
+            // Define um timeout para expirar o ID após 1 minuto
             const expirationTimeout = setTimeout(() => {
               console.log(`ID ${newPersonId} expired after 1 minute`);
               setPersonId("");
               setLastDescriptor(null);
               setCurrentPerson(null);
               setLastSavedTranscript(""); // Reset lastSavedTranscript
+              setIsMicEnabled(false); // Desativar microfone quando ID expirar
             }, 60000);
             setIdExpirationTimeout(expirationTimeout);
           }
 
-          // Update timestamp of last detection
+          // Atualiza o timestamp da última detecção
           setLastPersonTimestamp(new Date());
 
           const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4);
@@ -157,7 +163,7 @@ export default function WebCan({
 
           if (bestMatch.label !== "unknown" && bestMatch.distance < 0.4) {
             setCurrentPerson({ id: bestMatch.label, image: detections[0] });
-            // console.log(`Recognized user: ${bestMatch.label}`);
+            console.log(`Recognized user: ${bestMatch.label}`);
 
             const botDoc = await findBotWithAvt();
             if (
@@ -205,21 +211,24 @@ export default function WebCan({
             clearTimeout(detectionTimeout);
             setDetectionTimeout(null);
           }
-        } else if (personId) {
+        } else {
           if (!detectionTimeout) {
+            setIsMicEnabled(false); // Desativar microfone se nenhuma pessoa for detectada
+
             const timeout = setTimeout(() => {
-              // console.log(
-              //   "Person left the frame. Starting 60 seconds timer to delete ID:",
-              //   personId
-              // );
+              console.log(
+                "Person left the frame. Starting 60 seconds timer to delete ID:",
+                personId
+              );
 
               // Set a timeout to delete the ID after 60 seconds if no one reappears
               const expirationTimeout = setTimeout(() => {
-                // console.log(`ID ${personId} expired after 1 minute`);
+                console.log(`ID ${personId} expired after 1 minute`);
                 setPersonId("");
                 setLastDescriptor(null);
                 setCurrentPerson(null);
                 setLastSavedTranscript(""); // Reset lastSavedTranscript
+                setIsMicEnabled(false); // Desativar microfone quando ID expirar
               }, 60000);
 
               setIdExpirationTimeout(expirationTimeout);
@@ -246,6 +255,7 @@ export default function WebCan({
     lastDescriptor,
     lastPersonTimestamp,
     idExpirationTimeout,
+    setIsMicEnabled, // Adicione a dependência para o controle do microfone
   ]);
 
   return (

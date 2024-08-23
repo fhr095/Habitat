@@ -46,6 +46,7 @@ export default function Welcome({
   transcripts,
   avt,
   persons,
+  isFinished,
 }) {
   const [currentModel, setCurrentModel] = useState("/Avatar/chegando.glb");
   const [isCooldown, setIsCooldown] = useState(false);
@@ -56,6 +57,7 @@ export default function Welcome({
   useEffect(() => {
     if (isPersonDetected) {
       setCurrentModel("/Avatar/acenando.glb");
+      isFinished(true);  // Bloqueia fala enquanto o robô aparece
     } else {
       const timer = setTimeout(() => {
         setCurrentModel("/Avatar/conversando-feliz.glb");
@@ -63,11 +65,11 @@ export default function Welcome({
 
       return () => clearTimeout(timer);
     }
-  }, [isPersonDetected]);
+  }, [isPersonDetected, isFinished]);
 
   // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
-    if (isPersonDetected && persons.length > 0 && !isCooldown && transcripts.length == 0) {
+    if (isPersonDetected && persons.length > 0 && !isCooldown && transcripts.length === 0) {
       const postData = async () => {
         try {
           const res = await axios.post(
@@ -96,6 +98,16 @@ export default function Welcome({
       postData();
     }
   }, [isPersonDetected, persons, avt, isCooldown, transcripts]);
+
+  // Set isFinished to false when audio ends
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.onended = () => {
+        isFinished(false);  // Libera fala após o áudio terminar
+      };
+    }
+  }, [isFinished]);
 
   const containerClass =
     transcripts.length > 0 ? "welcome-container minimized" : "welcome-container";

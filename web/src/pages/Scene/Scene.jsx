@@ -6,10 +6,9 @@ import { db } from "../../firebase";
 
 import Model from "./components/Model/Model";
 import Response from "./components/Response/Response";
-import Button from "./components/Button/Button";
-import Transcript from "./components/Transcript/Transcript";
 import Welcome from "./components/Welcome/Welcome";
 import WebCan from "./components/WebCan/WebCan";
+import Transcript from "./components/Transcript/Transcript";
 
 import "./Scene.scss";
 
@@ -23,8 +22,9 @@ export default function Scene({ user }) {
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
   const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(false);
-  const [currentPerson, setCurrentPerson] = useState(null); // Armazena o ID e o print da pessoa atual
+  const [showQuestion, setShowQuestion] = useState(true);
+  const [currentPerson, setCurrentPerson] = useState(null);
+  const [isMicEnabled, setIsMicEnabled] = useState(false);  // Estado para controle do microfone
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -74,13 +74,16 @@ export default function Scene({ user }) {
         setResponse={setResponse}
       />
 
-      {!showQuestion && isPersonDetected && <Transcript setTranscripts={setTranscripts} />}
+      {!showQuestion && isPersonDetected && isMicEnabled && (
+        <Transcript setTranscripts={setTranscripts} showQuestion={showQuestion} isPersonDetected={isPersonDetected} />
+      )}
 
       <Welcome
         isPersonDetected={isPersonDetected}
         transcripts={transcripts}
         avt={id}
         persons={persons}
+        isFinished={setShowQuestion}
       />
 
       <WebCan
@@ -90,6 +93,7 @@ export default function Scene({ user }) {
         habitatId={id}
         transcripts={transcripts}
         response={response}
+        setIsMicEnabled={setIsMicEnabled}  // Passa o controle do microfone para WebCan
       />
     </div>
   );
