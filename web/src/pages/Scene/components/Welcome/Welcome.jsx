@@ -43,6 +43,7 @@ const AnimatedModel = ({ url }) => {
 // Componente principal da cena
 export default function Welcome({
   isPersonDetected,
+  history,
   transcripts,
   avt,
   persons,
@@ -69,7 +70,7 @@ export default function Welcome({
 
   // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
-    if (isPersonDetected && persons.length > 0 && !isCooldown && transcripts.length === 0) {
+    if (isPersonDetected && persons.length > 0 && !isCooldown && history.length == 0) {
       const postData = async () => {
         try {
           const res = await axios.post(
@@ -97,7 +98,7 @@ export default function Welcome({
 
       postData();
     }
-  }, [isPersonDetected, persons, avt, isCooldown, transcripts]);
+  }, [isPersonDetected, persons, avt, isCooldown, history]);
 
   // Set isFinished to false when audio ends
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function Welcome({
   }, [isFinished]);
 
   const containerClass =
-    transcripts.length > 0 ? "welcome-container minimized" : "welcome-container";
+  history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>

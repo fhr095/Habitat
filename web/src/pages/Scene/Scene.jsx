@@ -16,7 +16,7 @@ export default function Scene({ user }) {
   const { id } = useParams();
   const [ifcFileUrl, setIfcFileUrl] = useState(null);
   const [createdBy, setCreatedBy] = useState("");
-  const [transcripts, setTranscripts] = useState([]);
+  const [transcripts, setTranscripts] = useState(""); // Agora é uma string única
   const [fade, setFade] = useState([]);
   const [response, setResponse] = useState([]);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
@@ -24,7 +24,8 @@ export default function Scene({ user }) {
   const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
   const [showQuestion, setShowQuestion] = useState(true);
   const [currentPerson, setCurrentPerson] = useState(null);
-  const [isMicEnabled, setIsMicEnabled] = useState(false);  // Estado para controle do microfone
+  const [isMicEnabled, setIsMicEnabled] = useState(false);
+  const [history, setHistory] = useState([]); // Novo estado para o histórico de interações
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -49,9 +50,9 @@ export default function Scene({ user }) {
   }, [id]);
 
   useEffect(() => {
-    // Limpa o array de perguntas quando a pessoa não é mais detectada ou muda de pessoa
+    // Limpa o transcript e o histórico quando a pessoa não é mais detectada ou muda de pessoa
     if (!currentPerson) {
-      setTranscripts([]);
+      setHistory([]); // Limpa o histórico
     }
   }, [currentPerson]);
 
@@ -67,20 +68,22 @@ export default function Scene({ user }) {
         habitatId={id}
         avt={id}
         transcripts={transcripts}
+        setTranscripts={setTranscripts}
         setFade={setFade}
         showQuestion={showQuestion}
         setShowQuestion={setShowQuestion}
         response={response}
         setResponse={setResponse}
+        history={history} // Passa o histórico para o componente Response
+        setHistory={setHistory} // Passa o setHistory para permitir atualizações
       />
 
-      {!showQuestion && isPersonDetected && isMicEnabled && (
-        <Transcript setTranscripts={setTranscripts} showQuestion={showQuestion} isPersonDetected={isPersonDetected} />
-      )}
+      <Transcript setTranscripts={setTranscripts} showQuestion={showQuestion} isPersonDetected={isPersonDetected} />
 
       <Welcome
         isPersonDetected={isPersonDetected}
-        transcripts={transcripts}
+        history={history}
+        transcripts ={transcripts}
         avt={id}
         persons={persons}
         isFinished={setShowQuestion}
@@ -93,7 +96,7 @@ export default function Scene({ user }) {
         habitatId={id}
         transcripts={transcripts}
         response={response}
-        setIsMicEnabled={setIsMicEnabled}  // Passa o controle do microfone para WebCan
+        setIsMicEnabled={setIsMicEnabled}
       />
     </div>
   );

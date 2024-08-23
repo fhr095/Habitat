@@ -21,8 +21,7 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
         recognizer.recognized = (s, e) => {
           if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
             console.log(`Recognized: ${e.result.text}`);
-            // Adiciona a transcrição finalizada ao setTranscripts
-            setTranscripts((prevTranscripts) => [...prevTranscripts, e.result.text]);
+            setTranscripts((prevTranscripts) => `${prevTranscripts} ${e.result.text}`);
           } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
             console.log("No speech could be recognized.");
           }
@@ -30,12 +29,18 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
 
         recognizer.canceled = (s, e) => {
           console.error(`Canceled: ${e.reason}`);
-          recognizer.stopContinuousRecognitionAsync();
+          recognizer.stopContinuousRecognitionAsync(() => {
+            recognizer.close();
+            recognizerRef.current = null;
+          });
         };
 
         recognizer.sessionStopped = (s, e) => {
           console.log("Session stopped.");
-          recognizer.stopContinuousRecognitionAsync();
+          recognizer.stopContinuousRecognitionAsync(() => {
+            recognizer.close();
+            recognizerRef.current = null;
+          });
         };
 
         recognizerRef.current = recognizer;
@@ -59,11 +64,17 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
   useEffect(() => {
     if (recognizerRef.current) {
       if (isPersonDetected && !isRecognizing && !showQuestion) {
-        recognizerRef.current.startContinuousRecognitionAsync();
-        setIsRecognizing(true);
+        recognizerRef.current.startContinuousRecognitionAsync(() => {
+          setIsRecognizing(true);
+        });
       } else if (!isPersonDetected && isRecognizing) {
-        recognizerRef.current.stopContinuousRecognitionAsync();
-        setIsRecognizing(false);
+        recognizerRef.current.stopContinuousRecognitionAsync(() => {
+          setIsRecognizing(false);
+          if (recognizerRef.current) {
+            recognizerRef.current.close();
+            recognizerRef.current = null;
+          }
+        });
       }
     }
   }, [isPersonDetected, showQuestion, isRecognizing]);

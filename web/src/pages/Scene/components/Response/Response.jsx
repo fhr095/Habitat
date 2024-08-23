@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { doc, setDoc, collection } from "firebase/firestore";
 import { db } from "../../../../firebase";
@@ -7,40 +7,71 @@ import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
 import Avatar from "./Avatar";
 import "./Response.scss";
 
-export default function Response({ habitatId, avt, transcripts, setFade, showQuestion, setShowQuestion, response, setResponse }) {
+export default function Response({
+    habitatId,
+    avt,
+    transcripts,
+    setTranscripts, 
+    setFade,
+    showQuestion,
+    setShowQuestion,
+    response,
+    setResponse,
+    history,
+    setHistory,
+}) {
     const [loading, setLoading] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
     const [animation, setAnimation] = useState("pensando");
     const [progress, setProgress] = useState(0);
+    const previousTranscriptRef = useRef("");
 
     useEffect(() => {
         const sendTranscript = async (transcript) => {
             setLoading(true);
             setShowQuestion(true);
+
             try {
-                const res = await axios.post("https://roko.flowfuse.cloud/talkwithifc", {
+                const res = await axios.post("https://habitat-chatbot-test.netlify.app/.netlify/functions/respond", {
                     msg: transcript,
-                    avt: avt
+                    avt: "centroadm",
+                    history: history, 
                 });
 
+                console.log("Response: ", res.data.comandos);
                 setResponse(res.data.comandos);
                 setLoading(false);
                 setAnimation("falando-sorrindo");
+
+                // Atualiza o histórico com a nova interação
+                setHistory(prevHistory => [
+                    ...prevHistory,
+                    {
+                        question: transcript,
+                        answer: res.data.comandos.map(c => ({
+                            texto: c.texto,
+                            fade: c.fade,
+                        })),
+                    }
+                ]);
+
+                console.log("History updated: ", [...history]);
+
+                // Reseta o transcript após o envio
+                setTranscripts("");
             } catch (error) {
                 console.error("Error sending transcript: ", error);
                 setLoading(false);
             }
         };
 
-        if (transcripts.length > 0) {
-            const lastTranscript = transcripts[transcripts.length - 1];
-            if (lastTranscript !== "") {
-                sendTranscript(lastTranscript);
-                setAnimation("pensando");
-            }
+        if (transcripts && transcripts !== previousTranscriptRef.current) {
+            previousTranscriptRef.current = transcripts;
+            sendTranscript(transcripts);
+            setAnimation("pensando");
         }
-    }, [transcripts, avt, setFade]);
+    }, [transcripts, avt, setFade, history, setHistory, setTranscripts]);
 
     useEffect(() => {
         if (!loading && response.length > 0) {
@@ -53,18 +84,11 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
             setCurrentIndex(index);
             const comando = response[index];
 
-            if (comando.audio) {
-                const audio = new Audio(comando.audio);
-                audio.onloadedmetadata = () => {
-                    setFade([{ fade: comando.fade, duration: audio.duration + 2 }]);
-                };
-                audio.play();
-                audio.onended = () => {
-                    playAudioSequentially(index + 1);
-                };
-            } else {
+            // Simula o tempo de um áudio de 5 segundos
+            setFade([{ fade: comando.fade, duration: 7 }]);
+            setTimeout(() => {
                 playAudioSequentially(index + 1);
-            }
+            }, 5000);  // 5 segundos de simulação de áudio
         } else {
             setShowFeedback(true);
             startProgressBar();
@@ -91,7 +115,7 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
 
     const handleFeedback = async (type) => {
         const feedbackData = {
-            question: transcripts.join(" "),
+            question: transcripts,
             response: response.map(r => r.texto).join(" "),
             feedback: type,
         };
@@ -108,9 +132,9 @@ export default function Response({ habitatId, avt, transcripts, setFade, showQue
 
     return (
         <div className="response-container">
-            {showQuestion && transcripts.length > 0 && (
+            {showQuestion && transcripts && (
                 <div className="question">
-                    <p>{transcripts[transcripts.length - 1]}</p>
+                    <p>{transcripts}</p>
                 </div>
             )}
             {loading ? (

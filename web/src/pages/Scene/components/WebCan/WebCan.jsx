@@ -125,7 +125,7 @@ export default function WebCan({
             lastDescriptor &&
             faceapi.euclideanDistance(detectedDescriptor, lastDescriptor) <
               0.4 &&
-            new Date() - lastPersonTimestamp < 60000
+            new Date() - lastPersonTimestamp < 10000
           ) {
             // Se a mesma pessoa for detectada dentro de 1 minuto, mantém o ID
             setCurrentPerson({ id: personId, image: detections[0] });
@@ -151,7 +151,7 @@ export default function WebCan({
               setCurrentPerson(null);
               setLastSavedTranscript(""); // Reset lastSavedTranscript
               setIsMicEnabled(false); // Desativar microfone quando ID expirar
-            }, 60000);
+            }, 10000);
             setIdExpirationTimeout(expirationTimeout);
           }
 
@@ -229,7 +229,7 @@ export default function WebCan({
                 setCurrentPerson(null);
                 setLastSavedTranscript(""); // Reset lastSavedTranscript
                 setIsMicEnabled(false); // Desativar microfone quando ID expirar
-              }, 60000);
+              }, 10000);
 
               setIdExpirationTimeout(expirationTimeout);
               setDetectionTimeout(null);
