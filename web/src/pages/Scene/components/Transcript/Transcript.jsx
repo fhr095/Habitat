@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 
-export default function Transcript({ setTranscripts, isPersonDetected, showQuestion }) {
+export default function Transcript({ setTranscripts }) {
   const recognizerRef = useRef(null);
   const [isRecognizing, setIsRecognizing] = useState(false);
 
@@ -17,6 +17,10 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
 
         const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
         const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+        recognizer.recognizing = (s, e) => {
+          console.log(`Recognizing: ${e.result.text}`);
+        };
 
         recognizer.recognized = (s, e) => {
           if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
@@ -44,6 +48,9 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
         };
 
         recognizerRef.current = recognizer;
+        recognizer.startContinuousRecognitionAsync(() => {
+          setIsRecognizing(true);
+        });
       } catch (error) {
         console.error("Error starting recognition: ", error);
       }
@@ -61,23 +68,5 @@ export default function Transcript({ setTranscripts, isPersonDetected, showQuest
     };
   }, [setTranscripts]);
 
-  useEffect(() => {
-    if (recognizerRef.current) {
-      if (isPersonDetected && !isRecognizing && !showQuestion) {
-        recognizerRef.current.startContinuousRecognitionAsync(() => {
-          setIsRecognizing(true);
-        });
-      } else if (!isPersonDetected && isRecognizing) {
-        recognizerRef.current.stopContinuousRecognitionAsync(() => {
-          setIsRecognizing(false);
-          if (recognizerRef.current) {
-            recognizerRef.current.close();
-            recognizerRef.current = null;
-          }
-        });
-      }
-    }
-  }, [isPersonDetected, showQuestion, isRecognizing]);
-
-  return null; // O componente não precisa renderizar nada
+  return null;
 }

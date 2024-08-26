@@ -110,6 +110,12 @@ export default function Welcome({
     }
   }, [isFinished]);
 
+  useEffect(() => {
+    if (history.length == 0) {
+      isFinished(false);  // Libera fala quando o histórico é limpo
+    }
+  }, [history]);
+
   const containerClass =
   history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
 

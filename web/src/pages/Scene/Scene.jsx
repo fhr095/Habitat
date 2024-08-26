@@ -56,6 +56,11 @@ export default function Scene({ user }) {
     }
   }, [currentPerson]);
 
+  useEffect(() => {
+    console.log("showQuestion ", showQuestion);
+    console.log("isPersonDetected ", isPersonDetected);
+  }, [showQuestion, isPersonDetected]);
+
   return (
     <div className="scene-container">
       {ifcFileUrl ? (
@@ -78,12 +83,14 @@ export default function Scene({ user }) {
         setHistory={setHistory} // Passa o setHistory para permitir atualizações
       />
 
-      <Transcript setTranscripts={setTranscripts} showQuestion={showQuestion} isPersonDetected={isPersonDetected} />
+      {isPersonDetected && !showQuestion && (
+        <Transcript setTranscripts={setTranscripts} />
+      )}
 
       <Welcome
         isPersonDetected={isPersonDetected}
         history={history}
-        transcripts ={transcripts}
+        transcripts={transcripts}
         avt={id}
         persons={persons}
         isFinished={setShowQuestion}

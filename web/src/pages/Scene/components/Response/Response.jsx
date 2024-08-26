@@ -58,8 +58,6 @@ export default function Response({
 
                 console.log("History updated: ", [...history]);
 
-                // Reseta o transcript após o envio
-                setTranscripts("");
             } catch (error) {
                 console.error("Error sending transcript: ", error);
                 setLoading(false);
@@ -71,7 +69,7 @@ export default function Response({
             sendTranscript(transcripts);
             setAnimation("pensando");
         }
-    }, [transcripts, avt, setFade, history, setHistory, setTranscripts]);
+    }, [transcripts, avt, setFade, history, setHistory]);
 
     useEffect(() => {
         if (!loading && response.length > 0) {
@@ -98,6 +96,9 @@ export default function Response({
                 setAnimation("pensando");
                 setShowQuestion(false);
                 setProgress(0); // Reset progress bar
+
+                // Reseta o transcript somente após todas as respostas serem processadas
+                setTranscripts("");
             }, 5000);
         }
     };
