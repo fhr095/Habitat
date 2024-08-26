@@ -81,12 +81,28 @@ export default function Response({
         if (index < response.length) {
             setCurrentIndex(index);
             const comando = response[index];
-
-            // Simula o tempo de um áudio de 5 segundos
-            setFade([{ fade: comando.fade, duration: 7 }]);
-            setTimeout(() => {
+    
+            if (comando.audio) {
+                const audio = new Audio(comando.audio);
+                audio.onloadedmetadata = () => {
+                    const duration = audio.duration * 1000; // Duração em milissegundos
+                    setFade([{ fade: comando.fade, duration: duration + 2000 }]); // Adiciona 2 segundos de margem
+    
+                    audio.play();
+                    audio.onended = () => {
+                        playAudioSequentially(index + 1);
+                    };
+                };
+    
+                // Tratamento de erro ao carregar o áudio
+                audio.onerror = () => {
+                    console.error(`Falha ao carregar o áudio: ${comando.audio}`);
+                    // Continuar para a próxima resposta mesmo se o áudio falhar
+                    playAudioSequentially(index + 1);
+                };
+            } else {
                 playAudioSequentially(index + 1);
-            }, 5000);  // 5 segundos de simulação de áudio
+            }
         } else {
             setShowFeedback(true);
             startProgressBar();
@@ -96,10 +112,10 @@ export default function Response({
                 setAnimation("pensando");
                 setShowQuestion(false);
                 setProgress(0); // Reset progress bar
-
+    
                 // Reseta o transcript somente após todas as respostas serem processadas
                 setTranscripts("");
-            }, 5000);
+            }, 5000); // 5 segundos de espera após a última resposta
         }
     };
 

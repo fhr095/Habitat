@@ -7,6 +7,11 @@ export default function Transcript({ setTranscripts }) {
 
   useEffect(() => {
     const startRecognition = async () => {
+      if (recognizerRef.current) {
+        console.warn("Recognition is already in progress.");
+        return;
+      }
+
       try {
         const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
           import.meta.env.VITE_AZURE_SPEECH_KEY,
@@ -33,18 +38,29 @@ export default function Transcript({ setTranscripts }) {
 
         recognizer.canceled = (s, e) => {
           console.error(`Canceled: ${e.reason}`);
-          recognizer.stopContinuousRecognitionAsync(() => {
-            recognizer.close();
-            recognizerRef.current = null;
-          });
+          stopRecognition();
         };
 
         recognizer.sessionStopped = (s, e) => {
           console.log("Session stopped.");
-          recognizer.stopContinuousRecognitionAsync(() => {
-            recognizer.close();
-            recognizerRef.current = null;
-          });
+          stopRecognition();
+        };
+
+        const stopRecognition = () => {
+          if (recognizerRef.current) {
+            recognizerRef.current.stopContinuousRecognitionAsync(
+              () => {
+                if (recognizerRef.current) {
+                  recognizerRef.current.close();
+                  recognizerRef.current = null;
+                  setIsRecognizing(false);
+                }
+              },
+              (err) => {
+                console.error("Error stopping recognition: ", err);
+              }
+            );
+          }
         };
 
         recognizerRef.current = recognizer;
@@ -60,10 +76,17 @@ export default function Transcript({ setTranscripts }) {
 
     return () => {
       if (recognizerRef.current) {
-        recognizerRef.current.stopContinuousRecognitionAsync(() => {
-          recognizerRef.current.close();
-          recognizerRef.current = null;
-        });
+        recognizerRef.current.stopContinuousRecognitionAsync(
+          () => {
+            if (recognizerRef.current) {
+              recognizerRef.current.close();
+              recognizerRef.current = null;
+            }
+          },
+          (err) => {
+            console.error("Error stopping recognition: ", err);
+          }
+        );
       }
     };
   }, [setTranscripts]);
