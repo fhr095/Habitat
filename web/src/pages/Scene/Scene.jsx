@@ -98,6 +98,8 @@ export default function Scene({ user }) {
         setPersons={setPersons}
         setCurrentPerson={setCurrentPerson}
         habitatId={id}
+        transcripts={transcripts}
+        response={response}
       />
     </div>
   );

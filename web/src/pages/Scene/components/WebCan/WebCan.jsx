@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 import { v4 as uuidv4 } from "uuid";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
 import { db } from "../../../../firebase";
 
 export default function WebCan({
@@ -9,12 +9,14 @@ export default function WebCan({
   setPersons,
   setCurrentPerson,
   habitatId,
+  transcripts,
+  response,
 }) {
   const videoRef = useRef(null);
   const [labeledDescriptors, setLabeledDescriptors] = useState([]);
   const [personId, setPersonId] = useState("");
   const [detectionTimeout, setDetectionTimeout] = useState(null);
-  const [idExpirationTimeout, setIdExpirationTimeout] = useState(null);
+  const [lastSavedTranscript, setLastSavedTranscript] = useState(""); // Track the last saved transcript
 
   useEffect(() => {
     const loadModels = async () => {
@@ -74,6 +76,19 @@ export default function WebCan({
     loadModels();
   }, [habitatId]);
 
+  const findBotWithAvt = async () => {
+    const avatarsCollection = collection(db, `habitats/${habitatId}/avatars`);
+    const q = query(avatarsCollection, where("avt", "==", habitatId));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      return querySnapshot.docs[0]; // Assuming there is only one bot with the matching avt
+    } else {
+      console.error("No bot found with the matching avt");
+      return null;
+    }
+  };
+
   useEffect(() => {
     const detectFace = async () => {
       if (
@@ -96,69 +111,92 @@ export default function WebCan({
         setIsPersonDetected(isDetected);
 
         if (isDetected) {
-          const detectedDescriptor = detections[0].descriptor;
-          let existingFace = null;
+          const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.4);
+          const bestMatch = faceMatcher.findBestMatch(detections[0].descriptor);
 
-          // Verifica se o rosto detectado já existe nos descritores
-          for (const faceDescriptor of labeledDescriptors) {
-            const distance = faceapi.euclideanDistance(
-              faceDescriptor.descriptors[0],
-              detectedDescriptor
-            );
-            if (distance < 0.4) {
-              existingFace = faceDescriptor;
-              break;
+          if (bestMatch.label !== "unknown" && bestMatch.distance < 0.4) {
+            setCurrentPerson({ id: bestMatch.label, image: detections[0] });
+            console.log("Recognized user:", bestMatch.label);
+
+            // Find the bot with the matching avt
+            const botDoc = await findBotWithAvt();
+
+            if (
+              botDoc &&
+              transcripts.length > 0 &&
+              response.length > 0 &&
+              transcripts[transcripts.length - 1] !== lastSavedTranscript
+            ) {
+              const userMessagesRef = collection(
+                db,
+                `habitats/${habitatId}/avatars/${botDoc.id}/messages/${bestMatch.label}/userMessages`
+              );
+
+              try {
+                // Save the user's message
+                await addDoc(userMessagesRef, {
+                  sender: bestMatch.label,
+                  message: transcripts[transcripts.length - 1],
+                  timestamp: new Date(),
+                });
+
+                // Save the AI's response
+                for (const comando of response) {
+                  await addDoc(userMessagesRef, {
+                    sender: "bot",
+                    message: comando.texto,
+                    timestamp: new Date(),
+                  });
+                }
+                setLastSavedTranscript(transcripts[transcripts.length - 1]);
+              } catch (error) {
+                console.error("Error saving messages to Firestore:", error);
+              }
             }
+          } else if (!personId) {
+            const newPersonId = uuidv4();
+            setPersonId(newPersonId);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const context = canvas.getContext("2d");
+            context.drawImage(
+              videoRef.current,
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const imageData = canvas.toDataURL("image/png");
+
+            setCurrentPerson({ id: newPersonId, image: imageData });
+            console.log("New person detected with ID:", newPersonId);
           }
 
-          let faceId;
-          if (existingFace) {
-            faceId = existingFace.label;
-            setCurrentPerson({ id: faceId, image: detections[0] });
-            console.log(`Loaded existing face with ID: ${faceId}`);
-          } else {
-            // Se não encontrar uma correspondência, cria um novo ID
-            faceId = uuidv4();
-            const newFace = {
-              id: faceId,
-              descriptor: detectedDescriptor,
-              image: detections[0],
-              firstSeen: new Date(),
-              lastSeen: new Date(),
-              detections: 1,
-            };
+          const persons = detections.map((person) => ({
+            emotion: person.expressions.asSortedArray()[0].expression,
+            age: Math.floor(person.age),
+            gender: person.gender,
+          }));
 
-            setCurrentPerson(newFace);
-            setLabeledDescriptors((prev) => [
-              ...prev,
-              new faceapi.LabeledFaceDescriptors(faceId, [detectedDescriptor]),
-            ]);
-            console.log(`Created new face with ID: ${faceId}`);
+          setPersons(persons);
+
+          if (detectionTimeout) {
+            clearTimeout(detectionTimeout);
+            setDetectionTimeout(null);
           }
-
-          setPersons(
-            detections.map((person) => ({
-              emotion: person.expressions.asSortedArray()[0].expression,
-              age: Math.floor(person.age),
-              gender: person.gender,
-            }))
-          );
-        } else {
+        } else if (personId) {
           if (!detectionTimeout) {
             const timeout = setTimeout(() => {
-              console.log("Person left the frame. Expiring current ID:", personId);
-
-              if (idExpirationTimeout) {
-                clearTimeout(idExpirationTimeout);
-              }
-
-              const expirationTimeout = setTimeout(() => {
-                console.log(`ID ${personId} expired.`);
-                setPersonId("");
-                setCurrentPerson(null);
-              }, 1000); // Tempo reduzido para expiração rápida
-
-              setIdExpirationTimeout(expirationTimeout);
+              console.log(
+                "Person left the frame. Deleting data for ID:",
+                personId
+              );
+              setPersonId("");
+              setCurrentPerson(null);
+              setDetectionTimeout(null);
+              setLastSavedTranscript("");
             }, 2000);
             setDetectionTimeout(timeout);
           }
@@ -174,7 +212,10 @@ export default function WebCan({
     personId,
     detectionTimeout,
     labeledDescriptors,
+    transcripts,
+    response,
     habitatId,
+    lastSavedTranscript,
   ]);
 
   return (
