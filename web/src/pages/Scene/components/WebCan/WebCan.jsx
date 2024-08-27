@@ -11,12 +11,10 @@ export default function WebCan({
   habitatId,
   transcripts,
   response,
-  setIsMicEnabled,
 }) {
   const videoRef = useRef(null);
   const [labeledDescriptors, setLabeledDescriptors] = useState([]);
   const [personId, setPersonId] = useState("");
-  const [lastDescriptor, setLastDescriptor] = useState(null);
   const [detectionTimeout, setDetectionTimeout] = useState(null);
   const [idExpirationTimeout, setIdExpirationTimeout] = useState(null);
 
@@ -86,7 +84,7 @@ export default function WebCan({
         labeledDescriptors.length > 0
       ) {
         const options = new faceapi.SsdMobilenetv1Options({
-          minConfidence: 0.7,
+          minConfidence: 0.5,
         });
 
         const detections = await faceapi
@@ -100,71 +98,66 @@ export default function WebCan({
         setIsPersonDetected(isDetected);
 
         if (isDetected) {
-          setIsMicEnabled(true);
-
           const detectedDescriptor = detections[0].descriptor;
+          let existingFace = null;
 
-          // Verifica se há um ID correspondente no armazenamento local
-          const storedPersonData = checkLocalStorageForPerson(detectedDescriptor);
-          if (storedPersonData) {
-            setCurrentPerson(storedPersonData);
-            setPersonId(storedPersonData.id);
-            setLastDescriptor(detectedDescriptor);
-            console.log(`Loaded existing ID from localStorage: ${storedPersonData.id}`);
-            return; // Sai da função para evitar criar um novo ID
-          }
-
-          // Verificar se a pessoa detectada é a mesma, evitando criação repetida de IDs
-          if (
-            personId &&
-            lastDescriptor &&
-            faceapi.euclideanDistance(detectedDescriptor, lastDescriptor) <
-              0.4
-          ) {
-            // Se for a mesma pessoa, manter o ID e cancelar qualquer expiração agendada
-            console.log(`Retained existing ID: ${personId}`);
-            if (idExpirationTimeout) {
-              clearTimeout(idExpirationTimeout);
-              setIdExpirationTimeout(null);
+          // Verifica se o rosto detectado já existe nos descritores
+          for (const faceDescriptor of labeledDescriptors) {
+            const distance = faceapi.euclideanDistance(
+              faceDescriptor.descriptors[0],
+              detectedDescriptor
+            );
+            if (distance < 0.4) {
+              existingFace = faceDescriptor;
+              break;
             }
-          } else {
-            // Nova pessoa detectada ou uma pessoa diferente
-            const newPersonId = uuidv4();
-            setPersonId(newPersonId);
-            setLastDescriptor(detectedDescriptor);
-            setCurrentPerson({ id: newPersonId, image: detections[0] });
-            console.log(`Created new ID: ${newPersonId}`);
           }
 
-          const persons = detections.map((person) => ({
-            emotion: person.expressions.asSortedArray()[0].expression,
-            age: Math.floor(person.age),
-            gender: person.gender,
-          }));
+          let faceId;
+          if (existingFace) {
+            faceId = existingFace.label;
+            setCurrentPerson({ id: faceId, image: detections[0] });
+            console.log(`Loaded existing face with ID: ${faceId}`);
+          } else {
+            // Se não encontrar uma correspondência, cria um novo ID
+            faceId = uuidv4();
+            const newFace = {
+              id: faceId,
+              descriptor: detectedDescriptor,
+              image: detections[0],
+              firstSeen: new Date(),
+              lastSeen: new Date(),
+              detections: 1,
+            };
 
-          setPersons(persons);
+            setCurrentPerson(newFace);
+            setLabeledDescriptors((prev) => [
+              ...prev,
+              new faceapi.LabeledFaceDescriptors(faceId, [detectedDescriptor]),
+            ]);
+            console.log(`Created new face with ID: ${faceId}`);
+          }
+
+          setPersons(
+            detections.map((person) => ({
+              emotion: person.expressions.asSortedArray()[0].expression,
+              age: Math.floor(person.age),
+              gender: person.gender,
+            }))
+          );
         } else {
           if (!detectionTimeout) {
-            setIsMicEnabled(false);
-
-            // Expirar ID se não houver detecção por um tempo
             const timeout = setTimeout(() => {
-              console.log(
-                "Person left the frame. Expiring current ID:",
-                personId
-              );
+              console.log("Person left the frame. Expiring current ID:", personId);
 
               if (idExpirationTimeout) {
                 clearTimeout(idExpirationTimeout);
               }
 
-              // Expirar ID atual
               const expirationTimeout = setTimeout(() => {
                 console.log(`ID ${personId} expired.`);
                 setPersonId("");
-                setLastDescriptor(null);
                 setCurrentPerson(null);
-                setIsMicEnabled(false);
               }, 1000); // Tempo reduzido para expiração rápida
 
               setIdExpirationTimeout(expirationTimeout);
@@ -175,27 +168,6 @@ export default function WebCan({
       }
     };
 
-    const checkLocalStorageForPerson = (detectedDescriptor) => {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith("personData_")) {
-          const storedData = JSON.parse(localStorage.getItem(key));
-          if (storedData?.image?.descriptor) {
-            const storedDescriptor = new Float32Array(storedData.image.descriptor);
-
-            // Verificar se os descritores têm o mesmo comprimento antes de comparar
-            if (
-              storedDescriptor.length === detectedDescriptor.length &&
-              faceapi.euclideanDistance(detectedDescriptor, storedDescriptor) < 0.4
-            ) {
-              return storedData;
-            }
-          }
-        }
-      }
-      return null;
-    };
-
     const interval = setInterval(detectFace, 1000);
     return () => clearInterval(interval);
   }, [
@@ -204,12 +176,7 @@ export default function WebCan({
     personId,
     detectionTimeout,
     labeledDescriptors,
-    transcripts,
-    response,
     habitatId,
-    lastDescriptor,
-    idExpirationTimeout,
-    setIsMicEnabled,
   ]);
 
   return (
