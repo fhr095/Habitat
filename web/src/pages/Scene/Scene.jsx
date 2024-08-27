@@ -48,6 +48,16 @@ export default function Scene({ user }) {
     fetchHabitatData();
   }, [id]);
 
+  useEffect(() => {
+    if(!currentPerson){
+      setHistory([]); // Limpa o histórico quando a pessoa não está mais presente
+    }
+  }, [currentPerson]);
+
+  useEffect(() => {
+    console.log("History updated: ", history);
+  }, [history]);
+
   return (
     <div className="scene-container">
       {ifcFileUrl ? (
@@ -88,8 +98,6 @@ export default function Scene({ user }) {
         setPersons={setPersons}
         setCurrentPerson={setCurrentPerson}
         habitatId={id}
-        transcripts={transcripts}
-        response={response}
       />
     </div>
   );

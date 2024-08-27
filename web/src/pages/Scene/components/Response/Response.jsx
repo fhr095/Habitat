@@ -39,7 +39,6 @@ export default function Response({
                     history: history, 
                 });
 
-                console.log("Response: ", res.data.comandos);
                 setResponse(res.data.comandos);
                 setLoading(false);
                 setAnimation("falando-sorrindo");
@@ -55,8 +54,6 @@ export default function Response({
                         })),
                     }
                 ]);
-
-                console.log("History updated: ", [...history]);
 
             } catch (error) {
                 console.error("Error sending transcript: ", error);

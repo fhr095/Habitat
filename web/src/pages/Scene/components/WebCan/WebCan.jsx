@@ -9,8 +9,6 @@ export default function WebCan({
   setPersons,
   setCurrentPerson,
   habitatId,
-  transcripts,
-  response,
 }) {
   const videoRef = useRef(null);
   const [labeledDescriptors, setLabeledDescriptors] = useState([]);
