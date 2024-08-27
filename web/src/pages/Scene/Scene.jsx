@@ -50,15 +50,79 @@ export default function Scene({ user }) {
   }, [id]);
 
   useEffect(() => {
-    // Limpa o transcript e o histórico quando a pessoa não é mais detectada ou muda de pessoa
-    if (!currentPerson) {
-      setHistory([]); // Limpa o histórico
+    // Função para verificar se já existe um dado correspondente no armazenamento local
+    const checkForExistingData = (detectedDescriptor) => {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith("personData_")) {
+          const storedData = JSON.parse(localStorage.getItem(key));
+          if (storedData?.image?.descriptor) {
+            const storedDescriptor = new Float32Array(storedData.image.descriptor);
+
+            // Verifica se os descritores têm o mesmo comprimento antes de comparar
+            if (
+              storedDescriptor.length === detectedDescriptor.length &&
+              faceapi.euclideanDistance(detectedDescriptor, storedDescriptor) < 0.4
+            ) {
+              return storedData;
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    // Função para salvar os dados no localStorage
+    const saveToLocalStorage = (personData) => {
+      const personId = personData.id;
+      const storedData = JSON.parse(localStorage.getItem(`personData_${personId}`)) || {};
+
+      // Verifica se já existe um dado correspondente antes de salvar
+      const existingData = checkForExistingData(personData.image.descriptor);
+      if (existingData) {
+        console.log(`Existing data found in localStorage for ID ${existingData.id}`);
+        return; // Se encontrar dados existentes, não salva o novo ID
+      }
+
+      storedData.history = history;
+      const dataToStore = { ...storedData, ...personData };
+
+      // Log para verificar os dados antes de armazenar
+      console.log(`Saving to localStorage:`, dataToStore);
+
+      localStorage.setItem(`personData_${personId}`, JSON.stringify(dataToStore));
+    };
+
+    // Salva os dados da pessoa no localStorage quando `currentPerson` for atualizado
+    if (currentPerson) {
+      saveToLocalStorage(currentPerson);
+
+      // Remove os dados do localStorage após 5 minutos de inatividade
+      const expirationTimeout = setTimeout(() => {
+        console.log(`Removing data for ID ${currentPerson.id} from localStorage after 5 minutes`);
+        localStorage.removeItem(`personData_${currentPerson.id}`);
+      }, 5 * 60 * 1000); // 5 minutos
+
+      return () => clearTimeout(expirationTimeout);
     }
   }, [currentPerson]);
 
   useEffect(() => {
-    console.log("showQuestion ", showQuestion);
-    console.log("isPersonDetected ", isPersonDetected);
+    // Atualiza o localStorage sempre que o histórico for alterado
+    if (currentPerson) {
+      const personData = JSON.parse(localStorage.getItem(`personData_${currentPerson.id}`)) || {};
+      personData.history = history;
+
+      // Log para verificar os dados do histórico antes de atualizar
+      console.log(`Updating history in localStorage:`, personData);
+
+      localStorage.setItem(`personData_${currentPerson.id}`, JSON.stringify(personData));
+    }
+  }, [history]);
+
+  useEffect(() => {
+    console.log(showQuestion);
+    console.log(isPersonDetected);
   }, [showQuestion, isPersonDetected]);
 
   return (

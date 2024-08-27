@@ -58,7 +58,6 @@ export default function Welcome({
   useEffect(() => {
     if (isPersonDetected) {
       setCurrentModel("/Avatar/acenando.glb");
-      isFinished(true);  // Bloqueia fala enquanto o robô aparece
     } else {
       const timer = setTimeout(() => {
         setCurrentModel("/Avatar/conversando-feliz.glb");
@@ -71,6 +70,7 @@ export default function Welcome({
   // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
     if (isPersonDetected && persons.length > 0 && !isCooldown && history.length == 0) {
+      isFinished(true);  // Bloqueia fala enquanto o POST é feito
       const postData = async () => {
         try {
           const res = await axios.post(
