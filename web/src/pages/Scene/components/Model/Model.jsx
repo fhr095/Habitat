@@ -25,10 +25,6 @@ export default function Model({ ifcFileUrl, fade }) {
   }, [ifcFileUrl]);
 
   useEffect(() => {
-    console.log(fade);
-  }, [fade]);
-
-  useEffect(() => {
     if (fade.length > 0 && arrayName.length > 0 && camera) {
       const applyFadeEffect = (index) => {
         if (index >= fade.length) {
