@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { doc, setDoc, collection } from "firebase/firestore";
-import { db } from "../../../../firebase";
 import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
 
 import Avatar from "./Avatar";
@@ -44,16 +42,25 @@ export default function Response({
                 setAnimation("falando-sorrindo");
 
                 // Atualiza o histórico com a nova interação
-                setHistory(prevHistory => [
-                    ...prevHistory,
-                    {
-                        question: transcript,
-                        answer: res.data.comandos.map(c => ({
-                            texto: c.texto,
-                            fade: c.fade,
-                        })),
+                setHistory(prevHistory => {
+                    let newHistory = [
+                        ...prevHistory,
+                        {
+                            question: transcript,
+                            answer: res.data.comandos.map(c => ({
+                                texto: c.texto,
+                                fade: c.fade,
+                            })),
+                        }
+                    ];
+
+                    // Limitar o histórico a 3 itens, removendo os 2 primeiros se necessário
+                    if (newHistory.length > 3) {
+                        newHistory = newHistory.slice(2); // Remove os dois primeiros itens
                     }
-                ]);
+
+                    return newHistory;
+                });
 
             } catch (error) {
                 console.error("Error sending transcript: ", error);
@@ -134,6 +141,7 @@ export default function Response({
             feedback: type,
         };
 
+        // Logica de feedback aqui
         try {
             const feedbackRef = doc(collection(db, `habitats/${habitatId}/feedback`));
             await setDoc(feedbackRef, feedbackData);

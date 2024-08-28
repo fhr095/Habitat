@@ -55,7 +55,7 @@ export default function Scene({ user }) {
   }, [currentPerson]);
 
   useEffect(() => {
-    console.log("History updated: ", history);
+    console.log(history);
   }, [history]);
 
   return (
@@ -97,9 +97,6 @@ export default function Scene({ user }) {
         setIsPersonDetected={setIsPersonDetected}
         setPersons={setPersons}
         setCurrentPerson={setCurrentPerson}
-        habitatId={id}
-        transcripts={transcripts}
-        response={response}
       />
     </div>
   );
