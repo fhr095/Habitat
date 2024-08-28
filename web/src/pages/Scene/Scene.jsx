@@ -54,10 +54,6 @@ export default function Scene({ user }) {
     }
   }, [currentPerson]);
 
-  useEffect(() => {
-    console.log(history);
-  }, [history]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? (

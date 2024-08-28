@@ -25,6 +25,10 @@ export default function Model({ ifcFileUrl, fade }) {
   }, [ifcFileUrl]);
 
   useEffect(() => {
+    console.log(fade);
+  }, [fade]);
+
+  useEffect(() => {
     if (fade.length > 0 && arrayName.length > 0 && camera) {
       const applyFadeEffect = (index) => {
         if (index >= fade.length) {
@@ -71,7 +75,7 @@ export default function Model({ ifcFileUrl, fade }) {
                 camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
                 setScreenPosition({ x: 0, y: 0 });
                 applyFadeEffect(index + 1);
-              }, fadeElement.duration * 1000);
+              }, fadeElement.duration);
             } else {
               object.element.material = new THREE.MeshStandardMaterial({
                 opacity: 0.1,
@@ -79,7 +83,7 @@ export default function Model({ ifcFileUrl, fade }) {
               });
               setTimeout(() => {
                 object.element.material = originalMaterials.current.get(object.element);
-              }, fadeElement.duration * 1000);
+              }, fadeElement.duration);
             }
           }
         });

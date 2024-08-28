@@ -8,7 +8,6 @@ export default function Transcript({ setTranscripts }) {
   useEffect(() => {
     const startRecognition = async () => {
       if (recognizerRef.current) {
-        console.warn("Recognition is already in progress.");
         return;
       }
 
@@ -24,12 +23,11 @@ export default function Transcript({ setTranscripts }) {
         const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
         recognizer.recognizing = (s, e) => {
-          console.log(`Recognizing: ${e.result.text}`);
+          // console.log(`Recognizing: ${e.result.text}`);
         };
 
         recognizer.recognized = (s, e) => {
           if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-            console.log(`Recognized: ${e.result.text}`);
             setTranscripts((prevTranscripts) => `${prevTranscripts} ${e.result.text}`);
           } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
             console.log("No speech could be recognized.");
@@ -42,7 +40,6 @@ export default function Transcript({ setTranscripts }) {
         };
 
         recognizer.sessionStopped = (s, e) => {
-          console.log("Session stopped.");
           stopRecognition();
         };
 
