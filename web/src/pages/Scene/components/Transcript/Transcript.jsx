@@ -4,6 +4,7 @@ import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 export default function Transcript({ setTranscripts }) {
   const recognizerRef = useRef(null);
   const [isRecognizing, setIsRecognizing] = useState(false);
+  const previousTranscriptRef = useRef("");
 
   useEffect(() => {
     const startRecognition = async () => {
@@ -12,6 +13,8 @@ export default function Transcript({ setTranscripts }) {
       }
 
       try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
         const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
           import.meta.env.VITE_AZURE_SPEECH_KEY,
           import.meta.env.VITE_AZURE_SPEECH_REGION
@@ -23,19 +26,23 @@ export default function Transcript({ setTranscripts }) {
         const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
 
         recognizer.recognizing = (s, e) => {
-          // console.log(`Recognizing: ${e.result.text}`);
+          // Ignorado para evitar duplicação de fala parcial.
         };
 
         recognizer.recognized = (s, e) => {
           if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-            setTranscripts((prevTranscripts) => `${prevTranscripts} ${e.result.text}`);
+            const recognizedText = e.result.text.trim();
+            if (recognizedText && recognizedText !== previousTranscriptRef.current) {
+              setTranscripts((prevTranscripts) => `${prevTranscripts} ${recognizedText}`);
+              previousTranscriptRef.current = recognizedText;
+            }
           } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
             console.log("No speech could be recognized.");
           }
         };
 
         recognizer.canceled = (s, e) => {
-          console.error(`Canceled: ${e.reason}`);
+          console.error(`Recognition canceled: ${e.reason}`);
           stopRecognition();
         };
 
@@ -54,7 +61,7 @@ export default function Transcript({ setTranscripts }) {
                 }
               },
               (err) => {
-                console.error("Error stopping recognition: ", err);
+                console.error("Error stopping recognition:", err);
               }
             );
           }
@@ -65,7 +72,7 @@ export default function Transcript({ setTranscripts }) {
           setIsRecognizing(true);
         });
       } catch (error) {
-        console.error("Error starting recognition: ", error);
+        console.error("Error initializing recognition:", error);
       }
     };
 
@@ -81,7 +88,7 @@ export default function Transcript({ setTranscripts }) {
             }
           },
           (err) => {
-            console.error("Error stopping recognition: ", err);
+            console.error("Error stopping recognition on unmount:", err);
           }
         );
       }

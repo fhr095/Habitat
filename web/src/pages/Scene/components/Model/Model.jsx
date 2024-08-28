@@ -68,7 +68,7 @@ export default function Model({ ifcFileUrl, fade }) {
 
               setTimeout(() => {
                 object.element.material = originalMaterials.current.get(object.element);
-                camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
+                camera.controls.setLookAt(30, 30, 30, 0, 0, 0);
                 setScreenPosition({ x: 0, y: 0 });
                 applyFadeEffect(index + 1);
               }, fadeElement.duration);
@@ -100,7 +100,7 @@ export default function Model({ ifcFileUrl, fade }) {
 
     world.scene.setup();
 
-    await world.camera.controls.setLookAt(10, 10, 10, 0, 0, 0);
+    await world.camera.controls.setLookAt(30, 30, 30, 0, 0, 0);
 
     components.init();
 

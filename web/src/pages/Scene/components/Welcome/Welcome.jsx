@@ -65,7 +65,7 @@ export default function Welcome({
 
       return () => clearTimeout(timer);
     }
-  }, [isPersonDetected, isFinished]);
+  }, [isPersonDetected]);
 
   // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
@@ -109,12 +109,6 @@ export default function Welcome({
       };
     }
   }, [isFinished]);
-
-  useEffect(() => {
-    if (history.length == 0) {
-      isFinished(false);  // Libera fala quando o histórico é limpo
-    }
-  }, [history]);
 
   const containerClass =
   history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
