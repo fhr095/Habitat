@@ -8,8 +8,8 @@ import "./Response.scss";
 export default function Response({
     habitatId,
     avt,
-    transcripts,
-    setTranscripts, 
+    transcript,
+    setTranscript, 
     setFade,
     showQuestion,
     setShowQuestion,
@@ -68,12 +68,12 @@ export default function Response({
             }
         };
 
-        if (transcripts && transcripts !== previousTranscriptRef.current) {
-            previousTranscriptRef.current = transcripts;
-            sendTranscript(transcripts);
+        if (transcript && transcript !== previousTranscriptRef.current) {
+            previousTranscriptRef.current = transcript;
+            sendTranscript(transcript);
             setAnimation("pensando");
         }
-    }, [transcripts, avt, setFade, history, setHistory]);
+    }, [transcript, avt, setFade, history, setHistory]);
 
     useEffect(() => {
         if (!loading && response.length > 0) {
@@ -118,8 +118,8 @@ export default function Response({
                 setProgress(0); // Reset progress bar
     
                 // Reseta o transcript somente após todas as respostas serem processadas
-                setTranscripts("");
-            }, 5000); // 5 segundos de espera após a última resposta
+                setTranscript("");
+            }, 3000); // 3 segundos de espera após a última resposta
         }
     };
 
@@ -136,7 +136,7 @@ export default function Response({
 
     const handleFeedback = async (type) => {
         const feedbackData = {
-            question: transcripts,
+            question: transcript,
             response: response.map(r => r.texto).join(" "),
             feedback: type,
         };
@@ -154,9 +154,9 @@ export default function Response({
 
     return (
         <div className="response-container">
-            {showQuestion && transcripts && (
+            {showQuestion && transcript && (
                 <div className="question">
-                    <p>{transcripts}</p>
+                    <p>{transcript}</p>
                 </div>
             )}
             {loading ? (

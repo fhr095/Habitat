@@ -5,10 +5,10 @@ import "./Welcome.scss";
 export default function Welcome({
   isPersonDetected,
   history,
-  transcripts,
+  transcript,
   avt,
   persons,
-  isFinished,
+  setIsFinished,
 }) {
   const [currentGif, setCurrentGif] = useState("/Avatar/chegando.gif");
   const [isCooldown, setIsCooldown] = useState(false);
@@ -28,7 +28,7 @@ export default function Welcome({
 
   useEffect(() => {
     if (isPersonDetected && persons.length > 0 && !isCooldown && history.length === 0) {
-      isFinished(true);  // Bloqueia fala enquanto o POST é feito
+      setIsFinished(false);  // Bloqueia fala enquanto o POST é feito
       const postData = async () => {
         try {
           const res = await axios.post(
@@ -62,13 +62,13 @@ export default function Welcome({
     const audioElement = audioRef.current;
     if (audioElement) {
       audioElement.onended = () => {
-        isFinished(false);  // Libera fala após o áudio terminar
+        setIsFinished(true);  // Libera fala após o áudio terminar
       };
     }
-  }, [isFinished]);
+  }, [setIsFinished]);
 
   const containerClass =
-    history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
+    history.length > 0 || transcript !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>

@@ -16,15 +16,16 @@ export default function Scene({ user }) {
   const { id } = useParams();
   const [ifcFileUrl, setIfcFileUrl] = useState(null);
   const [createdBy, setCreatedBy] = useState("");
-  const [transcripts, setTranscripts] = useState(""); // Agora é uma string única
+  const [transcript, setTranscript] = useState(""); // Agora é uma string única
   const [fade, setFade] = useState([]);
   const [response, setResponse] = useState([]);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
   const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(true);
+  const [showQuestion, setShowQuestion] = useState(false);
   const [currentPerson, setCurrentPerson] = useState(null);
   const [history, setHistory] = useState([]); // Novo estado para o histórico de interações
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -54,6 +55,13 @@ export default function Scene({ user }) {
     }
   }, [currentPerson]);
 
+  useEffect(() => {
+    console.log("true ", isPersonDetected);
+    console.log("false ",showQuestion);
+    console.log("vazio ",transcript);
+    console.log("true ",isFinished);
+  }, [isPersonDetected, showQuestion, transcript, isFinished]);
+
   return (
     <div className="scene-container">
       {ifcFileUrl ? (
@@ -65,8 +73,8 @@ export default function Scene({ user }) {
       <Response
         habitatId={id}
         avt={id}
-        transcripts={transcripts}
-        setTranscripts={setTranscripts}
+        transcript={transcript}
+        setTranscript={setTranscript}
         setFade={setFade}
         showQuestion={showQuestion}
         setShowQuestion={setShowQuestion}
@@ -76,17 +84,17 @@ export default function Scene({ user }) {
         setHistory={setHistory} // Passa o setHistory para permitir atualizações
       />
 
-      {isPersonDetected && !showQuestion && (
-        <Transcript setTranscripts={setTranscripts} />
+      {isPersonDetected && !showQuestion && transcript === "" && isFinished && (
+        <Transcript setTranscript={setTranscript} />
       )}
 
       <Welcome
         isPersonDetected={isPersonDetected}
         history={history}
-        transcripts={transcripts}
+        transcript={transcript}
         avt={id}
         persons={persons}
-        isFinished={setShowQuestion}
+        setIsFinished={setIsFinished}
       />
 
       <WebCan

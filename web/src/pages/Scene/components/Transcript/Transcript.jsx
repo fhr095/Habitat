@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 
-export default function Transcript({ setTranscripts }) {
+export default function Transcript({ setTranscript }) {
   const recognizerRef = useRef(null);
   const [isRecognizing, setIsRecognizing] = useState(false);
   const previousTranscriptRef = useRef("");
@@ -33,7 +33,7 @@ export default function Transcript({ setTranscripts }) {
           if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
             const recognizedText = e.result.text.trim();
             if (recognizedText && recognizedText !== previousTranscriptRef.current) {
-              setTranscripts((prevTranscripts) => `${prevTranscripts} ${recognizedText}`);
+              setTranscript((prevTranscripts) => `${prevTranscripts} ${recognizedText}`);
               previousTranscriptRef.current = recognizedText;
             }
           } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
@@ -93,7 +93,7 @@ export default function Transcript({ setTranscripts }) {
         );
       }
     };
-  }, [setTranscripts]);
+  }, [setTranscript]);
 
   return null;
 }
