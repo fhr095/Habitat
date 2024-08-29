@@ -10,7 +10,7 @@ export default function Welcome({
   persons,
   setIsFinished,
 }) {
-  const [currentGif, setCurrentGif] = useState("/Avatar/chegando.gif");
+  const [currentGif, setCurrentGif] = useState("/Avatar/falando.gif");
   const [isCooldown, setIsCooldown] = useState(false);
   const audioRef = useRef(null);
 
@@ -19,7 +19,7 @@ export default function Welcome({
       setCurrentGif("/Avatar/acenando.gif");
     } else {
       const timer = setTimeout(() => {
-        setCurrentGif("/Avatar/conversando-feliz.gif");
+        setCurrentGif("/Avatar/falando.gif");
       }, 2000);
 
       return () => clearTimeout(timer);

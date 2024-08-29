@@ -2,8 +2,8 @@ import React from "react";
 
 export default function Avatar({ animation }) {
   const gifUrl = animation === "pensando"
-    ? "/Avatar/confuso.gif"
-    : "/Avatar/conversando-feliz.gif";
+    ? "/Avatar/falando.gif"
+    : "/Avatar/falando.gif";
 
   return (
     <div className="avatar-container">

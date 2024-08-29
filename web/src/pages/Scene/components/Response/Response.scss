@@ -57,9 +57,9 @@
     }
 
     .avatar-gif {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Garante que o GIF cubra toda a área do avatar */
+      width: 70%;
+      height: 70%;
+      object-fit: contain; /* Garante que o GIF cubra toda a área do avatar */
     }
 
     .loading-response-text {
@@ -105,9 +105,9 @@
     }
 
     .avatar-gif {
-      width: 100%;
-      height: 100%;
-      object-fit: cover; /* Garante que o GIF cubra toda a área do avatar */
+      width: 70%;
+      height: 70%;
+      object-fit: contain; /* Garante que o GIF cubra toda a área do avatar */
     }
 
     .response-text {
