@@ -55,13 +55,6 @@ export default function Scene({ user }) {
     }
   }, [currentPerson]);
 
-  useEffect(() => {
-    console.log("true ", isPersonDetected);
-    console.log("false ",showQuestion);
-    console.log("vazio ",transcript);
-    console.log("true ",isFinished);
-  }, [isPersonDetected, showQuestion, transcript, isFinished]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? (
