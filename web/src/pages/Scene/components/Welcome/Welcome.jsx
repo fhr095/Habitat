@@ -1,46 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import * as THREE from "three";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import "./Welcome.scss";
 
-// Componente para carregar e animar o modelo GLB
-const AnimatedModel = ({ url }) => {
-  const [gltf, setGltf] = useState(null);
-  const mixer = useRef(null);
-  const modelRef = useRef();
-
-  useEffect(() => {
-    const loader = new GLTFLoader();
-    loader.load(url, (gltf) => {
-      setGltf(gltf);
-    });
-  }, [url]);
-
-  useEffect(() => {
-    if (gltf && gltf.animations.length) {
-      mixer.current = new THREE.AnimationMixer(gltf.scene);
-      gltf.animations.forEach((clip) => {
-        const action = mixer.current.clipAction(clip);
-        action.play();
-      });
-    }
-  }, [gltf]);
-
-  useFrame((state, delta) => {
-    mixer.current?.update(delta);
-    if (modelRef.current) {
-      modelRef.current.rotation.y = -1.55; // Rotaciona o modelo 180 graus para deixá-lo de frente
-      modelRef.current.position.y = -0.75; // Ajuste a posição Y para mover o modelo para baixo
-    }
-  });
-
-  return gltf ? <primitive object={gltf.scene} ref={modelRef} /> : null;
-};
-
-// Componente principal da cena
 export default function Welcome({
   isPersonDetected,
   history,
@@ -49,27 +10,24 @@ export default function Welcome({
   persons,
   isFinished,
 }) {
-  const [currentModel, setCurrentModel] = useState("/Avatar/chegando.glb");
+  const [currentGif, setCurrentGif] = useState("/Avatar/chegando.gif");
   const [isCooldown, setIsCooldown] = useState(false);
-
-  // Ref for the audio element
   const audioRef = useRef(null);
 
   useEffect(() => {
     if (isPersonDetected) {
-      setCurrentModel("/Avatar/acenando.glb");
+      setCurrentGif("/Avatar/acenando.gif");
     } else {
       const timer = setTimeout(() => {
-        setCurrentModel("/Avatar/conversando-feliz.glb");
+        setCurrentGif("/Avatar/conversando-feliz.gif");
       }, 2000);
 
       return () => clearTimeout(timer);
     }
   }, [isPersonDetected]);
 
-  // Novo efeito para fazer o POST se persons contiver dados e não estiver em cooldown
   useEffect(() => {
-    if (isPersonDetected && persons.length > 0 && !isCooldown && history.length == 0) {
+    if (isPersonDetected && persons.length > 0 && !isCooldown && history.length === 0) {
       isFinished(true);  // Bloqueia fala enquanto o POST é feito
       const postData = async () => {
         try {
@@ -100,7 +58,6 @@ export default function Welcome({
     }
   }, [isPersonDetected, persons, avt, isCooldown, history]);
 
-  // Set isFinished to false when audio ends
   useEffect(() => {
     const audioElement = audioRef.current;
     if (audioElement) {
@@ -111,17 +68,11 @@ export default function Welcome({
   }, [isFinished]);
 
   const containerClass =
-  history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
+    history.length > 0 || transcripts !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>
-      <Canvas camera={{ position: [0, 0.2, 2], fov: 50 }}>
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 10, 5]} intensity={1} />
-        <AnimatedModel url={currentModel} />
-        <OrbitControls />
-      </Canvas>
-      {/* Audio element to play the audio */}
+      <img src={currentGif} alt="Animated GIF" className="gif" />
       <audio ref={audioRef} />
     </div>
   );

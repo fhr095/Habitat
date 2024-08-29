@@ -18,9 +18,10 @@
     opacity: 0; /* Opcional: desvanecer o container */
   }
 
-  canvas {
+  .gif {
     width: 100%;
     height: 100%;
+    object-fit: contain; /* Cobre toda a área do container sem distorcer o GIF */
     display: block;
   }
 }
