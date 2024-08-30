@@ -119,6 +119,7 @@ export default function Response({
     
                 // Reseta o transcript somente após todas as respostas serem processadas
                 setTranscript("");
+                previousTranscriptRef.current = "";
             }, 3000); // 3 segundos de espera após a última resposta
         }
     };
