@@ -30,7 +30,12 @@ export default function Transcript({ setTranscript }) {
             .trim();
 
           if (transcript) {
-            setTranscript(transcript); // Sempre atualiza o texto
+            setTranscript(prevTranscript => {
+              if (prevTranscript.trim() !== transcript.trim()) {
+                return transcript; // Apenas atualiza se o texto for diferente
+              }
+              return prevTranscript; // Mantém o mesmo texto se for igual
+            });
           }
         };
 
@@ -43,7 +48,6 @@ export default function Transcript({ setTranscript }) {
         recognizer.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
           stopRecognition();
-          startRecognition(); // Tenta reiniciar em caso de erro
         };
 
         const stopRecognition = () => {
