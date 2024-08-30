@@ -56,10 +56,6 @@ export default function Scene({ user }) {
     }
   }, [currentPerson]);
 
-  useEffect(() => {
-    console.log("Transcript: ", transcript);
-  }, [transcript]);
-
   return (
     <div className="scene-container">
       {ifcFileUrl ? (

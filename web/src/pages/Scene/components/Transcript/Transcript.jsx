@@ -5,7 +5,7 @@ export default function Transcript({ setTranscript }) {
 
   useEffect(() => {
     const startRecognition = () => {
-      if (recognizerRef.current) {
+      if (recognizerRef.current && recognizerRef.current.recognizing) {
         return; // Se o reconhecimento já está ativo, não faça nada
       }
 
@@ -21,6 +21,18 @@ export default function Transcript({ setTranscript }) {
         recognizer.lang = "pt-BR";
         recognizer.continuous = true;
         recognizer.interimResults = false;
+        recognizer.recognizing = false;
+
+        recognizer.onstart = () => {
+          recognizer.recognizing = true; // Marca o reconhecimento como ativo
+        };
+
+        recognizer.onend = () => {
+          recognizer.recognizing = false; // Marca o reconhecimento como inativo
+          if (recognizerRef.current) {
+            recognizer.start(); // Reinicie o reconhecimento se estiver ativo
+          }
+        };
 
         recognizer.onresult = (event) => {
           const transcript = Array.from(event.results)
@@ -39,17 +51,11 @@ export default function Transcript({ setTranscript }) {
           }
         };
 
-        recognizer.onend = () => {
-          if (recognizerRef.current) {
-            recognizer.start(); // Reinicie o reconhecimento se estiver ativo
-          }
-        };
-
         recognizer.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
           if (event.error === "no-speech") {
-            if (recognizerRef.current) {
-              recognizer.start(); // Reinicia se ocorrer o erro "no-speech"
+            if (recognizerRef.current && !recognizerRef.current.recognizing) {
+              recognizer.start(); // Reinicia se ocorrer o erro "no-speech" e não estiver ativo
             }
           } else {
             stopRecognition();
