@@ -47,7 +47,13 @@ export default function Transcript({ setTranscript }) {
 
         recognizer.onerror = (event) => {
           console.error("Speech recognition error:", event.error);
-          stopRecognition();
+          if (event.error === "no-speech") {
+            if (recognizerRef.current) {
+              recognizer.start(); // Reinicia se ocorrer o erro "no-speech"
+            }
+          } else {
+            stopRecognition();
+          }
         };
 
         const stopRecognition = () => {
