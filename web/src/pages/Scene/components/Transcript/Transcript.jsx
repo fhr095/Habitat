@@ -1,76 +1,60 @@
-import React, { useEffect, useRef, useState } from "react";
-import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
+import React, { useEffect, useRef } from "react";
 
 export default function Transcript({ setTranscript }) {
   const recognizerRef = useRef(null);
-  const [isRecognizing, setIsRecognizing] = useState(false);
-  const previousTranscriptRef = useRef("");
 
   useEffect(() => {
-    const startRecognition = async () => {
+    const startRecognition = () => {
       if (recognizerRef.current) {
-        return;
+        return; // Se o reconhecimento já está ativo, não faça nada
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          console.error("Browser does not support speech recognition.");
+          return;
+        }
 
-        const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(
-          import.meta.env.VITE_AZURE_SPEECH_KEY,
-          import.meta.env.VITE_AZURE_SPEECH_REGION
-        );
+        const recognizer = new SpeechRecognition();
+        recognizer.lang = "pt-BR";
+        recognizer.continuous = true;
+        recognizer.interimResults = false;
 
-        speechConfig.speechRecognitionLanguage = "pt-BR";
+        recognizer.onresult = (event) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join(' ')
+            .trim();
 
-        const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-        const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-
-        recognizer.recognizing = (s, e) => {
-          // Ignorado para evitar duplicação de fala parcial.
-        };
-
-        recognizer.recognized = (s, e) => {
-          if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-            const recognizedText = e.result.text.trim();
-            if (recognizedText && recognizedText !== previousTranscriptRef.current) {
-              setTranscript((prevTranscripts) => `${prevTranscripts} ${recognizedText}`);
-              previousTranscriptRef.current = recognizedText;
-            }
-          } else if (e.result.reason === SpeechSDK.ResultReason.NoMatch) {
-            console.log("No speech could be recognized.");
+          if (transcript) {
+            setTranscript(transcript); // Sempre atualiza o texto
           }
         };
 
-        recognizer.canceled = (s, e) => {
-          console.error(`Recognition canceled: ${e.reason}`);
-          stopRecognition();
+        recognizer.onend = () => {
+          if (recognizerRef.current) {
+            recognizer.start(); // Reinicie o reconhecimento se estiver ativo
+          }
         };
 
-        recognizer.sessionStopped = (s, e) => {
+        recognizer.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
           stopRecognition();
+          startRecognition(); // Tenta reiniciar em caso de erro
         };
 
         const stopRecognition = () => {
           if (recognizerRef.current) {
-            recognizerRef.current.stopContinuousRecognitionAsync(
-              () => {
-                if (recognizerRef.current) {
-                  recognizerRef.current.close();
-                  recognizerRef.current = null;
-                  setIsRecognizing(false);
-                }
-              },
-              (err) => {
-                console.error("Error stopping recognition:", err);
-              }
-            );
+            recognizerRef.current.stop();
+            recognizerRef.current = null;
           }
         };
 
         recognizerRef.current = recognizer;
-        recognizer.startContinuousRecognitionAsync(() => {
-          setIsRecognizing(true);
-        });
+        recognizer.start();
       } catch (error) {
         console.error("Error initializing recognition:", error);
       }
@@ -80,17 +64,8 @@ export default function Transcript({ setTranscript }) {
 
     return () => {
       if (recognizerRef.current) {
-        recognizerRef.current.stopContinuousRecognitionAsync(
-          () => {
-            if (recognizerRef.current) {
-              recognizerRef.current.close();
-              recognizerRef.current = null;
-            }
-          },
-          (err) => {
-            console.error("Error stopping recognition on unmount:", err);
-          }
-        );
+        recognizerRef.current.stop();
+        recognizerRef.current = null;
       }
     };
   }, [setTranscript]);

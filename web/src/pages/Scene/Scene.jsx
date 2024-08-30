@@ -51,6 +51,7 @@ export default function Scene({ user }) {
 
   useEffect(() => {
     if(!currentPerson){
+      setTranscript(""); // Limpa o texto quando a pessoa não está mais presente
       setHistory([]); // Limpa o histórico quando a pessoa não está mais presente
     }
   }, [currentPerson]);
@@ -73,8 +74,8 @@ export default function Scene({ user }) {
         setShowQuestion={setShowQuestion}
         response={response}
         setResponse={setResponse}
-        history={history} // Passa o histórico para o componente Response
-        setHistory={setHistory} // Passa o setHistory para permitir atualizações
+        history={history}
+        setHistory={setHistory}
       />
 
       {isPersonDetected && !showQuestion && transcript === "" && isFinished && (
