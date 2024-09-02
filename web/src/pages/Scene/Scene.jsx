@@ -14,14 +14,12 @@ import "./Scene.scss";
 
 export default function Scene({ user }) {
   const { id } = useParams();
-  const [ifcFileUrl, setIfcFileUrl] = useState(null);
-  const [createdBy, setCreatedBy] = useState("");
+  const [habitatData, setHabitatData] = useState({});
   const [transcript, setTranscript] = useState(""); // Agora é uma string única
   const [fade, setFade] = useState([]);
   const [response, setResponse] = useState([]);
   const [isPersonDetected, setIsPersonDetected] = useState(false);
   const [persons, setPersons] = useState([]);
-  const [dataCollectionEnabled, setDataCollectionEnabled] = useState(false);
   const [showQuestion, setShowQuestion] = useState(false);
   const [currentPerson, setCurrentPerson] = useState(null);
   const [history, setHistory] = useState([]); // Novo estado para o histórico de interações
@@ -35,9 +33,7 @@ export default function Scene({ user }) {
 
         if (habitatDoc.exists()) {
           const habitatData = habitatDoc.data();
-          setIfcFileUrl(habitatData.ifcFileUrl);
-          setCreatedBy(habitatData.createdBy);
-          setDataCollectionEnabled(habitatData.dataCollectionEnabled || false);
+          setHabitatData(habitatData);
         } else {
           console.error("No such document!");
         }
@@ -58,8 +54,8 @@ export default function Scene({ user }) {
 
   return (
     <div className="scene-container">
-      {ifcFileUrl ? (
-        <Model ifcFileUrl={ifcFileUrl} fade={fade} avt={id} />
+      {habitatData.ifcFileUrl ? (
+        <Model ifcFileUrl={habitatData.ifcFileUrl} fade={fade} avt={id} />
       ) : (
         <p>Loading...</p>
       )}
