@@ -1,4 +1,9 @@
-.voice-button {
+.voice-button-container, .home-button-container {
+  position: relative;
+  display: inline-block;
+}
+
+.voice-button, .home-button {
   background-color: #004736;
   border: none;
   border-radius: 50%;
@@ -24,9 +29,75 @@
     opacity: 0.5;
   }
 
-  .ScaleLoader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  &.listening {
+    animation: pulse 1.5s infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
+}
+
+.voice-button .ScaleLoader, .home-button .ScaleLoader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tooltip {
+  position: absolute;
+  top: -40px; // ajuste conforme necessário
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1;
+  opacity: 0.9;
+  font-size: 16px;
+}
+
+.progress-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+
+  &.listening .progress-ring__circle {
+    animation: progress var(--max-recording-time) linear forwards;
+  }
+}
+
+.progress-ring__svg {
+  overflow: visible;
+}
+
+.progress-ring__circle {
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.5));
+  transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
+}
+
+@keyframes progress {
+  from {
+    stroke-dashoffset: 283;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }

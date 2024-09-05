@@ -19,11 +19,6 @@ import Response from "../components/Response";
 import LoadingResponse from "../components/LoadingResponse";
 import VoiceButton from "../components/VoiceButton";
 
-import ConfigCallAction from "../components/ConfigCallAtion";
-import CallAction from "../components/CallAction";
-
-import WebCan from "../components/WebCan";
-
 import { GoHomeFill } from "react-icons/go";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
@@ -104,7 +99,6 @@ export default function SceneScreen({
   const timeoutRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const abortControllerRef = useRef(null);
-  const [isIdentify, setIdentify] = useState(false);
 
   const navigate = useNavigate(); // Hook de navegação
   const [currentUser, setUser] = useState(null); // Estado do usuário
@@ -552,15 +546,14 @@ export default function SceneScreen({
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
     const { signal } = abortController;
-    //https://habitat-chatbot-test.netlify.app/.netlify/functions/respond
-    //https://roko.flowfuse.cloud/talkwithifc
+
     try {
-      const response = await fetch("https://habitat-chatbot-test.netlify.app/.netlify/functions/respond", {
+      const response = await fetch("https://roko.flowfuse.cloud/talkwithifc", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ "msg": text, "avt": "centroadm" }),
+        body: JSON.stringify({ msg: text }),
         signal, // Attach the signal to the fetch request
       });
 
@@ -596,6 +589,10 @@ export default function SceneScreen({
       console.error("Nenhum comando recebido da IA.");
     }
   };
+
+  useEffect(() => {
+    console.log(response);
+  }, [response]);
 
   const handleCancel = () => {
     setShowQuestionAndResponse(false);
@@ -669,6 +666,7 @@ export default function SceneScreen({
   return (
     <div className="screen-container">
       {" "}
+      {/* Adiciona um container para a tela */}
       <div
         ref={mount}
         className={`scene ${isKioskMode ? "kiosk-mode" : ""}`}
@@ -685,9 +683,6 @@ export default function SceneScreen({
           setChatOpen={setChatOpen}
         />
       )}
-      {currentUser && (
-        <ConfigCallAction/>
-      )}
       <div className="box-question-response">
         {transcript !== "" ? (
           <Question
@@ -702,7 +697,6 @@ export default function SceneScreen({
             iaResponse={response}
             setIaReponse={setResponse}
             question={transcript}
-            setTranscript={setTranscript}
             focusOnLocation={(targetName, duration) =>
               focusOnLocation(targetName, duration)
             }
@@ -729,7 +723,6 @@ export default function SceneScreen({
           isDisabled={isButtonDisabled}
         />
       </div>
-      <WebCan setIdentify={setIdentify}/>
       {!isKioskMode && (
         <div className="login-container">
           {!currentUser ? (
@@ -742,9 +735,6 @@ export default function SceneScreen({
             </button>
           )}
         </div>
-      )}
-      {isKioskMode && isIdentify && transcript === "" && (
-        <CallAction/>
       )}
     </div>
   );

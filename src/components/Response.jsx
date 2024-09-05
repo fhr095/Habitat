@@ -19,6 +19,7 @@ export default function Response({
   iaResponse,
   setIaReponse,
   question,
+  setTranscript,
   focusOnLocation,
   onFinish,
 }) {
@@ -38,18 +39,13 @@ export default function Response({
         texto: message,
         audio: audioUrl,
         fade: fadeTarget,
-      } = iaResponse[currentMessageIndex];
+        duration = 3000,
+      } = iaResponse[currentMessageIndex] || {};
 
-      const duration = audioRef.current ? audioRef.current.duration * 1000 : 2000;
-
-      console.log(`Starting focus on location for message ${currentMessageIndex + 1} at ${new Date().toISOString()}`);
-      focusOnLocation(fadeTarget, duration);
-      
       setShowMessage(true);
       setShowFeedbackButtons(false);
 
       const handleAudioEnd = () => {
-        console.log(`Audio ended for message ${currentMessageIndex + 1} at ${new Date().toISOString()}`);
         setShowFeedbackButtons(true);
         if (currentMessageIndex === iaResponse.length - 1) {
           setShowProgress(true);
@@ -57,34 +53,32 @@ export default function Response({
             setShowProgress(false);
             setShowMessage(false);
             setIaReponse([]);
-            if (onFinish) onFinish(); 
-          }, 5000); 
+            setTranscript("");
+            if (onFinish) onFinish();
+          }, 5000);
         } else {
           setShowMessage(false);
           handleNextMessage();
         }
       };
 
-      if (!audioRef.current && audioUrl) { 
+      if (audioUrl) {
         const audio = new Audio(audioUrl);
         audioRef.current = audio;
         audio.play()
           .then(() => {
-            console.log(`Audio started for message ${currentMessageIndex + 1} at ${new Date().toISOString()}`);
             audio.onended = handleAudioEnd;
           })
           .catch(error => {
             console.error("Audio play interrupted: ", error);
+            handleNextMessage(); // Avança para a próxima mensagem em caso de erro
           });
-      } else if (audioRef.current && audioUrl !== audioRef.current.src) {
-        audioRef.current.pause();
-        audioRef.current = null;
-        handleNextMessage(); 
       } else {
-        audioRef.current.play()
-          .catch(error => {
-            console.error("Audio play interrupted: ", error);
-          });
+        handleNextMessage(); // Avança para a próxima mensagem se não houver áudio
+      }
+
+      if (fadeTarget) {
+        focusOnLocation(fadeTarget, duration);
       }
     }
 
@@ -135,7 +129,7 @@ export default function Response({
       setShowMessage(false);
       setLike(false);
       setDislike(false);
-      if (onFinish) onFinish(); 
+      if (onFinish) onFinish();
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -143,7 +137,7 @@ export default function Response({
 
   return (
     <div className="response-container">
-      {showMessage && (
+      {showMessage && iaResponse[currentMessageIndex] && (
         <div className="message-wrapper">
           <div className="bot-icon">
             <img src={Avatar} alt="Avatar" style={{ width: '30px', height: '30px' }} />

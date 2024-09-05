@@ -7,9 +7,18 @@ import Header from './Header';
 import Filters from './Filters';
 import MessageInput from './MessageInput';
 import { GoDiscussionClosed } from 'react-icons/go';
+import { AiFillLike, AiFillDislike } from 'react-icons/ai';
 import '../styles/Chat.scss';
 
-export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackFilter, setFeedbackFilter, dateRangeFilter, setDateRangeFilter }) {
+export default function ChatContainer({
+  isOpen,
+  setChatOpen,
+  onSearch,
+  feedbackFilter,
+  setFeedbackFilter,
+  dateRangeFilter,
+  setDateRangeFilter,
+}) {
   const [messages, setMessages] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightIndex, setHighlightIndex] = useState(-1);
@@ -33,6 +42,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
       });
       setMessages(updatedMessages);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -42,9 +52,8 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
     }
   }, [isOpen, messages]);
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    onSearch(e.target.value);
+  const handleSearch = (searchTerm) => {
+    setSearchTerm(searchTerm);
   };
 
   const matchesSearchTerm = (text) => text.toLowerCase().includes(searchTerm.toLowerCase());
@@ -70,9 +79,32 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
     };
   };
 
+  const isWithinDateRange = (timestamp) => {
+    if (!timestamp || !dateRangeFilter.type) return true;
+
+    const date = timestamp.toDate();
+    const now = new Date();
+
+    switch (dateRangeFilter.type) {
+      case 'lastDay':
+        return date >= new Date(now.setDate(now.getDate() - 1));
+      case 'lastWeek':
+        return date >= new Date(now.setDate(now.getDate() - 7));
+      case 'last3Months':
+        return date >= new Date(now.setMonth(now.getMonth() - 3));
+      case 'thisYear':
+        return date.getFullYear() === now.getFullYear();
+      case 'custom':
+        const [startDate, endDate] = dateRangeFilter.custom || [];
+        return (!startDate || date >= new Date(startDate)) && (!endDate || date <= new Date(endDate));
+      default:
+        return true;
+    }
+  };
+
   const filteredMessages = messages.filter((message) => {
     const matchesFeedback = feedbackFilter === '' || message.ratings === feedbackFilter;
-    const matchesDate = true; // Implement date filtering logic if needed
+    const matchesDate = isWithinDateRange(message.timestamp);
 
     return (matchesSearchTerm(message.question) || message.responses.some(matchesSearchTerm)) && matchesFeedback && matchesDate;
   });
@@ -91,6 +123,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
   };
 
   const formatDateHeader = (timestamp) => {
+    if (!timestamp || !timestamp.toDate) return ''; // Adiciona verificação para timestamp nulo ou indefinido
     const date = timestamp.toDate();
     const today = new Date();
     const yesterday = new Date(today);
@@ -148,16 +181,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
 
   return (
     <div className={`container-chat-container ${isOpen ? 'show' : 'hide'}`}>
-      <button
-        className="chat-button"
-        onClick={() => setChatOpen(!isOpen)}
-      >
-        <GoDiscussionClosed color="white" size={20} />
-      </button>
-      <div
-        className="chat-container"
-        ref={chatContainerRef}
-      >
+      <div className="chat-container" ref={chatContainerRef}>
         <div className="resizer" onMouseDown={startResizing}></div>
         <Header onFilterClick={() => setShowFilters(!showFilters)} />
         {showFilters && (
@@ -170,6 +194,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
             setDateRangeFilter={setDateRangeFilter}
             highlightedMessages={highlightedMessagesList}
             navigateHighlights={navigateHighlights}
+            messages={messages} // Passa a lista de mensagens para o componente Filters
           />
         )}
         <div className="chat-inner" ref={chatInnerRef}>
@@ -183,7 +208,7 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
                       position="right"
                       type="text"
                       text={message.highlightedQuestion}
-                      date={new Date(message.timestamp.seconds * 1000)}
+                      date={message.timestamp ? new Date(message.timestamp.seconds * 1000) : ''}
                       status="sent"
                       data={{ uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' }}
                       focus={index === highlightIndex}
@@ -195,9 +220,12 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
                         position="left"
                         type="text"
                         text={response}
-                        date={new Date(message.timestamp.seconds * 1000)}
+                        date={message.timestamp ? new Date(message.timestamp.seconds * 1000) : ''}
                         focus={index === highlightIndex}
                       />
+                      <div className="message-meta">
+                        {message.ratings === 'Like' ? <AiFillLike color="green" size={20} /> : <AiFillDislike color="red" size={20} />}
+                      </div>
                     </div>
                   ))}
                 </React.Fragment>
@@ -207,6 +235,12 @@ export default function ChatContainer({ isOpen, setChatOpen, onSearch, feedbackF
         </div>
         <MessageInput onSend={handleSendMessage} />
       </div>
+      <button
+        className="chat-button"
+        onClick={() => setChatOpen(!isOpen)}
+      >
+        <GoDiscussionClosed color="white" size={20} />
+      </button>
     </div>
   );
 }
