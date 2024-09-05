@@ -1,71 +1,168 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import ScaleLoader from "react-spinners/ScaleLoader";
-
 import "../styles/VoiceButton.scss";
 
-export default function VoiceButton({ setTranscript, isDisabled }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognition, setRecognition] = useState(null);
+export default function VoiceButton({ setTranscript, isDisabled, maxRecordingTime = 15 }) {
+  const [listening, setListening] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [audioCaptured, setAudioCaptured] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recognitionRef = useRef(null);
+  const recordingIntervalRef = useRef(null);
+  const [forceStop, setForceStop] = useState(false);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = true;
-      recognitionInstance.interimResults = true;
-      recognitionInstance.lang = "pt-BR";
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.lang = "pt-BR";
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
 
-      recognitionInstance.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            const transcript = event.results[i][0].transcript.trim();
-            setTranscript(transcript);
-          }
+      recognitionRef.current.onstart = () => {
+        setListening(true);
+        setAudioCaptured(false);  // Reset audio captured status
+        setShowTooltip(false);  // Esconder o tooltip quando a gravação começa
+        startRecordingTimer();
+      };
+
+      recognitionRef.current.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        setTranscript(result);
+        setAudioCaptured(true);  // Audio foi captado
+        setListening(false);
+        stopRecordingTimer();
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        setListening(false);
+        stopRecordingTimer();
+      };
+
+      recognitionRef.current.onend = () => {
+        if (!audioCaptured) {
+          setShowTooltip(true);  // Mostrar tooltip se nenhum áudio foi captado
+          setTimeout(() => {
+            setShowTooltip(false);
+          }, 2000);
         }
+        setListening(false);
+        stopRecordingTimer();
       };
-
-      recognitionInstance.onerror = (event) => {
-        console.error("Erro de reconhecimento de voz:", event.error);
-      };
-
-      setRecognition(recognitionInstance);
-    } else {
-      console.error("Este navegador não suporta reconhecimento de voz.");
     }
-  }, [setTranscript]);
+  }, [setTranscript, audioCaptured]);
 
-  const handleMouseDown = () => {
-    if (recognition) {
-      recognition.start();
-      setIsRecording(true);
+  useEffect(() => {
+    if (forceStop && listening) {
+      handleStopListening();
+    }
+  }, [forceStop, listening]);
+
+  const startRecordingTimer = () => {
+    setRecordingTime(0);
+    recordingIntervalRef.current = setInterval(() => {
+      setRecordingTime((prevTime) => {
+        const newTime = prevTime + 1;
+        if (newTime >= maxRecordingTime) {
+          handleStopListening();
+        }
+        return newTime;
+      });
+    }, 1000);
+  };
+
+  const stopRecordingTimer = () => {
+    clearInterval(recordingIntervalRef.current);
+    setRecordingTime(0);
+  };
+
+  const handleStartListening = () => {
+    if (recognitionRef.current && !listening) {
+      recognitionRef.current.start();
     }
   };
 
-  const handleMouseUp = () => {
-    if (recognition) {
-      recognition.stop();
-      setIsRecording(false);
+  const handleStopListening = () => {
+    if (recognitionRef.current && listening) {
+      recognitionRef.current.stop();
+      setListening(false);  // Força a atualização imediata do estado
+      stopRecordingTimer();
     }
+  };
+
+  const handleTouchStart = (e) => {
+    e.preventDefault();
+    setShowTooltip(false);
+    setForceStop(false);
+    handleStartListening();
+  };
+
+  const handleTouchEnd = (e) => {
+    e.preventDefault();
+    setForceStop(true);
+  };
+
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setShowTooltip(false);
+    setForceStop(false);
+    handleStartListening();
+  };
+
+  const handleMouseUp = (e) => {
+    e.preventDefault();
+    setForceStop(true);
+  };
+
+  const handleMouseLeave = (e) => {
+    e.preventDefault();
+    handleStopListening();
   };
 
   return (
-    <button
-      className="voice-button"
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      style={{
-        transform: isRecording ? "scale(1.2)" : "scale(1)",
-        transition: "transform 0.2s",
-      }}
-      disabled={isDisabled} // Desabilitar botão quando isDisabled for true
-    >
-      {isRecording ? (
-        <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
-      ) : (
-        <FaMicrophone color="white" size={20} />
-      )}
-    </button>
+    <div className="voice-button-container">
+      <div className={`progress-ring ${listening ? "listening" : ""}`}>
+        <svg className="progress-ring__svg" width="100" height="100">
+          <circle
+            className="progress-ring__circle"
+            stroke="url(#gradient)"
+            strokeWidth="6"
+            fill="transparent"
+            r="45"
+            cx="50"
+            cy="50"
+            style={{
+              strokeDasharray: 283,
+              strokeDashoffset: listening ? 283 - (283 / maxRecordingTime) * recordingTime : 283,
+              transition: `stroke-dashoffset 1s linear`,
+            }}
+          />
+          <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: "#FF5733", stopOpacity: 1 }} />
+              <stop offset="100%" style={{ stopColor: "#FFC300", stopOpacity: 1 }} />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <button
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={(e) => e.preventDefault()}
+        disabled={isDisabled}
+        className={`voice-button ${listening ? "listening" : ""}`}
+      >
+        {listening ? (
+          <ScaleLoader color="white" height={15} width={3} radius={2} margin={2} />
+        ) : (
+          <FaMicrophone color="white" size={20} />
+        )}
+      </button>
+      {showTooltip && <div className="tooltip">Segure para falar e depois solte</div>}
+    </div>
   );
 }

@@ -52,6 +52,19 @@
       }
     }
   }
+
+  .cancel-button{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    color: #999;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 @keyframes fadeIn {
@@ -69,5 +82,21 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@media screen and (max-width: 768px){
+  .loading-response-container{
+    .message-wrapper  {
+      width: 100%;
+
+      .bot-icon{
+        margin-left: 30px;
+      }
+
+      .message-container{
+        justify-content: center;
+      }
+    }
   }
 }
