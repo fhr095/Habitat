@@ -31,13 +31,13 @@ export default function Response({
             setShowQuestion(true);
 
             try {
-                const res = await axios.post("https://habitat-chatbot-test.netlify.app/.netlify/functions/respond", {
+                const res = await axios.post("http://localhost:8888/.netlify/functions/response", {
                     msg: transcript,
                     avt: "centroadm",
                     history: history, 
                 });
 
-                setResponse(res.data.comandos);
+                setResponse(res.data);
                 setLoading(false);
                 setAnimation("falando-sorrindo");
 
@@ -47,8 +47,8 @@ export default function Response({
                         ...prevHistory,
                         {
                             question: transcript,
-                            answer: res.data.comandos.map(c => ({
-                                texto: c.texto,
+                            answer: res.data.map(c => ({
+                                texto: c.response,
                                 fade: c.fade,
                             })),
                         }
@@ -86,8 +86,8 @@ export default function Response({
             setCurrentIndex(index);
             const comando = response[index];
     
-            if (comando.audio) {
-                const audio = new Audio(comando.audio);
+            if (comando.audioUrl) {
+                const audio = new Audio(comando.audioUrl);
                 audio.onloadedmetadata = () => {
                     const duration = audio.duration * 1000; // Duração em milissegundos
                     setFade([{ fade: comando.fade, duration: duration + 2000 }]); // Adiciona 2 segundos de margem
@@ -138,7 +138,7 @@ export default function Response({
     const handleFeedback = async (type) => {
         const feedbackData = {
             question: transcript,
-            response: response.map(r => r.texto).join(" "),
+            response: response.map(r => r.response).join(" "),
             feedback: type,
         };
 
@@ -173,7 +173,7 @@ export default function Response({
                         <>
                             <Avatar animation={animation} />
                             <div className="response-text">
-                                <p>{response[currentIndex]?.texto}</p>
+                                <p>{response[currentIndex]?.response}</p>
                                 {showFeedback && (
                                     <div className="feedback-container">
                                         <div className="button-group">

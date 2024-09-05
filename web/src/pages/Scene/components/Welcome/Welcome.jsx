@@ -32,15 +32,16 @@ export default function Welcome({
       const postData = async () => {
         try {
           const res = await axios.post(
-            "https://roko.flowfuse.cloud/talkwithifc",
+            // "https://roko.flowfuse.cloud/talkwithifc",
+            "http://localhost:8888/.netlify/functions/welcome",
             {
-              avt: avt,
+              avt: "centroadm",
               persons: persons,
             }
           );
           // Play the audio when response is received
-          if (res.data.comandos && res.data.comandos.audio) {
-            audioRef.current.src = res.data.comandos.audio;
+          if (res.data && res.data.audioUrl) {
+            audioRef.current.src = res.data.audioUrl;
             audioRef.current.play();
           }
         } catch (error) {

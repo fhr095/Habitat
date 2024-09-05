@@ -51,7 +51,7 @@ export default function Scene({ user }) {
       setHistory([]); // Limpa o histórico quando a pessoa não está mais presente
     }
   }, [currentPerson]);
-
+  
   return (
     <div className="scene-container">
       {habitatData.ifcFileUrl ? (
