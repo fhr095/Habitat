@@ -31,7 +31,7 @@ export default function Response({
             setShowQuestion(true);
 
             try {
-                const res = await axios.post("http://localhost:8888/.netlify/functions/response", {
+                const res = await axios.post("https://habitat-avatar.netlify.app/.netlify/functions/response", {
                     msg: transcript,
                     avt: "centroadm",
                     history: history, 

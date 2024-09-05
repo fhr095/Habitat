@@ -33,7 +33,7 @@ export default function Welcome({
         try {
           const res = await axios.post(
             // "https://roko.flowfuse.cloud/talkwithifc",
-            "http://localhost:8888/.netlify/functions/welcome",
+            "https://habitat-avatar.netlify.app/.netlify/functions/welcome",
             {
               avt: "centroadm",
               persons: persons,
