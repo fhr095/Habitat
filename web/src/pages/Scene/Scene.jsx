@@ -79,16 +79,16 @@ export default function Scene({ user }) {
         <Transcript setTranscript={setTranscript} />
       )}
 
-      <Porcupine setIsFinished={setIsFinished}/>
+      {/* <Porcupine setIsFinished={setIsFinished}/> */}
 
-      {/* <Welcome
+      <Welcome
         isPersonDetected={isPersonDetected}
         history={history}
         transcript={transcript}
         avt={id}
         persons={persons}
         setIsFinished={setIsFinished}
-      /> */}
+      />
 
       <WebCan
         setIsPersonDetected={setIsPersonDetected}
