@@ -25,6 +25,7 @@ export default function Scene({ user }) {
   const [currentPerson, setCurrentPerson] = useState(null);
   const [history, setHistory] = useState([]); // Novo estado para o histórico de interações
   const [isFinished, setIsFinished] = useState(false);
+  const [isPorcupine, setIsPorcupine] = useState(false);
 
   useEffect(() => {
     const fetchHabitatData = async () => {
@@ -75,14 +76,13 @@ export default function Scene({ user }) {
         setHistory={setHistory}
       />
 
-      {!showQuestion && transcript === "" && isFinished && (
+      {isPersonDetected || isPorcupine && !showQuestion && transcript === "" && isFinished && (
         <Transcript setTranscript={setTranscript} />
       )}
 
-      {!isFinished && (
-        <Porcupine setIsFinished={setIsFinished}/>
+      {!isPersonDetected && (
+        <Porcupine setIsPorcupine={setIsPorcupine}/>
       )}
-      
 
       <Welcome
         isPersonDetected={isPersonDetected}

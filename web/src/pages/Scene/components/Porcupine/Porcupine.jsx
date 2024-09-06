@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { usePorcupine } from '@picovoice/porcupine-react';
 
-export default function Porcupine({ setIsFinished }) {
+export default function Porcupine({ setIsPorcupine }) {
   const { keywordDetection, init, start, stop } = usePorcupine();
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function Porcupine({ setIsFinished }) {
   useEffect(() => {
     if (keywordDetection) {
       console.log(`Detected keyword: ${keywordDetection.label}`);
-      setIsFinished(true);
+      setIsPorcupine(true);
     }
   }, [keywordDetection]);
 
