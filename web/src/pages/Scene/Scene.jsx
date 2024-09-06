@@ -79,7 +79,10 @@ export default function Scene({ user }) {
         <Transcript setTranscript={setTranscript} />
       )}
 
-      <Porcupine setIsFinished={setIsFinished}/>
+      {!isFinished && (
+        <Porcupine setIsFinished={setIsFinished}/>
+      )}
+      
 
       <Welcome
         isPersonDetected={isPersonDetected}
