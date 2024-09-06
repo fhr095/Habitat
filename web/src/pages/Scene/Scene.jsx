@@ -75,11 +75,11 @@ export default function Scene({ user }) {
         setHistory={setHistory}
       />
 
-      {isPersonDetected && !showQuestion && transcript === "" && isFinished && (
+      {!showQuestion && transcript === "" && isFinished && (
         <Transcript setTranscript={setTranscript} />
       )}
 
-      {/* <Porcupine setIsFinished={setIsFinished}/> */}
+      <Porcupine setIsFinished={setIsFinished}/>
 
       <Welcome
         isPersonDetected={isPersonDetected}
