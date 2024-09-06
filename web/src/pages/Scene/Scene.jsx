@@ -9,6 +9,7 @@ import Response from "./components/Response/Response";
 import Welcome from "./components/Welcome/Welcome";
 import WebCan from "./components/WebCan/WebCan";
 import Transcript from "./components/Transcript/Transcript";
+import Porcupine from "./components/Porcupine/Porcupine";
 
 import "./Scene.scss";
 
@@ -78,14 +79,16 @@ export default function Scene({ user }) {
         <Transcript setTranscript={setTranscript} />
       )}
 
-      <Welcome
+      <Porcupine setIsFinished={setIsFinished}/>
+
+      {/* <Welcome
         isPersonDetected={isPersonDetected}
         history={history}
         transcript={transcript}
         avt={id}
         persons={persons}
         setIsFinished={setIsFinished}
-      />
+      /> */}
 
       <WebCan
         setIsPersonDetected={setIsPersonDetected}

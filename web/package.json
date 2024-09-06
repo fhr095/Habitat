@@ -13,6 +13,8 @@
     "@aws-sdk/client-transcribe-streaming": "^3.635.0",
     "@google-cloud/speech": "^6.7.0",
     "@mapbox/mapbox-sdk": "^0.16.0",
+    "@picovoice/porcupine-react": "^3.0.3",
+    "@picovoice/web-voice-processor": "^4.0.9",
     "@react-leaflet/core": "^2.1.0",
     "@react-three/drei": "^9.109.5",
     "@react-three/fiber": "^8.16.8",
