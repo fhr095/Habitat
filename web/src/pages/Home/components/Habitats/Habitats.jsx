@@ -1,58 +1,55 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus, FaCompass } from "react-icons/fa";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth, signOut } from "firebase/auth";
 import { db } from "../../../../firebase";
 import ModalCreateHabitat from "../ModalCreateHabitat/ModalCreateHabitat";
 import ListHabitats from "../ListHabitats/ListHabitats";
+import { useHabitatUser } from "../../../../context/HabitatUserContext";
 import './Habitats.scss';
 
-export default function Habitats({ user, setHabitat }) {
+export default function Habitats() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isListModalOpen, setIsListModalOpen] = useState(true);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [habitats, setHabitats] = useState([]);
+  
+  const { user, setHabitat } = useHabitatUser(); // Agora usando o contexto para acessar user e setHabitat
 
   useEffect(() => {
-    const habitatsMap = new Map();
+    const fetchHabitats = async () => {
+      if (!user?.email) return; // Verifica se user.email está definido
 
-    const fetchHabitatsRealTime = () => {
-      // Query para habitats criados pelo usuário
-      const habitatsCreatedQuery = query(
-        collection(db, "habitats"),
-        where("createdBy", "==", user.email)
-      );
+      try {
+        const habitatsCreatedQuery = query(collection(db, "habitats"), where("createdBy", "==", user.email));
+        const habitatsCollectionSnapshot = await getDocs(collection(db, "habitats"));
 
-      // Listener para habitats criados pelo usuário
-      const unsubscribeCreated = onSnapshot(habitatsCreatedQuery, (snapshot) => {
-        snapshot.forEach((doc) => {
+        const habitatsMap = new Map();
+
+        // Adicionar habitats criados pelo usuário
+        const createdSnapshot = await getDocs(habitatsCreatedQuery);
+        createdSnapshot.forEach((doc) => {
           habitatsMap.set(doc.id, { id: doc.id, ...doc.data() });
         });
-        setHabitats(Array.from(habitatsMap.values()));
-      });
 
-      // Listener para habitats onde o usuário é membro
-      const unsubscribeMembers = onSnapshot(collection(db, "habitats"), (snapshot) => {
-        snapshot.forEach(async (habitatDoc) => {
-          const memberSnapshot = await onSnapshot(collection(db, `habitats/${habitatDoc.id}/members`), (membersSnapshot) => {
-            membersSnapshot.forEach((memberDoc) => {
-              if (memberDoc.id === user.email) {
-                habitatsMap.set(habitatDoc.id, { id: habitatDoc.id, ...habitatDoc.data() });
-                setHabitats(Array.from(habitatsMap.values()));
-              }
-            });
+        // Verificar habitats onde o usuário é membro
+        for (const habitatDoc of habitatsCollectionSnapshot.docs) {
+          const memberDoc = await getDocs(collection(db, `habitats/${habitatDoc.id}/members`));
+          memberDoc.forEach((doc) => {
+            if (doc.id === user.email) {
+              habitatsMap.set(habitatDoc.id, { id: habitatDoc.id, ...habitatDoc.data() });
+            }
           });
-        });
-      });
+        }
 
-      return () => {
-        unsubscribeCreated();
-        unsubscribeMembers();
-      };
+        setHabitats(Array.from(habitatsMap.values()));
+      } catch (error) {
+        console.error("Erro ao buscar habitats: ", error);
+      }
     };
 
-    fetchHabitatsRealTime();
-  }, [user.email]);
+    fetchHabitats();
+  }, [user?.email]);
 
   const toggleCreateModal = () => {
     setIsCreateModalOpen(prevState => !prevState);
@@ -98,10 +95,12 @@ export default function Habitats({ user, setHabitat }) {
       )}
       
       {habitats.length > 0 && <div className="divider" />}
-
-      {habitats.length > 0 && habitats.map(habitat => (
-        <div onClick={handleHabitatClick(habitat)} key={habitat.id} className="buttons habitat-item" style={{ backgroundImage: `url(${habitat.imageUrl})` }} />
-      ))}
+      
+      {habitats.length > 0 ? (
+        habitats.map(habitat => (
+          <div onClick={handleHabitatClick(habitat)} key={habitat.id} className="buttons habitat-item" style={{ backgroundImage: `url(${habitat.imageUrl})` }} />
+        ))
+      ) : null}
 
       <div className="divider" />
 

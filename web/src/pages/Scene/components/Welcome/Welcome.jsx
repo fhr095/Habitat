@@ -1,48 +1,53 @@
-import React, { useEffect, useState, useRef } from "react";
+// Welcome.jsx
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import "./Welcome.scss";
+import eventBus from '../../../../eventBus'; // Certifique-se que o caminho está correto
+//import "./Welcome.scss";
 
 export default function Welcome({
   isPersonDetected,
+  isPorcupine,
   history,
   transcript,
   avt,
   persons,
   setIsFinished,
 }) {
-  const [currentGif, setCurrentGif] = useState("/Avatar/falando.gif");
   const [isCooldown, setIsCooldown] = useState(false);
   const audioRef = useRef(null);
 
+  // Dispara eventos de detecção de pessoa
   useEffect(() => {
-    if (isPersonDetected) {
-      setCurrentGif("/Avatar/acenando.gif");
+    if (isPersonDetected || isPorcupine) {
+      eventBus.emit('personDetected'); // Dispara evento para acenar
     } else {
-      const timer = setTimeout(() => {
-        setCurrentGif("/Avatar/falando.gif");
-      }, 2000);
-
-      return () => clearTimeout(timer);
+      eventBus.emit('personLost'); // Dispara evento para retornar ao idle
     }
-  }, [isPersonDetected]);
+    console.log("Detectouuuuuuuuuuuu")
+  }, [isPersonDetected, isPorcupine]);
 
+  if (isPorcupine){
+    setIsFinished(true); 
+  };
+
+  // Lógica para fazer o POST e tocar o áudio
   useEffect(() => {
     if (isPersonDetected && persons.length > 0 && !isCooldown && history.length === 0) {
       setIsFinished(false);  // Bloqueia fala enquanto o POST é feito
       const postData = async () => {
         try {
           const res = await axios.post(
-            // "https://roko.flowfuse.cloud/talkwithifc",
             "https://habitat-avatar.netlify.app/.netlify/functions/welcome",
             {
               avt: "centroadm",
               persons: persons,
             }
           );
-          // Play the audio when response is received
+          // Tocar o áudio quando a resposta for recebida
           if (res.data && res.data.audioUrl) {
             audioRef.current.src = res.data.audioUrl;
             audioRef.current.play();
+            eventBus.emit('audioStarted'); // Dispara evento quando o áudio começa
           }
         } catch (error) {
           console.error("Error sending data:", error);
@@ -59,21 +64,28 @@ export default function Welcome({
     }
   }, [isPersonDetected, persons, avt, isCooldown, history]);
 
+  // Disparar evento quando o áudio termina
   useEffect(() => {
     const audioElement = audioRef.current;
     if (audioElement) {
       audioElement.onended = () => {
         setIsFinished(true);  // Libera fala após o áudio terminar
+        eventBus.emit('audioEnded'); // Dispara evento quando o áudio termina
+      };
+
+      audioElement.onplay = () => {
+        eventBus.emit('audioStarted'); // Dispara evento quando o áudio começa
       };
     }
   }, [setIsFinished]);
 
+  // Remover o estado e JSX relacionado a GIFs
   const containerClass =
     history.length > 0 || transcript !== "" ? "welcome-container minimized" : "welcome-container";
 
   return (
     <div className={containerClass}>
-      <img src={currentGif} alt="Animated GIF" className="gif" />
+      {/* Removido o <img> de GIFs */}
       <audio ref={audioRef} />
     </div>
   );

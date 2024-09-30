@@ -58,7 +58,7 @@
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         z-index: 1000;
-        width: 300px;
+        width: 150px;
         margin-top: 5px;
 
         button {
@@ -111,20 +111,26 @@
       }
     }
 
-    .items-list {
+    .members-list,
+    .groups-list,
+    .bots-list {
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 10px;
       overflow: auto;
 
-      .item-container {
+      .member-container,
+      .group-container,
+      .bot-container {
         width: 100%;
         display: flex;
         align-items: center;
         position: relative; /* Add position relative to member-container */
 
-        .item {
+        .member-item,
+        .group-item,
+        .bot-item {
           position: relative;
           width: calc(100% - 30px);
           display: flex;

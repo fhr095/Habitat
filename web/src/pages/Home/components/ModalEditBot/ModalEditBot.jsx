@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaTimes } from "react-icons/fa";
 import "./ModalEditBot.scss";
@@ -17,6 +17,10 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
         data: [{ info: "", fade: "", name: "" }]
     });
     const [fade, setFade] = useState({});
+
+    useEffect(() => {
+        console.log("fade", fade);
+    }, [fade]);
 
     useEffect(() => {
         const fetchBotData = async () => {
@@ -122,32 +126,28 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
                     </div>
                     <div className="form-section">
                         <p>Digite: "Você está aqui" e selecione um local no modelo caso queira definir um ponto inicial para quem for visualizar</p>
-                        {botData.data && botData.data.length > 0 ? (
-                            botData.data.map((item, index) => (
-                                <div key={index} className="info-section">
-                                    <label>
-                                        Info:
-                                        <input
-                                            type="text"
-                                            value={item.info || ""}
-                                            onChange={(e) => handleInfoChange(index, "info", e.target.value)}
-                                            required
-                                        />
-                                    </label>
-                                    <label>
-                                        Nome do Fade:
-                                        <input
-                                            type="text"
-                                            value={item.name || ""}
-                                            readOnly
-                                        />
-                                    </label>
-                                    <button type="button" onClick={() => handleRemoveInfo(index)}>Remover</button>
-                                </div>
-                            ))
-                        ) : (
-                            <p>Nenhuma informação disponível</p>
-                        )}
+                        {botData.data.map((item, index) => (
+                            <div key={index} className="info-section">
+                                <label>
+                                    Info:
+                                    <input
+                                        type="text"
+                                        value={item.info || ""}
+                                        onChange={(e) => handleInfoChange(index, "info", e.target.value)}
+                                        required
+                                    />
+                                </label>
+                                <label>
+                                    Nome do Fade:
+                                    <input
+                                        type="text"
+                                        value={item.name || ""}
+                                        readOnly
+                                    />
+                                </label>
+                                <button type="button" onClick={() => handleRemoveInfo(index)}>Remover</button>
+                            </div>
+                        ))}
                     </div>
                     <div className="model-viewer">
                         <Scene ifcFileUrl={ifcFileUrl} setFade={setFade} />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { BiSolidLike, BiSolidDislike } from "react-icons/bi";
+import eventBus from '../../../../eventBus';
 
 import Avatar from "./Avatar";
 import "./Response.scss";
@@ -31,24 +32,29 @@ export default function Response({
             setShowQuestion(true);
 
             try {
-                const res = await axios.post("https://habitat-avatar.netlify.app/.netlify/functions/response", {
+                
+                const res = await axios.post(/*https://roko.flowfuse.cloud/talkwithifc*/"https://habitat-chatbot-test.netlify.app/.netlify/functions/respond" /*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/, {
                     msg: transcript,
                     avt: "centroadm",
                     history: history, 
                 });
-
+                console.log("ENVIO:", transcript);
                 setResponse(res.data);
                 setLoading(false);
                 setAnimation("falando-sorrindo");
-
+                console.log("ENVIO2:", res.data);
                 // Atualiza o histórico com a nova interação
                 setHistory(prevHistory => {
                     let newHistory = [
                         ...prevHistory,
                         {
                             question: transcript,
-                            answer: res.data.map(c => ({
+                            /*answer: res.data.map(c => ({
                                 texto: c.response,
+                                fade: c.fade,
+                            })),*/
+                            answer: res.data.comandos.map(c => ({
+                                texto: c.texto,
                                 fade: c.fade,
                             })),
                         }
@@ -72,28 +78,35 @@ export default function Response({
             previousTranscriptRef.current = transcript;
             sendTranscript(transcript);
             setAnimation("pensando");
+            eventBus.emit('processingStarted');
+
         }
     }, [transcript, avt, setFade, history, setHistory]);
 
     useEffect(() => {
-        if (!loading && response.length > 0) {
+        console.log("ENVIO3:", response);
+        if (!loading && response.comandos.length > 0) {            
             playAudioSequentially(0);
         }
     }, [loading, response]);
 
     const playAudioSequentially = async (index) => {
-        if (index < response.length) {
+        console.log("ENVIO5:", index);
+        if (index < response.comandos.length) {
             setCurrentIndex(index);
-            const comando = response[index];
+            const comando = response.comandos[index];
     
-            if (comando.audioUrl) {
-                const audio = new Audio(comando.audioUrl);
+            if (comando.audio) {
+                const audio = new Audio(comando.audio);
                 audio.onloadedmetadata = () => {
                     const duration = audio.duration * 1000; // Duração em milissegundos
                     setFade([{ fade: comando.fade, duration: duration + 2000 }]); // Adiciona 2 segundos de margem
     
                     audio.play();
+                    eventBus.emit('processingEnded');
+                    eventBus.emit('audioStarted');
                     audio.onended = () => {
+                        eventBus.emit('audioEnded');
                         playAudioSequentially(index + 1);
                     };
                 };
@@ -112,7 +125,7 @@ export default function Response({
             startProgressBar();
             setTimeout(() => {
                 setShowFeedback(false);
-                setResponse([]);
+                setResponse({ comandos: [] });
                 setAnimation("pensando");
                 setShowQuestion(false);
                 setProgress(0); // Reset progress bar
@@ -168,12 +181,12 @@ export default function Response({
                     </div>
                 </div>
             ) : (
-                <div className={`response ${response.length === 0 ? "response-exit" : ""}`}>
-                    {response.length > 0 && (
+                <div className={`response ${response.comandos.length === 0 ? "response-exit" : ""}`}>
+                    {response.comandos.length > 0 && (
                         <>
                             <Avatar animation={animation} />
                             <div className="response-text">
-                                <p>{response[currentIndex]?.response}</p>
+                                <p>{response.comandos[currentIndex]?.texto}</p>
                                 {showFeedback && (
                                     <div className="feedback-container">
                                         <div className="button-group">
