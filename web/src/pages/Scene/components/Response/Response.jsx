@@ -71,6 +71,16 @@ export default function Response({
             } catch (error) {
                 console.error("Error sending transcript: ", error);
                 setLoading(false);
+                setShowFeedback(false);
+                setResponse({ comandos: [] });
+                setAnimation("pensando");
+                setShowQuestion(false);
+                setProgress(0); // Reset progress bar
+    
+                // Reseta o transcript somente após todas as respostas serem processadas
+                setTranscript("");
+                eventBus.emit('processingEnded');
+                previousTranscriptRef.current = "";
             }
         };
 
