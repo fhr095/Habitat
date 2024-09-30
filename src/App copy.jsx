@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -26,8 +26,6 @@ function MainApp() {
   const { setUser, habitat } = useHabitatUser(); // Agora usando o contexto para gerenciar o user
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -50,8 +48,6 @@ function MainApp() {
     return () => unsubscribe();
   }, [navigate, location, setUser]);
 
-
-
   // Spinner de carregamento enquanto o usuário não é autenticado
   return (
     <div className="app-container">
@@ -73,7 +69,13 @@ function MainApp() {
             </SceneConfigProvider>
           } 
         />
-        <Route path="/" element={<Home user={userData} />} />
+        <Route path="/" 
+          element={
+            <SceneConfigProvider>
+              <Home />
+            </SceneConfigProvider>
+          } 
+        />
         <Route path="/habitat/:id" element={<Home />} />
       </Routes>
     </div>
