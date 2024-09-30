@@ -51,7 +51,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
       touchTimer = setTimeout(() => {
         setIsScreenTouched(true);
         console.log("Screen touched for 3 seconds");
-      }, 1700); // 3000 ms = 3 seconds
+      }, 1200); // 3000 ms = 3 seconds
     };
 
     const onTouchEnd = (e) => {
