@@ -41,6 +41,45 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   const [arrayName, setArrayName] = useState([]);
   const [modelLoaded, setModelLoaded] = useState(false);
 
+  const [isScreenTouched, setIsScreenTouched] = useState(false);
+
+  useEffect(() => {
+    let touchTimer = null;
+
+    const onTouchStart = (e) => {
+      // Start a timer when a touch or click begins
+      touchTimer = setTimeout(() => {
+        setIsScreenTouched(true);
+        console.log("Screen touched for 3 seconds");
+      }, 1700); // 3000 ms = 3 seconds
+    };
+
+    const onTouchEnd = (e) => {
+      // Clear the timer if the touch or click ends before 3 seconds
+      if (touchTimer) {
+        clearTimeout(touchTimer);
+        touchTimer = null;
+      }
+    };
+
+    // Add event listeners to the document
+    document.addEventListener("mousedown", onTouchStart);
+    document.addEventListener("touchstart", onTouchStart);
+    document.addEventListener("mouseup", onTouchEnd);
+    document.addEventListener("touchend", onTouchEnd);
+    document.addEventListener("mouseleave", onTouchEnd);
+
+    // Clean up event listeners when the component unmounts
+    return () => {
+      document.removeEventListener("mousedown", onTouchStart);
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("mouseup", onTouchEnd);
+      document.removeEventListener("touchend", onTouchEnd);
+      document.removeEventListener("mouseleave", onTouchEnd);
+    };
+  }, []);
+
+
   useEffect(() => {
     const fetchHabitatData = async () => {
       try {
@@ -101,6 +140,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   useEffect(() => {
     if(transcript === ""){
       setIsPorcupine(false);
+      setIsScreenTouched(false);
     }
   }, [transcript]);
   
@@ -155,10 +195,10 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
         setHistory={setHistory}
       />
 
-      {(isPersonDetected || isPorcupine) && !showQuestion && transcript === '' && isFinished && (
+      {(isScreenTouched || isPersonDetected || isPorcupine) && !showQuestion && transcript === '' && isFinished && (
         <Transcript setTranscript={setTranscript} />
       )}
-      {console.log(isPersonDetected,isPorcupine,!showQuestion,transcript === '',isFinished, 'último: ',(isPersonDetected || isPorcupine) && transcript === '')}
+      {console.log(isScreenTouched,isPersonDetected,isPorcupine,!showQuestion,transcript === '',isFinished, 'último: ',(isScreenTouched || isPersonDetected || isPorcupine) && transcript === '')}
 
       {!isPorcupine && (
         <Porcupine setIsPorcupine={setIsPorcupine}/>
@@ -170,6 +210,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
       <Welcome
         isPersonDetected={isPersonDetected}
         isPorcupine={isPorcupine}
+        isScreenTouched={isScreenTouched}
         history={history}
         transcript={transcript}
         avt={id}

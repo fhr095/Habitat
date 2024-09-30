@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 
 export default function Transcript({ setTranscript }) {
   const recognizerRef = useRef(null);
-
+  console.log("testandoooooooooo");
   useEffect(() => {
     const startRecognition = () => {
       if (recognizerRef.current && recognizerRef.current.recognizing) {

@@ -7,6 +7,7 @@ import eventBus from '../../../../eventBus'; // Certifique-se que o caminho est�
 export default function Welcome({
   isPersonDetected,
   isPorcupine,
+  isScreenTouched,
   history,
   transcript,
   avt,
@@ -18,15 +19,15 @@ export default function Welcome({
 
   // Dispara eventos de detecção de pessoa
   useEffect(() => {
-    if (isPersonDetected || isPorcupine) {
+    if (isPersonDetected || isPorcupine || isScreenTouched) {
       eventBus.emit('personDetected'); // Dispara evento para acenar
     } else {
       eventBus.emit('personLost'); // Dispara evento para retornar ao idle
     }
     console.log("Detectouuuuuuuuuuuu")
-  }, [isPersonDetected, isPorcupine]);
+  }, [isPersonDetected, isPorcupine, isScreenTouched]);
 
-  if (isPorcupine){
+  if (isPorcupine || isScreenTouched){
     setIsFinished(true); 
   };
 
