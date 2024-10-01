@@ -27,13 +27,12 @@ export default function Welcome({
     console.log("Detectouuuuuuuuuuuu")
   }, [isPersonDetected, isPorcupine, isScreenTouched]);
 
-  if (isPorcupine || isScreenTouched){
-    setIsFinished(true); 
-  };
-
+  useEffect(() => {
+    
+  },[]);
   // Lógica para fazer o POST e tocar o áudio
   useEffect(() => {
-    if (isPersonDetected && persons.length > 0 && !isCooldown && history.length === 0) {
+    if ((isPersonDetected || isPorcupine || isScreenTouched) /*&& persons.length > 0*/ && !isCooldown && history.length === 0) {
       setIsFinished(false);  // Bloqueia fala enquanto o POST é feito
       const postData = async () => {
         try {
@@ -63,7 +62,10 @@ export default function Welcome({
 
       postData();
     }
-  }, [isPersonDetected, persons, avt, isCooldown, history]);
+    if (isPorcupine || isScreenTouched){
+      setIsFinished(true); 
+    };
+  }, [isPersonDetected, isPorcupine, isScreenTouched, persons, avt, isCooldown, history]);
 
   // Disparar evento quando o áudio termina
   useEffect(() => {
