@@ -349,7 +349,7 @@ const stopOscillation = (objectName) => {
         <p>Loading...</p>
       )*/}
 
-      {<ControlPanel />}
+      {/*<ControlPanel />*/}
       
 
       
