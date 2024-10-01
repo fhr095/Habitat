@@ -300,7 +300,7 @@ const ControlPanel = () => {
                     };
 
                 // Controle de seleção de objetos no bloomEffect.status
-                case "bloomEffectSelection":
+                /*case "bloomEffectSelection":
                     return {
                     ...prevConfig,
                     bloomEffect: {
@@ -311,12 +311,46 @@ const ControlPanel = () => {
                               ...prevConfig.bloomEffect.status[value], // Mantém o nome original
                               status: checked, // Atualiza apenas o status
                             },
-                          },
+                          },*/
                           /*status: {
                             ...prevConfig.bloomEffect.status,
                             [value]: checked, // Atualiza o estado (true ou false)
                             },*/
-                    },
+                    /*},
+                    };*/
+
+                // Controle de seleção de objetos no bloomEffect.status
+                case "bloomEffectSelection":
+                    return {
+                        ...prevConfig,
+                        bloomEffect: {
+                        ...prevConfig.bloomEffect,
+                        status: {
+                            ...prevConfig.bloomEffect.status,
+                            [value]: {
+                            ...prevConfig.bloomEffect.status[value], // Mantém o nome e emissiveIntensity
+                            status: checked, // Atualiza apenas o status
+                            },
+                        },
+                        },
+                    };
+
+                // Controle de emissividade dos objetos
+                case "emissiveIntensity":
+                const uuid = event.target.dataset.uuid; // O uuid é armazenado no data-attribute
+                const emissiveIntensity = parseFloat(event.target.value);
+                    return {
+                        ...prevConfig,
+                        bloomEffect: {
+                        ...prevConfig.bloomEffect,
+                        status: {
+                            ...prevConfig.bloomEffect.status,
+                            [uuid]: {
+                            ...prevConfig.bloomEffect.status[uuid],
+                            emissiveIntensity: emissiveIntensity,
+                            },
+                        },
+                        },
                     };
 
                 default:
@@ -922,12 +956,28 @@ const ControlPanel = () => {
                   checked={objectsStatus[uuid].status || false}
                   onChange={handleChange}
                 />
-                {objectsStatus[uuid].name || `Objeto ${uuid}`} {/* Aqui você pode usar um nome mais descritivo, se houver */}
+                {objectsStatus[uuid].name || `Objeto ${uuid}`} {/* Exibe o nome do objeto */}
               </label>
+              {objectsStatus[uuid].status && (
+                <div>
+                  Intensidade Emissiva:
+                  <input
+                    type="range"
+                    name="emissiveIntensity"
+                    data-uuid={uuid} // Armazena o uuid no data-attribute
+                    min="0"
+                    max="4"
+                    step="0.1"
+                    value={objectsStatus[uuid].emissiveIntensity || 1.0}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </div>
+
            
         </div>
     );

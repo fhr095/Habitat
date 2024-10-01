@@ -627,6 +627,75 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
       smaaPassRef.current = null;
     }
   };
+
+
+  const bloomStatusRef = useRef(sceneConfig.bloomEffect.status);
+  useEffect(() => {
+    bloomStatusRef.current = sceneConfig.bloomEffect.status;
+  }, [sceneConfig.bloomEffect.status]);
+
+  const animate = () => {
+    requestAnimationFrame(animate);
+  
+    const delta = clockRef.current.getDelta();
+    const elapsedTime = clockRef.current.getElapsedTime();
+  
+    if (mixerRef.current) mixerRef.current.update(delta);
+  
+    // Update controls and other animations
+    TWEEN.update(); // If you're using TWEEN
+    if (worldRef.current.controls) worldRef.current.controls.update();
+  
+    const { scene, renderer, camera } = worldRef.current;
+    const background = scene.background;
+  
+    // Update emissive intensity for oscillating objects
+    scene.traverse((object) => {
+      if (object.isMesh) {
+        const bloomObject = bloomStatusRef.current[object.uuid];
+  
+        if (bloomObject && bloomObject.status) {
+          if (bloomObject.oscillate) {
+            // Initialize oscillation parameters if not already set
+            if (!object.userData.oscillation) {
+              object.userData.oscillation = {
+                initialIntensity: object.material.emissiveIntensity || 1.0,
+              };
+            }
+  
+            // Oscillation parameters
+            const minIntensity = 0.1;
+            const maxIntensity = 2.0;
+            const speed = 0.5; // Adjust as needed
+  
+            // Calculate the new emissive intensity using a sine function
+            const intensity =
+              minIntensity +
+              (maxIntensity - minIntensity) * 0.5 * (1 + Math.sin(speed * elapsedTime * Math.PI * 2));
+  
+            object.material.emissiveIntensity = intensity;
+          } else if (object.userData.oscillation) {
+            // Oscillation stopped; reset emissive intensity to initial value
+            object.material.emissiveIntensity = object.userData.oscillation.initialIntensity;
+            delete object.userData.oscillation;
+          }
+        }
+      }
+    });
+  
+    // Render with Bloom or default rendering
+    if (bloomComposerRef.current && finalComposerRef.current) {
+      scene.background = null;
+      scene.traverse(nonBloomed);
+      bloomComposerRef.current.render();
+      scene.traverse(restoreMaterial);
+      scene.background = background;
+      finalComposerRef.current.render();
+    } else {
+      renderer.render(scene, camera);
+    }
+  };
+  
   
   useEffect(() => {
        
@@ -669,7 +738,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     window.addEventListener('pointerdown', onPointerDown);
     
     // Função de animação principal que inclui TWEEN, controles e o mixer de animação
-    const animate = () => {
+    /*const animate = () => {
       requestAnimationFrame(animate);
   
       const delta = clockRef.current.getDelta();
@@ -693,7 +762,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
       } else {
         renderer.render(scene, camera);
       }
-    };
+    };*/
     animate();
     
 
@@ -737,8 +806,51 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
 
   useEffect(() => {
     updateBloomLayers();
+    bloomStatusRef.current = bloomStatus;
     console.log('bloomStatus:',bloomStatus );
   }, [bloomStatus]);
+
+  /*const updateBloomLayers = () => {
+    if (!worldRef.current) return;
+  
+    const { scene } = worldRef.current;
+    scene.traverse((object) => {
+      if (object.isMesh) {
+        const bloomObject = bloomStatus[object.uuid];
+  
+        if (bloomObject && bloomObject.status) {
+          // Clona o material se ainda não foi clonado
+          if (!object.material.isCloned) {
+            object.material = object.material.clone();
+            object.material.isCloned = true; // Marca o material como clonado
+          }
+  
+          if (bloomObject.name === "Cabeça-Robo") {
+            object.material.roughness = 0.5;
+            object.material.metalness = 0;
+  
+            object.material.emissive = new THREE.Color(0x00bfff);
+            object.material.emissiveIntensity = 2;
+          } else {
+            // Usa a cor base do material como cor emissiva
+            const baseColor = object.material.color.clone();
+            object.material.emissive = baseColor;
+            object.material.emissiveIntensity = bloomObject.emissiveIntensity || 1.0;
+          }
+  
+          object.layers.enable(BLOOM_SCENE);
+        } else {
+          object.layers.disable(BLOOM_SCENE);
+  
+          // Reseta a emissividade do material
+          /*if (object.material.isCloned) {
+            object.material.emissiveIntensity = 0;
+            object.material.emissive = new THREE.Color(0x000000);
+          }*//*
+        }
+      }
+    });
+  };*/
 
   const updateBloomLayers = () => {
     if (!worldRef.current) return;
@@ -746,24 +858,59 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     const { scene } = worldRef.current;
     scene.traverse((object) => {
       if (object.isMesh) {
-        if (bloomStatus[object.uuid] && bloomStatus[object.uuid].status) {
-          if (bloomStatus[object.uuid].name === "Cabeça-Robo"){
+        const bloomObject = bloomStatus[object.uuid];
+  
+        if (bloomObject && bloomObject.status) {
+          // Clona o material se ainda não foi clonado
+          if (!object.material.isCloned) {
+            object.material = object.material.clone();
+            object.material.isCloned = true; // Marca o material como clonado
+  
+            // Armazena as propriedades originais
+            object.material.userData.originalEmissive = object.material.emissive.clone();
+            object.material.userData.originalEmissiveIntensity = object.material.emissiveIntensity;
+            object.material.userData.originalEmissiveMap = object.material.emissiveMap;
+            object.material.userData.originalRoughness = object.material.roughness;
+            object.material.userData.originalMetalness = object.material.metalness;
+          }
+  
+          // Modifica as propriedades do material para o efeito de bloom
+          if (bloomObject.name === "Cabeça-Robo") {
             object.material.roughness = 0.5;
-            object.material.metalness = 0;         
-
+            object.material.metalness = 0;
+  
             object.material.emissive = new THREE.Color(0x00bfff);
             object.material.emissiveIntensity = 2;
-            
+            object.material.emissiveMap = null; // Remove o emissiveMap se houver
+          } else {
+            if (object.material.map) {
+              // Se o material tem uma textura, use-a como emissiveMap
+              object.material.emissiveMap = object.material.map;
+              object.material.emissive = new THREE.Color(0xffffff); // Define emissive como branco
+            } else {
+              // Usa a cor base do material como cor emissiva
+              object.material.emissive = object.material.color.clone();
+            }
+            object.material.emissiveIntensity = bloomObject.emissiveIntensity || 1.0;
           }
-          
+  
           object.layers.enable(BLOOM_SCENE);
         } else {
           object.layers.disable(BLOOM_SCENE);
+  
+          // Reseta as propriedades do material para os valores originais
+          if (object.material.isCloned && object.material.userData.originalEmissive) {
+            object.material.emissive.copy(object.material.userData.originalEmissive);
+            object.material.emissiveIntensity = object.material.userData.originalEmissiveIntensity;
+            object.material.emissiveMap = object.material.userData.originalEmissiveMap;
+            object.material.roughness = object.material.userData.originalRoughness;
+            object.material.metalness = object.material.userData.originalMetalness;
+          }
         }
       }
     });
   };
-
+  
 
 function onPointerDown(event) {
   if (!worldRef.current) return;

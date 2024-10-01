@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -14,6 +14,7 @@ import Porcupine from "./components/Porcupine/Porcupine";
 import SetupScene from "./components/SetupScene/SetupScene";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
 import AnimationController from "./components/AnimationController/AnimationController";
+import { SceneConfigContext } from "../../context/SceneConfigContext";
 
 import activationSound from '/sounds/button-on.mp3';
 
@@ -48,8 +49,53 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   const resetPorcupineTimerRef = useRef(null);
 
   const activationAudioRef = useRef(null);
-  
 
+  const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext);
+  const objectsStatus = sceneConfig.bloomEffect.status || {};
+  
+  // Function to start oscillation for an object
+const startOscillation = (objectName) => {
+  setSceneConfig((prevConfig) => {
+    const newStatus = { ...prevConfig.bloomEffect.status };
+    for (const uuid in newStatus) {
+      if (newStatus[uuid].name === objectName) {
+        newStatus[uuid] = {
+          ...newStatus[uuid],
+          oscillate: true,
+        };
+      }
+    }
+    return {
+      ...prevConfig,
+      bloomEffect: {
+        ...prevConfig.bloomEffect,
+        status: newStatus,
+      },
+    };
+  });
+};
+
+// Function to stop oscillation for an object
+const stopOscillation = (objectName) => {
+  setSceneConfig((prevConfig) => {
+    const newStatus = { ...prevConfig.bloomEffect.status };
+    for (const uuid in newStatus) {
+      if (newStatus[uuid].name === objectName) {
+        newStatus[uuid] = {
+          ...newStatus[uuid],
+          oscillate: false,
+        };
+      }
+    }
+    return {
+      ...prevConfig,
+      bloomEffect: {
+        ...prevConfig.bloomEffect,
+        status: newStatus,
+      },
+    };
+  });
+};
 
   // Inicializar os objetos de áudio uma vez
   useEffect(() => {
@@ -162,6 +208,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
     }
     resetPorcupineTimerRef.current = setTimeout(() => {
       if (transcript === '') {
+        stopOscillation("Peito");
         setIsPorcupine(false);
         console.log("Nenhum áudio detectado após 7 segundos, resetando isPorcupine");
       }
@@ -172,9 +219,11 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   useEffect(() => {
     if (isScreenTouched) {
       activationAudioRef.current.play();
+      startOscillation("Peito");
       startScreenTouchResetTimer();
     } else {
       if (resetScreenTouchTimerRef.current) {
+        stopOscillation("Peito");
         clearTimeout(resetScreenTouchTimerRef.current);
         resetScreenTouchTimerRef.current = null;
       }
@@ -185,9 +234,11 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   useEffect(() => {
     if (isPorcupine) {
       activationAudioRef.current.play();
+      startOscillation("Peito");
       startPorcupineResetTimer();      
     } else {
       if (resetPorcupineTimerRef.current) {
+        stopOscillation("Peito");
         clearTimeout(resetPorcupineTimerRef.current);
         resetPorcupineTimerRef.current = null;
       }
@@ -201,10 +252,12 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
       if (resetScreenTouchTimerRef.current) {
         clearTimeout(resetScreenTouchTimerRef.current);
         resetScreenTouchTimerRef.current = null;
+        stopOscillation("Peito");
       }
       if (resetPorcupineTimerRef.current) {
         clearTimeout(resetPorcupineTimerRef.current);
         resetPorcupineTimerRef.current = null;
+        stopOscillation("Peito");
       }
     }
   }, [transcript]);
@@ -214,9 +267,11 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
     return () => {
       if (resetScreenTouchTimerRef.current) {
         clearTimeout(resetScreenTouchTimerRef.current);
+        stopOscillation("Peito");
       }
       if (resetPorcupineTimerRef.current) {
         clearTimeout(resetPorcupineTimerRef.current);
+        stopOscillation("Peito");
       }
     };
   }, []);
@@ -294,7 +349,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
         <p>Loading...</p>
       )*/}
 
-      {/*<ControlPanel />*/}
+      {<ControlPanel />}
       
 
       

@@ -127,7 +127,7 @@ async function loadIfc(buffer, world, setArrayName, components) {
 }*/
 
 
-async function loadGlb(buffer, world, setArrayName) {
+/*async function loadGlb(buffer, world, setArrayName) {
   console.log("Iniciando carregamento de modelo GLB...");
 
   const loader = new GLTFLoader();
@@ -198,5 +198,79 @@ async function loadGlb(buffer, world, setArrayName) {
   } catch (error) {
     console.error("Erro ao carregar o GLB:", error);
   }
-}
+}*/
 
+async function loadGlb(buffer, world, setArrayName) {
+  console.log("Iniciando carregamento de modelo GLB...");
+
+  const loader = new GLTFLoader();
+
+  try {
+    const model = await new Promise((resolve, reject) => {
+      loader.parse(buffer, "", resolve, (error) => {
+        console.error("Erro no parsing do GLB:", error);
+        reject(error);
+      });
+    });
+
+    console.log("GLB model carregado:", model);
+
+    if (model.scene) {
+      console.log("Adicionando modelo GLB à cena...");
+      world.scene.add(model.scene);
+
+      // Inicializando o status dos objetos carregados
+      const initialStatus = {};
+
+      // Inspeção dos objetos e camadas do modelo principal
+      model.scene.traverse((child) => {
+        if (child.isMesh) {
+          console.log(`Objeto da cena principal ${child.name} está na camada: ${child.layers.mask}`);
+
+          let st = true;
+          if (child.name === "Plane" || child.name === "Robo-Corpo") {
+            st = false;
+          }
+
+          // Armazena o status inicial de cada objeto, incluindo emissiveIntensity
+          initialStatus[child.uuid] = {
+            name: child.name,        // Nome original do objeto
+            status: st,              // Define o status inicial
+            emissiveIntensity: 0.1,  // Valor padrão da emissividade
+            oscillate: false,
+          };
+        }
+      });
+
+      // Armazena o array de nomes dos objetos no estado
+      setArrayName(
+        model.scene.children.map((element) => ({
+          name: element.name,
+          element: element,
+        }))
+      );
+
+      // Verificar e capturar animações, se existirem
+      let animations = [];
+      if (model.animations && model.animations.length > 0) {
+        console.log("Animações detectadas no modelo GLB:", model.animations.length);
+        animations = model.animations;
+      }
+
+      console.log("Modelo GLB adicionado à cena com sucesso.");
+
+      // Retorna tanto a cena quanto as animações e o status inicial dos objetos
+      return {
+        scene: model.scene,
+        animations: animations,  // Animações ficam acessíveis aqui
+        initialStatus,           // Retorna o status inicial dos objetos para registro no contexto em Model.jsx
+      };
+    } else {
+      console.error("Nenhuma cena encontrada no modelo GLB.");
+      throw new Error("Nenhuma cena encontrada.");
+    }
+
+  } catch (error) {
+    console.error("Erro ao carregar o GLB:", error);
+  }
+}
