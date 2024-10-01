@@ -15,6 +15,8 @@ import SetupScene from "./components/SetupScene/SetupScene";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
 import AnimationController from "./components/AnimationController/AnimationController";
 
+import activationSound from '/sounds/button-on.mp3';
+
 import "./Scene.scss";
 
 export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address}) {
@@ -45,6 +47,16 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   const resetScreenTouchTimerRef = useRef(null);
   const resetPorcupineTimerRef = useRef(null);
 
+  const activationAudioRef = useRef(null);
+  
+
+
+  // Inicializar os objetos de áudio uma vez
+  useEffect(() => {
+    activationAudioRef.current = new Audio(activationSound);
+    activationAudioRef.current.volume = 1; // Ajusta o volume para 50%
+  }, []);
+
   useEffect(() => {
     let touchTimer = null;
     let startX = null;
@@ -65,9 +77,9 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
       // Start the long-press timer
       touchTimer = setTimeout(() => {
         setIsScreenTouched(true);
-        console.log("Screen touched for 3 seconds");
-        startScreenTouchResetTimer(); // Start the 7-second reset timer
-      }, 1500); // Long press duration: 1.5 seconds
+        startScreenTouchResetTimer(); // Start the 7-second reset timer        
+        console.log("Screen touched for 1 second");        
+      }, 1000); // Long press duration: 1 second
     };
 
     const onTouchMove = (e) => {
@@ -159,6 +171,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   // useEffect para monitorar isScreenTouched e iniciar o temporizador
   useEffect(() => {
     if (isScreenTouched) {
+      activationAudioRef.current.play();
       startScreenTouchResetTimer();
     } else {
       if (resetScreenTouchTimerRef.current) {
@@ -171,7 +184,8 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   // useEffect para monitorar isPorcupine e iniciar o temporizador
   useEffect(() => {
     if (isPorcupine) {
-      startPorcupineResetTimer();
+      activationAudioRef.current.play();
+      startPorcupineResetTimer();      
     } else {
       if (resetPorcupineTimerRef.current) {
         clearTimeout(resetPorcupineTimerRef.current);
