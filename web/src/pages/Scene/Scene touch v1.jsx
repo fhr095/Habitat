@@ -42,168 +42,41 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address})
   const [modelLoaded, setModelLoaded] = useState(false);
 
   const [isScreenTouched, setIsScreenTouched] = useState(false);
-  const resetScreenTouchTimerRef = useRef(null);
-  const resetPorcupineTimerRef = useRef(null);
+  const resetTimerRef = useRef(null);
 
   useEffect(() => {
     let touchTimer = null;
-    let startX = null;
-    let startY = null;
-
-    const touchThreshold = 5; // Movement threshold in pixels
 
     const onTouchStart = (e) => {
-      // Store the starting position
-      if (e.touches && e.touches.length > 0) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      } else {
-        startX = e.clientX;
-        startY = e.clientY;
-      }
-
-      // Start the long-press timer
+      // Start a timer when a touch or click begins
       touchTimer = setTimeout(() => {
         setIsScreenTouched(true);
         console.log("Screen touched for 3 seconds");
-        startScreenTouchResetTimer(); // Start the 7-second reset timer
-      }, 1500); // Long press duration: 1.5 seconds
+      }, 1200); // 3000 ms = 3 seconds
     };
 
-    const onTouchMove = (e) => {
-      if (startX === null || startY === null) return;
-
-      let currentX, currentY;
-      if (e.touches && e.touches.length > 0) {
-        currentX = e.touches[0].clientX;
-        currentY = e.touches[0].clientY;
-      } else {
-        currentX = e.clientX;
-        currentY = e.clientY;
-      }
-
-      const deltaX = Math.abs(currentX - startX);
-      const deltaY = Math.abs(currentY - startY);
-
-      if (deltaX > touchThreshold || deltaY > touchThreshold) {
-        // User moved beyond the threshold; cancel the long-press detection
-        if (touchTimer) {
-          clearTimeout(touchTimer);
-          touchTimer = null;
-        }
-        startX = null;
-        startY = null;
-      }
-    };
-
-    const onTouchEnd = () => {
-      // Clear the long-press timer if the touch ends prematurely
+    const onTouchEnd = (e) => {
+      // Clear the timer if the touch or click ends before 3 seconds
       if (touchTimer) {
         clearTimeout(touchTimer);
         touchTimer = null;
       }
-      startX = null;
-      startY = null;
     };
 
-    // Add event listeners
+    // Add event listeners to the document
     document.addEventListener("mousedown", onTouchStart);
     document.addEventListener("touchstart", onTouchStart);
-    document.addEventListener("mousemove", onTouchMove);
-    document.addEventListener("touchmove", onTouchMove);
     document.addEventListener("mouseup", onTouchEnd);
     document.addEventListener("touchend", onTouchEnd);
     document.addEventListener("mouseleave", onTouchEnd);
 
-    // Clean up event listeners on unmount
+    // Clean up event listeners when the component unmounts
     return () => {
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-      }
       document.removeEventListener("mousedown", onTouchStart);
       document.removeEventListener("touchstart", onTouchStart);
-      document.removeEventListener("mousemove", onTouchMove);
-      document.removeEventListener("touchmove", onTouchMove);
       document.removeEventListener("mouseup", onTouchEnd);
       document.removeEventListener("touchend", onTouchEnd);
       document.removeEventListener("mouseleave", onTouchEnd);
-    };
-  }, []);
-
-  // Função para iniciar o temporizador de reset para isScreenTouched
-  const startScreenTouchResetTimer = () => {
-    if (resetScreenTouchTimerRef.current) {
-      clearTimeout(resetScreenTouchTimerRef.current);
-    }
-    resetScreenTouchTimerRef.current = setTimeout(() => {
-      if (transcript === '') {
-        setIsScreenTouched(false);
-        console.log("Nenhum áudio detectado após 7 segundos, resetando isScreenTouched");
-      }
-    }, 7000); // Resetar após 7 segundos
-  };
-
-  // Função para iniciar o temporizador de reset para isPorcupine
-  const startPorcupineResetTimer = () => {
-    if (resetPorcupineTimerRef.current) {
-      clearTimeout(resetPorcupineTimerRef.current);
-    }
-    resetPorcupineTimerRef.current = setTimeout(() => {
-      if (transcript === '') {
-        setIsPorcupine(false);
-        console.log("Nenhum áudio detectado após 7 segundos, resetando isPorcupine");
-      }
-    }, 7000); // Resetar após 7 segundos
-  };
-
-  // useEffect para monitorar isScreenTouched e iniciar o temporizador
-  useEffect(() => {
-    if (isScreenTouched) {
-      startScreenTouchResetTimer();
-    } else {
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-        resetScreenTouchTimerRef.current = null;
-      }
-    }
-  }, [isScreenTouched]);
-
-  // useEffect para monitorar isPorcupine e iniciar o temporizador
-  useEffect(() => {
-    if (isPorcupine) {
-      startPorcupineResetTimer();
-    } else {
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-        resetPorcupineTimerRef.current = null;
-      }
-    }
-  }, [isPorcupine]);
-
-  // useEffect para monitorar transcript e limpar temporizadores quando necessário
-  useEffect(() => {
-    if (transcript !== '') {
-      // Se transcript não está vazio, limpar ambos os temporizadores
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-        resetScreenTouchTimerRef.current = null;
-      }
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-        resetPorcupineTimerRef.current = null;
-      }
-    }
-  }, [transcript]);
-
-  // Certifique-se de limpar os temporizadores quando o componente desmontar
-  useEffect(() => {
-    return () => {
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-      }
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-      }
     };
   }, []);
 
