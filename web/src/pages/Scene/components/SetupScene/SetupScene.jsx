@@ -735,7 +735,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     const components = new OBC.Components();
     setComponents(components);
 
-    window.addEventListener('pointerdown', onPointerDown);
+    //window.addEventListener('pointerdown', onPointerDown);
     
     // Função de animação principal que inclui TWEEN, controles e o mixer de animação
     /*const animate = () => {
@@ -790,7 +790,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
 
     // Limpeza ao desmontar
     return () => {
-      window.removeEventListener('pointerdown', onPointerDown);
+      //window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('resize', handleResize);
       containerRef.current.removeChild(renderer.domElement);
       if (mixer) mixer.stopAllAction();
