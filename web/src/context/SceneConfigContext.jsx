@@ -13,7 +13,7 @@ export const SceneConfigProvider = ({ children }) => {
       direction: { x: 0, y: 0.8, z: 0 },
       autoRotate: false,
       autoRotateSpeed: 2.0,
-      zoomEnabled: true,
+      zoomEnabled: false,
       movementLimits: { y: [0, Math.PI] }, // Adicionado movimento de limite padrão
     },
     renderSettings: {

@@ -1,26 +1,26 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
+
 import { db } from "../../firebase";
 
 import Model from "./components/Model/Model";
 import Response from "./components/Response/Response";
 import Welcome from "./components/Welcome/Welcome";
+import WebCan from "./components/WebCan/WebCan";
 import Transcript from "./components/Transcript/Transcript";
 import Porcupine from "./components/Porcupine/Porcupine";
+
 import SetupScene from "./components/SetupScene/SetupScene";
-import AnimationController from "./components/AnimationController/AnimationController";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
-import WebCan from "./components/WebCan/WebCan";
-
-
+import AnimationController from "./components/AnimationController/AnimationController";
 import { SceneConfigContext } from "../../context/SceneConfigContext";
 
 import activationSound from '/sounds/button-on.mp3';
 
 import "./Scene.scss";
 
-export default function Scene({ habitatId, mainFileUrl, mobileFileUrl}) {
+export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, address}) {
   const { id } = useParams();
   const [habitatData, setHabitatData] = useState({});
   const [transcript, setTranscript] = useState(""); // Agora é uma string única
@@ -275,7 +275,6 @@ const stopOscillation = (objectName) => {
       }
     };
   }, []);
-  ////////////////////////
 
 
   useEffect(() => {

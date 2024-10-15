@@ -19,6 +19,7 @@
     "@react-three/drei": "^9.109.5",
     "@react-three/fiber": "^8.16.8",
     "@speechly/react-client": "^2.2.4",
+    "@statelyai/inspect": "^0.4.0",
     "@thatopen/components": "^2.1.17",
     "@thatopen/components-front": "^2.1.12",
     "@thatopen/fragments": "^2.1.6",
