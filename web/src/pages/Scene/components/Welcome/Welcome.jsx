@@ -37,7 +37,7 @@ export default function Welcome({
       const postData = async () => {
         try {
           const res = await axios.post(
-            "https://habitat-avatar.netlify.app/.netlify/functions/welcome",
+            "https://habitat-chatbot-test.netlify.app/.netlify/functions/welcome",
             {
               avt: "centroadm",
               persons: persons,
