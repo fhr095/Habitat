@@ -40,7 +40,7 @@ export default function Response({
 
             try {
                 
-                const res = await axios.post("https://13.59.188.36:1880/talkwithifc"/*"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"/*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/, {
+                const res = await axios.post(/*"/*https://13.59.188.36:1880/talkwithifc"*/"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1",/*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/ {
                     msg: transcript,
                     avt: "centroadm",
                     history: history, 
