@@ -22,6 +22,7 @@ export default function VoiceButton({
   const startTimeRef = useRef(null);
   const hintTimeoutRef = useRef(null); // Timeout for hint display
   const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
+  const touchMovedRef = useRef(false); // Track if touch movement occurred
 
   // Handle the start of the button press
   const handleStart = (event) => {
@@ -40,6 +41,7 @@ export default function VoiceButton({
     }
 
     setShowHint(false); // Hide the hint immediately on press
+    touchMovedRef.current = false; // Reset touch movement tracking
 
     playSound();
     onStartListening();
@@ -64,27 +66,34 @@ export default function VoiceButton({
     // Prevent default behavior
     if (event) event.preventDefault();
 
-    if (!transcript) {
-      // Show "Segure para falar" if no transcript is detected
-      setShowHint(true);
-      if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
-      hintTimeoutRef.current = setTimeout(() => {
-        setShowHint(false);
-      }, 5000); // Show hint for 5 seconds
-    }
-
-    // Wait 30 ms before stopping listening
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      onStopListening();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    if (!touchMovedRef.current) {
+      if (!transcript) {
+        // Show "Segure para falar" if no transcript is detected
+        setShowHint(true);
+        if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
+        hintTimeoutRef.current = setTimeout(() => {
+          setShowHint(false);
+        }, 5000); // Show hint for 5 seconds
       }
-      setProgress(0);
-    }, 100); // 30 ms delay after releasing the button
+
+      // Wait 30 ms before stopping listening
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        onStopListening();
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        setProgress(0);
+      }, 100); // 30 ms delay after releasing the button
+    }
+  };
+
+  const handleMove = (event) => {
+    // Detect touch movement and set flag to prevent 'hold' action if movement happens
+    touchMovedRef.current = true;
   };
 
   useEffect(() => {
@@ -122,10 +131,9 @@ export default function VoiceButton({
           />
         )}
         <button
-          onPointerDown={handleStart}
-          onPointerUp={handleEnd}
-          onPointerCancel={handleEnd}
-          onPointerLeave={handleEnd}
+          onTouchStart={handleStart}
+          onTouchEnd={handleEnd}
+          onTouchMove={handleMove} // Detect movement
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}

@@ -241,7 +241,7 @@ useEffect(() => {
   }, []);
 
   // Lógica de toque na tela (long press)
- useEffect(() => {
+ /*useEffect(() => {
     let touchTimer = null;
     let startX = null;
     let startY = null;
@@ -326,7 +326,7 @@ useEffect(() => {
       document.removeEventListener("touchend", onTouchEnd);
       document.removeEventListener("mouseleave", onTouchEnd);
     };
-  }, []);
+  }, []);*/
 
   // Fetch dos dados do habitat
   useEffect(() => {
