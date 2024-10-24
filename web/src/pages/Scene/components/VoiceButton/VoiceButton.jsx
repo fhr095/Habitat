@@ -23,7 +23,11 @@ export default function VoiceButton({
   const hintTimeoutRef = useRef(null); // Timeout for hint display
   const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
 
-  const handleStart = () => {
+  // Handle the start of the button press
+  const handleStart = (event) => {
+    // Prevent default behavior to avoid conflicts (e.g., context menu, scrolling)
+    event.preventDefault();
+
     // Clear any existing intervals or timeouts
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -31,6 +35,11 @@ export default function VoiceButton({
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+    if (hintTimeoutRef.current) {
+      clearTimeout(hintTimeoutRef.current);
+    }
+
+    setShowHint(false); // Hide the hint immediately on press
 
     playSound();
     onStartListening();
@@ -50,14 +59,18 @@ export default function VoiceButton({
     }, 100); // Update every 100 ms for smoother progress
   };
 
-  const handleEnd = () => {
+  // Handle the end of the button press
+  const handleEnd = (event) => {
+    // Prevent default behavior
+    if (event) event.preventDefault();
+
     if (!transcript) {
       // Show "Segure para falar" if no transcript is detected
       setShowHint(true);
       if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
       hintTimeoutRef.current = setTimeout(() => {
         setShowHint(false);
-      }, 3000); // Show hint for 3 seconds
+      }, 5000); // Show hint for 5 seconds
     }
 
     // Wait 30 ms before stopping listening
@@ -71,7 +84,7 @@ export default function VoiceButton({
         intervalRef.current = null;
       }
       setProgress(0);
-    }, 30); // 30 ms delay after releasing the button
+    }, 100); // 30 ms delay after releasing the button
   };
 
   useEffect(() => {
@@ -109,10 +122,10 @@ export default function VoiceButton({
           />
         )}
         <button
-          onMouseDown={handleStart}
-          onMouseUp={handleEnd}
-          onTouchStart={handleStart}
-          onTouchEnd={handleEnd}
+          onPointerDown={handleStart}
+          onPointerUp={handleEnd}
+          onPointerCancel={handleEnd}
+          onPointerLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
@@ -132,12 +145,14 @@ export default function VoiceButton({
           )}
         </button>
       </span>
-      <p className={`status-text ${isListening ? "listening-text" : ""}`}>
-        {isListening ? "Escutando..." : ""}
-      </p>
-      {showHint && (
-        <p className="hint-text">Segure para falar</p>
-      )}
+      <div className="text-container">
+        <p className={`status-text ${isListening ? "listening-text" : ""}`}>
+          {isListening ? "Escutando..." : ""}
+        </p>
+        {!isListening && showHint && (
+          <p className="hint-text">Segure para falar</p>
+        )}
+      </div>
     </div>
   );
 }

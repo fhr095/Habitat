@@ -13,24 +13,27 @@ export default function VoiceButton({
   onStopListening,
   isDisabled,
   transcript,
-  maxDuration = 30, // Duration in seconds
+  maxDuration = 30, // Duração em segundos
 }) {
   const [progress, setProgress] = useState(0);
-  const [showHint, setShowHint] = useState(false); // Controls the "Segure para falar" hint
+  const [showHint, setShowHint] = useState(false); // Controla a dica "Segure para falar"
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
-  const hintTimeoutRef = useRef(null); // Timeout for hint display
-  const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
+  const hintTimeoutRef = useRef(null); // Timeout para exibir a dica
+  const maxDurationMs = maxDuration * 1000; // Converter para milissegundos
 
-  const handleStart = () => {
-    // Clear any existing intervals or timeouts
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
+  // Iniciar a gravação
+  const handleStart = (event) => {
+    // Chame preventDefault apenas para eventos de mouse
+    if (event.type === "mousedown") {
+      event.preventDefault();
     }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+
+    // Limpar quaisquer intervalos ou timeouts existentes
+    clearIntervalsAndTimeouts();
+
+    setShowHint(false); // Ocultar a dica imediatamente ao pressionar
 
     playSound();
     onStartListening();
@@ -38,52 +41,72 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
-    // Update progress bar
+    // Adicionar listener global para touchend
+    window.addEventListener("touchend", handleEnd);
+    // Adicionar listener global para mouseup
+    window.addEventListener("mouseup", handleEnd);
+
+    // Atualizar barra de progresso
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTimeRef.current;
       const newProgress = (elapsedTime / maxDurationMs) * 100;
       setProgress(newProgress);
 
       if (elapsedTime >= maxDurationMs) {
-        handleEnd(); // Automatically stop listening after maxDuration
+        handleEnd(); // Parar automaticamente após a duração máxima
       }
-    }, 100); // Update every 100 ms for smoother progress
+    }, 100); // Atualizar a cada 100 ms para uma progressão suave
   };
 
-  const handleEnd = () => {
+  // Finalizar a gravação
+  const handleEnd = (event) => {
+    // Chame preventDefault apenas para eventos de mouse
+    if (event && event.type === "mouseup") {
+      event.preventDefault();
+    }
+
+    // Remover listeners globais
+    window.removeEventListener("touchend", handleEnd);
+    window.removeEventListener("mouseup", handleEnd);
+
     if (!transcript) {
-      // Show "Segure para falar" if no transcript is detected
+      // Mostrar "Segure para falar" se nenhum áudio foi capturado
       setShowHint(true);
       if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
       hintTimeoutRef.current = setTimeout(() => {
         setShowHint(false);
-      }, 3000); // Show hint for 3 seconds
+      }, 5000); // Exibir dica por 5 segundos
     }
 
-    // Wait 30 ms before stopping listening
+    // Aguardar brevemente antes de parar a gravação
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       onStopListening();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      clearIntervalsAndTimeouts();
       setProgress(0);
-    }, 30); // 30 ms delay after releasing the button
+    }, 100); // Pequeno atraso após soltar o botão
+  };
+
+  const clearIntervalsAndTimeouts = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (hintTimeoutRef.current) {
+      clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = null;
+    }
   };
 
   useEffect(() => {
     if (!isListening) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
+      clearIntervalsAndTimeouts();
       setProgress(0);
     }
   }, [isListening]);
@@ -109,10 +132,10 @@ export default function VoiceButton({
           />
         )}
         <button
-          onMouseDown={handleStart}
-          onMouseUp={handleEnd}
           onTouchStart={handleStart}
-          onTouchEnd={handleEnd}
+          onMouseDown={handleStart}
+          onTouchCancel={handleEnd}
+          onMouseLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
@@ -132,12 +155,14 @@ export default function VoiceButton({
           )}
         </button>
       </span>
-      <p className={`status-text ${isListening ? "listening-text" : ""}`}>
-        {isListening ? "Escutando..." : ""}
-      </p>
-      {showHint && (
-        <p className="hint-text">Segure para falar</p>
-      )}
+      <div className="text-container">
+        <p className={`status-text ${isListening ? "listening-text" : ""}`}>
+          {isListening ? "Escutando..." : ""}
+        </p>
+        {!isListening && showHint && (
+          <p className="hint-text">Segure para falar</p>
+        )}
+      </div>
     </div>
   );
 }
