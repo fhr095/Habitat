@@ -13,34 +13,24 @@ export default function VoiceButton({
   onStopListening,
   isDisabled,
   transcript,
-  maxDuration = 30, // Duration in seconds
+  maxDuration = 30, // Duração em segundos
 }) {
   const [progress, setProgress] = useState(0);
-  const [showHint, setShowHint] = useState(false); // Controls the "Segure para falar" hint
+  const [showHint, setShowHint] = useState(false); // Controla a dica "Segure para falar"
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
-  const hintTimeoutRef = useRef(null); // Timeout for hint display
-  const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
-  const movedRef = useRef(false); // Track if movement occurred (touch or mouse)
+  const hintTimeoutRef = useRef(null); // Timeout para exibir a dica
+  const maxDurationMs = maxDuration * 1000; // Converter para milissegundos
 
-  // Handle the start of the button press (both mouse and touch)
+  // Iniciar a gravação
   const handleStart = (event) => {
     event.preventDefault();
 
-    // Clear any existing intervals or timeouts
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    if (hintTimeoutRef.current) {
-      clearTimeout(hintTimeoutRef.current);
-    }
+    // Limpar quaisquer intervalos ou timeouts existentes
+    clearIntervalsAndTimeouts();
 
-    setShowHint(false); // Hide the hint immediately on press
-    movedRef.current = false; // Reset movement tracking
+    setShowHint(false); // Ocultar a dica imediatamente ao pressionar
 
     playSound();
     onStartListening();
@@ -48,85 +38,68 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
-    // Add event listeners to handle release even if outside the button
-    window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchend', handleEnd);
+    // Adicionar listeners globais para capturar o fim do clique/toque
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchend", handleEnd);
 
-    // Update progress bar
+    // Atualizar barra de progresso
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTimeRef.current;
       const newProgress = (elapsedTime / maxDurationMs) * 100;
       setProgress(newProgress);
 
       if (elapsedTime >= maxDurationMs) {
-        handleEnd(); // Automatically stop listening after maxDuration
+        handleEnd(); // Parar automaticamente após a duração máxima
       }
-    }, 100); // Update every 100 ms for smoother progress
+    }, 100); // Atualizar a cada 100 ms para uma progressão suave
   };
 
-  // Handle the end of the button press (both mouse and touch)
+  // Finalizar a gravação
   const handleEnd = (event) => {
     event.preventDefault();
 
-    // Remove global event listeners
-    window.removeEventListener('mouseup', handleEnd);
-    window.removeEventListener('touchend', handleEnd);
+    // Remover listeners globais
+    window.removeEventListener("mouseup", handleEnd);
+    window.removeEventListener("touchend", handleEnd);
 
-    // Only stop listening if no movement occurred
-    if (!movedRef.current) {
-      if (!transcript) {
-        // Show "Segure para falar" if no transcript is detected
-        setShowHint(true);
-        if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
-        hintTimeoutRef.current = setTimeout(() => {
-          setShowHint(false);
-        }, 5000); // Show hint for 5 seconds
-      }
-
-      // Wait briefly before stopping listening
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        onStopListening();
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-        setProgress(0);
-      }, 100); // Short delay after releasing the button
+    if (!transcript) {
+      // Mostrar "Segure para falar" se nenhum áudio foi capturado
+      setShowHint(true);
+      if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = setTimeout(() => {
+        setShowHint(false);
+      }, 5000); // Exibir dica por 5 segundos
     }
+
+    // Aguardar brevemente antes de parar a gravação
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      onStopListening();
+      clearIntervalsAndTimeouts();
+      setProgress(0);
+    }, 100); // Pequeno atraso após soltar o botão
   };
 
-  const handleMove = () => {
-    // Detect movement and set flag to prevent 'hold' action if movement happens
-    movedRef.current = true;
-  };
-
-  const handleCancel = () => {
-    // This function ensures that the action is canceled if touch or mouse move outside the button
+  const clearIntervalsAndTimeouts = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setProgress(0);
-    onStopListening();
-
-    // Ensure event listeners are removed if cancel happens
-    window.removeEventListener('mouseup', handleEnd);
-    window.removeEventListener('touchend', handleEnd);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (hintTimeoutRef.current) {
+      clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = null;
+    }
   };
 
   useEffect(() => {
     if (!isListening) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
+      clearIntervalsAndTimeouts();
       setProgress(0);
     }
   }, [isListening]);
@@ -153,11 +126,9 @@ export default function VoiceButton({
         )}
         <button
           onTouchStart={handleStart}
-          onTouchMove={handleMove} // Detect touch movement
-          onTouchCancel={handleCancel} // Cancel if touch is interrupted
           onMouseDown={handleStart}
-          onMouseMove={handleMove} // Detect mouse movement
-          onMouseLeave={handleCancel} // Cancel if mouse leaves button area
+          onTouchCancel={handleEnd}
+          onMouseLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
