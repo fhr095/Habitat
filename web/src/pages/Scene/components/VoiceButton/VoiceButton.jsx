@@ -16,51 +16,87 @@ export default function VoiceButton({
   maxDuration = 30, // Duration in seconds
 }) {
   const [progress, setProgress] = useState(0);
-  const [listening, setListening] = useState(false); // State to handle listening
+  const [showHint, setShowHint] = useState(false); // Controls the "Segure para falar" hint
   const intervalRef = useRef(null);
+  const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
+  const hintTimeoutRef = useRef(null); // Timeout for hint display
   const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
 
-  const handleClick = () => {
-    if (!listening) {
-      // Start listening
-      playSound();
-      onStartListening();
-      startTimeRef.current = Date.now();
-      setProgress(0);
-      setListening(true);
+  // Handle the start of the button press
+  const handleStart = (event) => {
+    // Prevent default behavior to avoid conflicts (e.g., context menu, scrolling)
+    event.preventDefault();
 
-      // Update progress bar
-      intervalRef.current = setInterval(() => {
-        const elapsedTime = Date.now() - startTimeRef.current;
-        const newProgress = (elapsedTime / maxDurationMs) * 100;
-        setProgress(newProgress);
-
-        if (elapsedTime >= maxDurationMs) {
-          handleStop(); // Automatically stop after maxDuration
-        }
-      }, 100);
-    } else {
-      // Stop listening and send data
-      handleStop();
-    }
-  };
-
-  const handleStop = () => {
-    onStopListening();
-    setListening(false);
-    setProgress(0);
-
+    // Clear any existing intervals or timeouts
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
-      intervalRef.current = null;
     }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (hintTimeoutRef.current) {
+      clearTimeout(hintTimeoutRef.current);
+    }
+
+    setShowHint(false); // Hide the hint immediately on press
+
+    playSound();
+    onStartListening();
+
+    startTimeRef.current = Date.now();
+    setProgress(0);
+
+    // Update progress bar
+    intervalRef.current = setInterval(() => {
+      const elapsedTime = Date.now() - startTimeRef.current;
+      const newProgress = (elapsedTime / maxDurationMs) * 100;
+      setProgress(newProgress);
+
+      if (elapsedTime >= maxDurationMs) {
+        handleEnd(); // Automatically stop listening after maxDuration
+      }
+    }, 100); // Update every 100 ms for smoother progress
+  };
+
+  // Handle the end of the button press
+  const handleEnd = (event) => {
+    // Prevent default behavior
+    if (event) event.preventDefault();
+
+    if (!transcript) {
+      // Show "Segure para falar" if no transcript is detected
+      setShowHint(true);
+      if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
+      hintTimeoutRef.current = setTimeout(() => {
+        setShowHint(false);
+      }, 5000); // Show hint for 5 seconds
+    }
+
+    // Wait 30 ms before stopping listening
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      onStopListening();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setProgress(0);
+    }, 100); // 30 ms delay after releasing the button
   };
 
   useEffect(() => {
-    if (!isListening && intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    if (!isListening) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setProgress(0);
     }
   }, [isListening]);
@@ -73,7 +109,7 @@ export default function VoiceButton({
   return (
     <div className="voice-button-container">
       <span className="bar-container">
-        {listening && (
+        {isListening && (
           <CircularProgressbar
             className="bar"
             value={progress}
@@ -86,12 +122,15 @@ export default function VoiceButton({
           />
         )}
         <button
-          onClick={handleClick}
+          onPointerDown={handleStart}
+          onPointerUp={handleEnd}
+          onPointerCancel={handleEnd}
+          onPointerLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
-          className={`voice-button ${listening ? "listening" : ""}`}
+          className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
         >
-          {listening ? (
+          {isListening ? (
             <div>
               <ScaleLoader
                 color="#eaf1f0"
@@ -107,9 +146,12 @@ export default function VoiceButton({
         </button>
       </span>
       <div className="text-container">
-        <p className={`status-text ${listening ? "listening-text" : ""}`}>
-          {listening ? "Escutando..." : ""}
+        <p className={`status-text ${isListening ? "listening-text" : ""}`}>
+          {isListening ? "Escutando..." : ""}
         </p>
+        {!isListening && showHint && (
+          <p className="hint-text">Segure para falar</p>
+        )}
       </div>
     </div>
   );
