@@ -227,7 +227,7 @@ useEffect(() => {
   }, [transcript]);
 
   // Limpeza de temporizadores ao desmontar o componente
-  useEffect(() => {
+ /* useEffect(() => {
     return () => {
       if (resetScreenTouchTimerRef.current) {
         clearTimeout(resetScreenTouchTimerRef.current);
@@ -238,7 +238,7 @@ useEffect(() => {
         stopOscillation("Peito");
       }
     };
-  }, []);
+  }, []);*/
 
   // Lógica de toque na tela (long press)
  /*useEffect(() => {
