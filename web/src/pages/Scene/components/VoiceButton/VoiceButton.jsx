@@ -25,7 +25,10 @@ export default function VoiceButton({
 
   // Iniciar a gravação
   const handleStart = (event) => {
-    event.preventDefault();
+    // Chame preventDefault apenas para eventos de mouse
+    if (event.type === "mousedown") {
+      event.preventDefault();
+    }
 
     // Limpar quaisquer intervalos ou timeouts existentes
     clearIntervalsAndTimeouts();
@@ -38,9 +41,8 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
-    // Adicionar listeners globais para capturar o fim do clique/toque
+    // Adicionar listener global apenas para mouseup
     window.addEventListener("mouseup", handleEnd);
-    window.addEventListener("touchend", handleEnd);
 
     // Atualizar barra de progresso
     intervalRef.current = setInterval(() => {
@@ -56,11 +58,13 @@ export default function VoiceButton({
 
   // Finalizar a gravação
   const handleEnd = (event) => {
-    event.preventDefault();
+    // Chame preventDefault apenas para eventos de mouse
+    if (event && event.type === "mouseup") {
+      event.preventDefault();
+    }
 
-    // Remover listeners globais
+    // Remover listener global
     window.removeEventListener("mouseup", handleEnd);
-    window.removeEventListener("touchend", handleEnd);
 
     if (!transcript) {
       // Mostrar "Segure para falar" se nenhum áudio foi capturado
@@ -126,7 +130,9 @@ export default function VoiceButton({
         )}
         <button
           onTouchStart={handleStart}
+          onTouchEnd={handleEnd} // Adicionado
           onMouseDown={handleStart}
+          onMouseUp={handleEnd} // Adicionado
           onTouchCancel={handleEnd}
           onMouseLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
