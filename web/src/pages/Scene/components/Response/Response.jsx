@@ -40,7 +40,7 @@ export default function Response({
 
             try {
                 
-                const res = await axios.post("https://13.59.188.36:1880/talkwithifc"/*"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"*/,/*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/ {
+                const res = await axios.post(/*"https://13.59.188.36:1880/talkwithifc"*/"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1",/*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/ {
                     msg: transcript,
                     avt: "centroadm",
                     history: history, 
@@ -170,7 +170,7 @@ export default function Response({
           }
       
           // **Start focus on the object if 'fade' is defined**
-          if (comando.fade && comando.fade != "Cidade Administrativa de MG") {
+          if (comando.fade && comando.fade != "Cidade Administrativa de MG" && comando.fade != "null") {
             console.log("FADE:", comando.fade);
             console.log("Scene:", scene);
             console.log("Camera:", camera);
