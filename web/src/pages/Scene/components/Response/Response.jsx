@@ -177,7 +177,7 @@ export default function Response({
             console.log("Controls:", controls);
             console.log("TEM AUDIO:", audioDuration);
             //setUltimo(false);
-            setCurrentModel("model2");
+            setCurrentModel("model1");
             const isUltimo = (response.comandos.length - index === 1);
             const isPrimeiro = (index ===0);
             console.log("UTLTOMO SET:",response.comandos.length-index, isUltimo)            

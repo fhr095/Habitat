@@ -48,6 +48,10 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
+    // Add event listeners to handle release even if outside the button
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchend', handleEnd);
+
     // Update progress bar
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTimeRef.current;
@@ -63,6 +67,10 @@ export default function VoiceButton({
   // Handle the end of the button press (both mouse and touch)
   const handleEnd = (event) => {
     event.preventDefault();
+
+    // Remove global event listeners
+    window.removeEventListener('mouseup', handleEnd);
+    window.removeEventListener('touchend', handleEnd);
 
     // Only stop listening if no movement occurred
     if (!movedRef.current) {
@@ -103,6 +111,10 @@ export default function VoiceButton({
     }
     setProgress(0);
     onStopListening();
+
+    // Ensure event listeners are removed if cancel happens
+    window.removeEventListener('mouseup', handleEnd);
+    window.removeEventListener('touchend', handleEnd);
   };
 
   useEffect(() => {
@@ -141,11 +153,9 @@ export default function VoiceButton({
         )}
         <button
           onTouchStart={handleStart}
-          onTouchEnd={handleEnd}
           onTouchMove={handleMove} // Detect touch movement
           onTouchCancel={handleCancel} // Cancel if touch is interrupted
           onMouseDown={handleStart}
-          onMouseUp={handleEnd}
           onMouseMove={handleMove} // Detect mouse movement
           onMouseLeave={handleCancel} // Cancel if mouse leaves button area
           disabled={isDisabled || transcript !== ""}
