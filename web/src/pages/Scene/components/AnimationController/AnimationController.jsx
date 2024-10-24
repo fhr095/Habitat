@@ -220,11 +220,11 @@ export default function AnimationController() {
           break;
 
         case 'listening':
-          playAnimationRef.current('Confuso');
+          //playAnimationRef.current('Confuso');
           break;
 
         case 'processing':
-          playAnimationRef.current('Confuso');
+          //playAnimationRef.current('Confuso');
           break;
 
         case 'talking':
