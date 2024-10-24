@@ -32,6 +32,23 @@ export default function Response({
     const { setCurrentModel } = useContext(ModelContext); // Pega a função para controlar o modelo exibido
     const { scene, camera, controls, setSceneConfig } = useContext(SceneConfigContext); // Usar SceneConfigContext para pegar cena e câmera
 
+    // Response.jsx
+
+
+const { updateSceneConfigForModel } = useContext(SceneConfigContext);
+
+useEffect(() => {
+  if (!loading && response.comandos.length > 0) {            
+    setCurrentModel("model2");
+    updateSceneConfigForModel("model2");
+    playAudioSequentially(0);
+  } else {
+    setCurrentModel("model1");
+    updateSceneConfigForModel("model1");
+  }
+}, [loading, response, setCurrentModel, updateSceneConfigForModel]);
+
+
 
     useEffect(() => {
         const sendTranscript = async (transcript) => {

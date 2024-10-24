@@ -1,8 +1,6 @@
-// Welcome.jsx
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import eventBus from '../../../../eventBus'; // Certifique-se que o caminho está correto
-//import "./Welcome.scss";
+import eventBus from '../../../../eventBus';
 
 export default function Welcome({
   isPersonDetected,
@@ -15,80 +13,117 @@ export default function Welcome({
   setIsFinished,
 }) {
   const [isCooldown, setIsCooldown] = useState(false);
+  const [welcomedIds, setWelcomedIds] = useState([]);
   const audioRef = useRef(null);
 
-  // Dispara eventos de detecção de pessoa
+  // Event handling for person detection
   useEffect(() => {
     if (isPersonDetected || isPorcupine || isScreenTouched) {
-      eventBus.emit('personDetected'); // Dispara evento para acenar
+      eventBus.emit('personDetected');
     } else {
-      eventBus.emit('personLost'); // Dispara evento para retornar ao idle
+      eventBus.emit('personLost');
     }
-    console.log("Detectouuuuuuuuuuuu")
+    console.log("Person detection event emitted");
   }, [isPersonDetected, isPorcupine, isScreenTouched]);
 
+  // Main logic for sending POST request and playing audio
   useEffect(() => {
-    
-  },[]);
-  // Lógica para fazer o POST e tocar o áudio
-  useEffect(() => {
-    if ((isPersonDetected || isPorcupine || isScreenTouched) /*&& persons.length > 0*/ && !isCooldown && history.length === 0) {
-      setIsFinished(false);  // Bloqueia fala enquanto o POST é feito
+    const now = Date.now();
+    const MAX_WELCOME_TIME = 1 * 60 * 1000; // 5 minutes
+
+    // Remove IDs that were welcomed more than 5 minutes ago
+    setWelcomedIds((prevWelcomedIds) =>
+      prevWelcomedIds.filter(
+        (welcomed) => now - welcomed.timestamp < MAX_WELCOME_TIME
+      )
+    );
+
+    // Check for new persons
+    const newPersons = persons.filter(
+      (person) =>
+        !welcomedIds.some((welcomed) => welcomed.id === person.id)
+    );
+    console.log("NEW: ", newPersons)
+    if (
+      (isPersonDetected || isPorcupine || isScreenTouched) &&
+      !isCooldown &&
+      history.length === 0 &&
+      newPersons.length > 0
+    ) {
+      setIsFinished(false); // Block speech while POST is made
+
       const postData = async () => {
         try {
           const res = await axios.post(
-            "https://habitat-avatar.netlify.app/.netlify/functions/welcome",
+            "https://habitat-chatbot-test.netlify.app/.netlify/functions/welcome",
             {
               avt: "centroadm",
-              persons: persons,
+              persons: newPersons,
             }
           );
-          // Tocar o áudio quando a resposta for recebida
+          console.log(persons);
+          // Play audio when response is received
           if (res.data && res.data.audioUrl) {
             audioRef.current.src = res.data.audioUrl;
             audioRef.current.play();
-            eventBus.emit('audioStarted'); // Dispara evento quando o áudio começa
+            eventBus.emit('audioStarted');
           }
+          // Add new IDs to welcomedIds with timestamp
+          const newWelcomed = newPersons.map((person) => ({
+            id: person.id,
+            timestamp: now,
+          }));
+          setWelcomedIds((prevIds) => [...prevIds, ...newWelcomed]);
         } catch (error) {
           console.error("Error sending data:", error);
         }
       };
 
-      // Inicia o cooldown de 5 minutos após o envio dos dados
+      // Start cooldown after sending data
       setIsCooldown(true);
       setTimeout(() => {
         setIsCooldown(false);
-      }, 300000); // 5 minutos
+      }, 10000); // 10 seconds
 
       postData();
     }
-    if (isPorcupine || isScreenTouched){
-      setIsFinished(true); 
-    };
-  }, [isPersonDetected, isPorcupine, isScreenTouched, persons, avt, isCooldown, history]);
 
-  // Disparar evento quando o áudio termina
+    if (isPorcupine || isScreenTouched ) {
+      setIsFinished(true);
+    }
+  }, [
+    isPersonDetected,
+    isPorcupine,
+    isScreenTouched,
+    persons,
+    avt,
+    isCooldown,
+    history,
+    setIsFinished,
+  ]);
+
+  // Handle audio events
   useEffect(() => {
     const audioElement = audioRef.current;
     if (audioElement) {
       audioElement.onended = () => {
-        setIsFinished(true);  // Libera fala após o áudio terminar
-        eventBus.emit('audioEnded'); // Dispara evento quando o áudio termina
+        setIsFinished(true);
+        eventBus.emit('audioEnded');
       };
 
       audioElement.onplay = () => {
-        eventBus.emit('audioStarted'); // Dispara evento quando o áudio começa
+        eventBus.emit('audioStarted');
       };
     }
   }, [setIsFinished]);
 
-  // Remover o estado e JSX relacionado a GIFs
   const containerClass =
-    history.length > 0 || transcript !== "" ? "welcome-container minimized" : "welcome-container";
+    history.length > 0 || transcript !== ""
+      ? "welcome-container minimized"
+      : "welcome-container";
 
   return (
     <div className={containerClass}>
-      {/* Removido o <img> de GIFs */}
       <audio ref={audioRef} />
     </div>
   );

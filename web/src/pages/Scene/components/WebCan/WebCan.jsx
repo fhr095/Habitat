@@ -8,19 +8,17 @@ export default function WebCan({
   setCurrentPerson,
 }) {
   const videoRef = useRef(null);
-  const [personId, setPersonId] = useState("");
-  const [detectionTimeout, setDetectionTimeout] = useState(null);
+  const [detectedPersons, setDetectedPersons] = useState([]);
 
   useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = "/models";
       try {
         await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
         await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
-        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         startVideo();
       } catch (error) {
         console.error("Error loading models: ", error);
@@ -43,80 +41,147 @@ export default function WebCan({
   }, []);
 
   useEffect(() => {
+    let isComponentMounted = true;
+    let frameCount = 0;
+    const processEveryNFrames = 4; // Process every 4 frames
+
     const detectFace = async () => {
-      if (videoRef.current && videoRef.current.readyState === 4) {
-        const options = new faceapi.SsdMobilenetv1Options({
-          minConfidence: 0.5,
-        });
+      if (
+        isComponentMounted &&
+        videoRef.current &&
+        videoRef.current.readyState === 4
+      ) {
+        frameCount++;
+        if (frameCount % processEveryNFrames === 0) {
+          const options = new faceapi.TinyFaceDetectorOptions({
+            inputSize: 224,
+            scoreThreshold: 0.5,
+          });
 
-        const detections = await faceapi
-          .detectAllFaces(videoRef.current, options)
-          .withFaceLandmarks()
-          .withFaceExpressions()
-          .withAgeAndGender();
+          const detections = await faceapi
+            .detectAllFaces(videoRef.current, options)
+            .withFaceLandmarks()
+            .withFaceDescriptors()
+            .withAgeAndGender()
+            .withFaceExpressions();
 
-        const isDetected = detections.length > 0;
-        setIsPersonDetected(isDetected);
+          const isDetected = detections.length > 0;
+          setIsPersonDetected(isDetected);
 
-        if (isDetected) {
-          if (!personId) {
-            const newPersonId = uuidv4();
-            setPersonId(newPersonId);
+          if (isDetected) {
+            const now = Date.now();
+            const THRESHOLD = 0.65; // Adjust as needed
+            const MAX_IDLE_TIME = 30000; // 5 seconds
 
-            const canvas = document.createElement("canvas");
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const context = canvas.getContext("2d");
-            context.drawImage(
-              videoRef.current,
-              0,
-              0,
-              canvas.width,
-              canvas.height
+            let newDetectedPersons = [...detectedPersons];
+            const personsInFrame = [];
+
+            detections.forEach((detection) => {
+              const descriptor = detection.descriptor;
+
+              // Find the best match among detectedPersons
+              let minDistance = Infinity;
+              let bestMatch = null;
+
+              newDetectedPersons.forEach((person) => {
+                const distance = faceapi.euclideanDistance(
+                  descriptor,
+                  person.descriptor
+                );
+                if (distance < minDistance) {
+                  minDistance = distance;
+                  bestMatch = person;
+                }
+              });
+
+              if (minDistance < THRESHOLD && bestMatch) {
+                // Update timestamp and data
+                bestMatch.timestamp = now;
+                bestMatch.data = {
+                  emotion:
+                    detection.expressions.asSortedArray()[0].expression,
+                  age: Math.floor(detection.age),
+                  gender: detection.gender,
+                };
+                personsInFrame.push(bestMatch);
+                // Log when an existing person is recognized
+                console.log(
+                  `Recognized person with ID: ${bestMatch.id}. Timestamp updated.`
+                );
+              } else {
+                // Create new person
+                const newPersonId = uuidv4();
+                const newPerson = {
+                  id: newPersonId,
+                  descriptor: descriptor,
+                  timestamp: now,
+                  data: {
+                    emotion:
+                      detection.expressions.asSortedArray()[0].expression,
+                    age: Math.floor(detection.age),
+                    gender: detection.gender,
+                  },
+                };
+                newDetectedPersons.push(newPerson);
+                personsInFrame.push(newPerson);
+                // Log when a new person is detected
+                console.log(`New person detected with ID: ${newPersonId}`);
+              }
+            });
+
+            // Remove persons not seen for more than MAX_IDLE_TIME
+            const updatedDetectedPersons = newDetectedPersons.filter(
+              (person) => {
+                const isActive = now - person.timestamp < MAX_IDLE_TIME;
+                if (!isActive) {
+                  // Log when a person is removed due to inactivity
+                  console.log(
+                    `Person with ID: ${person.id} removed due to inactivity.`
+                  );
+                }
+                return isActive;
+              }
             );
-            const imageData = canvas.toDataURL("image/png");
 
-            setCurrentPerson({ id: newPersonId, image: imageData });
-            console.log("New person detected with ID:", newPersonId);
-          }
+            // Keep only the 5 most recent persons
+            updatedDetectedPersons.sort(
+              (a, b) => b.timestamp - a.timestamp
+            );
+            if (updatedDetectedPersons.length > 5) {
+              const removedPersons = updatedDetectedPersons.splice(5);
+              // Log when the oldest persons are removed
+              removedPersons.forEach((person) => {
+                console.log(
+                  `Person with ID: ${person.id} removed to maintain max capacity of 5 persons.`
+                );
+              });
+            }
 
-          const persons = detections.map((person) => ({
-            emotion: person.expressions.asSortedArray()[0].expression,
-            age: Math.floor(person.age),
-            gender: person.gender,
-          }));
+            setDetectedPersons(updatedDetectedPersons);
 
-          setPersons(persons);
+            // Update persons state with IDs
+            setPersons(
+              personsInFrame.map((person) => ({
+                id: person.id,
+                emotion: person.data.emotion,
+                age: person.data.age,
+                gender: person.data.gender,
+              }))
+            );
 
-          if (detectionTimeout) {
-            clearTimeout(detectionTimeout);
-            setDetectionTimeout(null);
-          }
-        } else if (personId) {
-          if (!detectionTimeout) {
-            const timeout = setTimeout(() => {
-              console.log(
-                "Person left the frame. Deleting data for ID:",
-                personId
-              );
-              setPersonId("");
-              setCurrentPerson(null);
-              setDetectionTimeout(null);
-            }, 2000);
-            setDetectionTimeout(timeout);
+            // Set the current person to the first detected
+            setCurrentPerson(personsInFrame[0]);
           }
         }
       }
     };
 
-    const interval = setInterval(detectFace, 1000);
-    return () => clearInterval(interval);
-  }, [
-    setIsPersonDetected,
-    setPersons,
-    personId,
-    detectionTimeout,
-  ]);
+    const interval = setInterval(detectFace, 100); // Adjust interval as needed
+    return () => {
+      isComponentMounted = false;
+      clearInterval(interval);
+    };
+  }, [detectedPersons, setIsPersonDetected, setPersons, setCurrentPerson]);
 
   return (
     <video

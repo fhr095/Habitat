@@ -12,7 +12,7 @@ export default function AnimationController() {
   const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext);
   const idleTimerRef = useRef(null);
   const idleAnimationIntervalRef = useRef(null);
-  const idleAnimations = ['RodandoCurto', 'MinasPiscando', 'MinasPiscando']; // Array de animações ociosas
+  const idleAnimations = [/*'RodandoCurto',*/ 'MinasPiscando', 'MinasPiscando']; // Array de animações ociosas
 
   // Referências para o inspetor e o ator
   const inspectorRef = useRef(null);
@@ -23,11 +23,13 @@ export default function AnimationController() {
 
   // Cria uma referência para a função playAnimation
   const playAnimationRef = useRef(playAnimation);
-
+  
   // Atualiza a referência sempre que playAnimation mudar
   useEffect(() => {
     playAnimationRef.current = playAnimation;
   }, [playAnimation]);
+
+  
 
   useEffect(() => {
     // Inicializa o inspetor apenas uma vez
@@ -117,6 +119,11 @@ export default function AnimationController() {
     };
   }, []);
 
+  /*const distractedRef = useRef(state.context.distracted);
+      useEffect(() => {
+        distractedRef.current = state.context.distracted;
+      }, [state.context.distracted]);*/
+
   useEffect(() => {
     const actor = actorRef.current;
 
@@ -126,6 +133,8 @@ export default function AnimationController() {
 
       console.log('Estado atual:', currentStateValue);
       console.log('Contexto atual:', state.context);
+
+      
 
       // Limpa os temporizadores apenas se o valor do estado mudar
       if (prevStateValue !== currentStateValue) {
@@ -146,14 +155,14 @@ export default function AnimationController() {
       const adjustCameraForAnimation = (animationName) => {
         switch (animationName) {
           case 'CantodeTela':
-            setSceneConfig((prevConfig) => ({
+            /*setSceneConfig((prevConfig) => ({
               ...prevConfig,
               camera: {
                 ...prevConfig.camera,
                 position: { x: 1.2, y: 0.75, z: 2.05 },
                 direction: { x: -48.5, y: -2.3, z: -35.85 }
               },
-            }));
+            }));*/
             break;
 
             /*case 'RodandoCurto':
@@ -168,14 +177,14 @@ export default function AnimationController() {
               break;*/
 
           default:
-            setSceneConfig((prevConfig) => ({
+            /*setSceneConfig((prevConfig) => ({
               ...prevConfig,
               camera: {
                 ...prevConfig.camera,
                 position: { x: 1, y: 1, z: 0 },
                 direction: { x: 0, y: 0.8, z: 0 }
               },
-            }));
+            }));*/
             break;
         }
       };
@@ -195,12 +204,14 @@ export default function AnimationController() {
           break;
 
         case 'waving1':
-          playAnimationRef.current('Acenando');
+          //playAnimationRef.current('Acenando');
+          playAnimationRef.current('MinasPiscando');
           adjustCameraForAnimation('Acenando');
           break;
 
         case 'waving2':
-          playAnimationRef.current('Acenando-2');
+          //playAnimationRef.current('Acenando-2');
+          playAnimationRef.current('MinasPiscando');
           adjustCameraForAnimation('Acenando-2');
           break;
 
@@ -226,7 +237,8 @@ export default function AnimationController() {
 
       
       // Inicia animações aleatórias se o avatar estiver distraído
-      if (state.context.distracted) {
+      if (state.context.distracted) {        
+        console.log("Aleatorio: ", state.context.distracted);
         if (!idleAnimationIntervalRef.current) {
           idleAnimationIntervalRef.current = setInterval(() => {
             const randomAnimation =
@@ -235,6 +247,13 @@ export default function AnimationController() {
             adjustCameraForAnimation(randomAnimation);
           }, 6000); // Troca de animação a cada 10 segundos (ajuste conforme necessário)
         }
+      }
+
+       // Se o avatar não está mais distraído, limpa o intervalo de animação
+       if (!state.context.distracted && idleAnimationIntervalRef.current) {
+        console.log('Limpando intervalo de animação ociosa');
+        clearInterval(idleAnimationIntervalRef.current);
+        idleAnimationIntervalRef.current = null;
       }
 
       // Atualiza o valor anterior do estado

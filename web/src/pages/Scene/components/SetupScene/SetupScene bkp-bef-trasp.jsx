@@ -190,7 +190,27 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
 
-  
+  /*function onPointerDown(event) {
+    if (!worldRef.current) return;
+
+    const { scene, camera } = worldRef.current;
+
+    // Calculate normalized mouse coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the raycaster with the mouse position and camera
+    raycaster.setFromCamera(mouse, camera);
+
+    // Intersect objects in the scene
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    if (intersects.length > 0) {
+      const object = intersects[0].object;
+      object.layers.toggle(BLOOM_SCENE);
+    }
+  }*/
+  //////////////////////////
+
   const setupCamera = () => {
     let cameraNeedsUpdate = false;
   
@@ -552,7 +572,7 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
   const updateMaterialsForEnvironmentMap = (scene, texture) => {
     scene.traverse((object) => {
       if (object.isMesh) {
-        //console.log("Oi, tudo bem?");
+        console.log("Oi, tudo bem?");
         // Armazena o material original caso ainda não tenha sido armazenado
         if (!originalMaterials.current.has(object)) {
           originalMaterials.current.set(object, object.material);
@@ -566,7 +586,7 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
         });
         object.material.envMapIntensity = envMapIntensity; // Define a intensidade do environment map
         object.material.needsUpdate = true; // Força a atualização do material
-        //console.log(`Material atualizado para objeto: ${object.name || 'sem nome'}`);
+        console.log(`Material atualizado para objeto: ${object.name || 'sem nome'}`);
       }
     });
   };
@@ -688,8 +708,7 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
     // Update controls and other animations
     TWEEN.update(); // If you're using TWEEN
     if (worldRef.current.controls) worldRef.current.controls.update();
-
-      
+  
     const { scene, renderer, camera } = worldRef.current;
     const background = scene.background;
   
@@ -697,9 +716,8 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
     scene.traverse((object) => {
       if (object.isMesh) {
         const bloomObject = bloomStatusRef.current[object.uuid];
-        
+  
         if (bloomObject && bloomObject.status) {
-         
           if (bloomObject.oscillate) {
             // Initialize oscillation parameters if not already set
             if (!object.userData.oscillation) {
@@ -727,8 +745,7 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
         }
       }
     });
-
-      
+  
     // Render with Bloom or default rendering
     if (bloomComposerRef.current && finalComposerRef.current) {
       scene.background = null;
@@ -761,6 +778,7 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
     // Configuração dos controles da câmera
     worldRef.current = { scene, renderer, camera };
     setupControls();
+
     
     // Agora que controls foi criado, atualizamos o estado do mundo
     setWorld({
@@ -769,16 +787,49 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
       camera: worldRef.current.camera,
       controls: worldRef.current.controls,
     });
+
     // Funções auxiliares de configuração de luz, materiais, etc.
-    setupLights(scene);      
+    setupLights(scene);
+    
+    
     scene.background = new THREE.Color(sceneConfig.backgroundColor);
+
     // Configuração dos componentes
     const components = new OBC.Components();
     setComponents(components);
+
+    //window.addEventListener('pointerdown', onPointerDown);
+    
+    // Função de animação principal que inclui TWEEN, controles e o mixer de animação
+    /*const animate = () => {
+      requestAnimationFrame(animate);
+  
+      const delta = clockRef.current.getDelta();
+      if (mixerRef.current) mixerRef.current.update(delta);
+  
+      // Atualizações de controles e outros
+      TWEEN.update(); // Se estiver usando TWEEN
+      if (worldRef.current.controls) worldRef.current.controls.update();
+  
+      const { scene, renderer, camera } = worldRef.current;
+      const background = scene.background;
+  
+      // Renderização com Bloom ou renderização padrão
+      if (bloomComposerRef.current && finalComposerRef.current) {
+        scene.background = null;
+        scene.traverse(nonBloomed);
+        bloomComposerRef.current.render();
+        scene.traverse(restoreMaterial);
+        scene.background = background;
+        finalComposerRef.current.render();
+      } else {
+        renderer.render(scene, camera);
+      }
+    };*/
     setScene(scene);
     setCamera(camera);
     setControls(worldRef.current.controls);
-    
+
     animate();
     
     
@@ -824,10 +875,51 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
   useEffect(() => {
     updateBloomLayers();
     bloomStatusRef.current = bloomStatus;
-    console.log('bloomStatus:',bloomStatus);
+    console.log('bloomStatus:',bloomStatus );
   }, [bloomStatus]);
 
+  /*const updateBloomLayers = () => {
+    if (!worldRef.current) return;
   
+    const { scene } = worldRef.current;
+    scene.traverse((object) => {
+      if (object.isMesh) {
+        const bloomObject = bloomStatus[object.uuid];
+  
+        if (bloomObject && bloomObject.status) {
+          // Clona o material se ainda não foi clonado
+          if (!object.material.isCloned) {
+            object.material = object.material.clone();
+            object.material.isCloned = true; // Marca o material como clonado
+          }
+  
+          if (bloomObject.name === "Cabeça-Robo") {
+            object.material.roughness = 0.5;
+            object.material.metalness = 0;
+  
+            object.material.emissive = new THREE.Color(0x00bfff);
+            object.material.emissiveIntensity = 2;
+          } else {
+            // Usa a cor base do material como cor emissiva
+            const baseColor = object.material.color.clone();
+            object.material.emissive = baseColor;
+            object.material.emissiveIntensity = bloomObject.emissiveIntensity || 1.0;
+          }
+  
+          object.layers.enable(BLOOM_SCENE);
+        } else {
+          object.layers.disable(BLOOM_SCENE);
+  
+          // Reseta a emissividade do material
+          /*if (object.material.isCloned) {
+            object.material.emissiveIntensity = 0;
+            object.material.emissive = new THREE.Color(0x000000);
+          }*//*
+        }
+      }
+    });
+  };*/
+
   const updateBloomLayers = () => {
     if (!worldRef.current) return;
   
@@ -927,6 +1019,181 @@ function onPointerDown(event) {
 }
 
   
+  /*function onPointerDown(event) {
+    if (!worldRef.current) return;
+  
+    const { scene, camera } = worldRef.current;
+  
+    // Calcula as coordenadas normalizadas do mouse
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  
+    // Atualiza o raycaster com a posição do mouse e da câmera
+    raycaster.setFromCamera(mouse, camera);
+  
+    // Intersecta os objetos na cena
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    if (intersects.length > 0) {
+      const object = intersects[0].object;
+      const uuid = object.uuid;
+      setBloomStatus((prevStatus) => ({
+        ...prevStatus,
+        [uuid]: !prevStatus[uuid],
+      }));
+    }
+  }*/
+  
+  
+
+  /*useEffect(() => {
+       
+    // Configurações do renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    containerRef.current.appendChild(renderer.domElement);
+
+    // Configurações da cena
+    const scene = new THREE.Scene();
+
+    // Configuração da câmera
+    setupCamera();    
+    const camera = cameraRef.current;
+
+    // Configuração dos controles da câmera
+    worldRef.current = { scene, renderer, camera };
+    setupControls();
+
+    
+    // Agora que controls foi criado, atualizamos o estado do mundo
+    setWorld({
+      scene: worldRef.current.scene,
+      renderer: worldRef.current.renderer,
+      camera: worldRef.current.camera,
+      controls: worldRef.current.controls,
+    });
+
+    const renderScene = new RenderPass(scene, camera);
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      2,
+      0.1,
+      0.1,
+    );
+    const bloomComposer = new EffectComposer(renderer);
+    bloomComposer.addPass(renderScene);
+    bloomComposer.addPass(bloomPass);
+
+    bloomComposer.renderToScreen = false;
+
+    const mixPass = new ShaderPass(
+      new THREE.ShaderMaterial({
+        uniforms: {
+          baseTexture: { value: null },
+          bloomTexture: { value: bloomComposer.renderTarget2.texture },
+        },
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+      }),
+      'baseTexture'
+    );
+
+
+    const finalComposer = new EffectComposer(renderer);
+    finalComposer.addPass(renderScene);
+    finalComposer.addPass(mixPass);
+
+    const outputPass = new OutputPass();
+    finalComposer.addPass(outputPass);
+
+
+    const BLOOM_SCENE = 1;
+    const bloomLayer = new THREE.Layers();
+    bloomLayer.set(BLOOM_SCENE);
+
+    const darkMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const materials = {};
+
+    function nonBloomed(obj) {
+      if (obj.isMesh && bloomLayer.test(obj.layers) === false) {
+        materials[obj.uuid] = obj.material;
+        obj.material = darkMaterial;
+      }
+    }
+
+    function restoreMaterial(obj) {
+      if (materials[obj.uuid]) {
+        obj.material = materials[obj.uuid];
+        delete materials[obj.uuid];
+      }
+    }
+
+    // Funções auxiliares de configuração de luz, materiais, etc.
+    setupLights(scene);
+    
+    scene.background = new THREE.Color(sceneConfig.backgroundColor);
+
+    // Configuração dos componentes
+    const components = new OBC.Components();
+    setComponents(components);
+
+    const rayCaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    function onPointerDown(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      rayCaster.setFromCamera(mouse, camera);
+      const intersects = rayCaster.intersectObjects(scene.children);
+      if (intersects.length > 0) {
+        const object = intersects[0].object;
+        object.layers.toggle(BLOOM_SCENE);
+      }
+    }
+
+    window.addEventListener('pointerdown', onPointerDown);
+    
+    // Função de animação principal que inclui TWEEN, controles e o mixer de animação
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      // Atualizar animações do mixer se ele existir
+      const delta = clockRef.current.getDelta();
+      if (mixerRef.current) mixerRef.current.update(delta);
+
+      TWEEN.update();
+      if (worldRef.current.controls) worldRef.current.controls.update();
+      //renderer.render(scene, cameraRef.current);
+      const background = scene.background;
+      scene.background = null;
+      scene.traverse(nonBloomed);
+      bloomComposer.render();
+      scene.traverse(restoreMaterial);
+      scene.background = background;
+      finalComposer.render();
+    };
+    animate();
+
+    // Responsividade ao redimensionar a tela
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      bloomComposer.setSize(window.innerWidth, window.innerHeight);
+      finalComposer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Limpeza ao desmontar
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      containerRef.current.removeChild(renderer.domElement);
+      if (mixerRef.current) mixerRef.current.stopAllAction();
+    };
+  }, []);*/
+
+  
   // Atualiza configurações de câmera sem recriar a cena
   useEffect(() => {
     if (worldRef.current) {
@@ -1020,6 +1287,42 @@ function onPointerDown(event) {
     }
   }, [autoRotate, autoRotateSpeed]);
 
+  /*useEffect(() => {
+    if (worldRef.current && antiAliasingEnabled !== worldRef.current.antiAliasingEnabled) {
+      console.log('Recriando o renderer para atualizar o anti-aliasing:', { antiAliasingEnabled });
+      
+      // Salva a cena e a câmera atuais
+      const { scene, camera, controls } = worldRef.current;
+  
+      // Cria um novo renderizador com o anti-aliasing atualizado
+      const newRenderer = new THREE.WebGLRenderer({
+        antialias: antiAliasingEnabled,
+      });
+      newRenderer.setSize(window.innerWidth, window.innerHeight);
+      newRenderer.setPixelRatio(pixelRatio); // Aplica o pixel ratio atual
+  
+      // Substitui o renderizador anterior no DOM
+      containerRef.current.removeChild(worldRef.current.renderer.domElement);
+      containerRef.current.appendChild(newRenderer.domElement);
+  
+      // Reatribui o renderizador
+      worldRef.current.renderer = newRenderer;
+      worldRef.current.antiAliasingEnabled = antiAliasingEnabled;
+  
+      // Reconfigura controles e animações com o novo renderizador
+      controls.object = camera;
+      controls.update();
+  
+      // Função de animação para usar o novo renderizador
+      const animate = () => {
+        requestAnimationFrame(animate);
+        controls.update();
+        newRenderer.render(scene, camera); // Renderiza com o novo renderer
+      };
+      animate();
+    }
+  }, [antiAliasingEnabled, pixelRatio]);*/
+  
   
   // Atualiza o sistema de partículas quando o estado do contexto muda
   useEffect(() => {
@@ -1083,6 +1386,33 @@ function onPointerDown(event) {
   ]);
 
 
+  /*useEffect(() => {
+    if (animations.length > 0 && worldRef.current.scene && mixer) {
+      // Inicializar as ações de animação
+      animations.forEach((clip) => {
+        const action = mixer.clipAction(clip);
+        action.play();
+      });
+      console.log("Animações iniciadas");
+    }
+  }, [animations, mixer]);*/
+
+
+  // Atualizar animação com base no índice selecionado
+  /*useEffect(() => {
+    if (sceneConfig.animationIndex !== undefined && mixer && animations.length > 0) {
+      mixer.stopAllAction(); // Parar todas as animações anteriores
+      const selectedClip = animations[sceneConfig.animationIndex];
+      if (selectedClip) {
+        const action = mixer.clipAction(selectedClip);
+        action.play(); // Reproduzir animação selecionada
+        action.timeScale = sceneConfig.animationSpeed || 1; // Define a velocidade da animação
+        console.log(`Animação selecionada: ${selectedClip.name}`);
+      }
+    }
+  }, [sceneConfig.animationIndex, sceneConfig.animationSpeed, mixer, animations]);*/
+
+  
 
   // Atualizar animação com base no índice selecionado usando playAnimation do contexto
   useEffect(() => {

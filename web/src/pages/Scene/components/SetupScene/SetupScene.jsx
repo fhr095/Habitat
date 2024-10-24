@@ -2,11 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
 import * as TWEEN from "@tweenjs/tween.js";
-import { useEffect, useRef, useContext, useState } from "react";
+import { useEffect, useRef, useContext } from "react";
 import * as OBC from "@thatopen/components"; // Componentes OBC
 import { AnimationMixer } from "three";
 import { useAnimations } from "../../../../context/AnimationContext";
 import { SceneConfigContext } from "../../../../context/SceneConfigContext";
+import { ModelContext } from "../../../../context/ModelContext";
 import { Water } from 'three/examples/jsm/objects/Water';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
@@ -16,58 +17,116 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass';
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 
-
-
-export default function SetupScene({ setCamera, modelUrl, setComponents, setWorld }) {
-  
+export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setWorld }) {
   const { animations, mixer, playAnimation, stopAllAnimations } = useAnimations();
 
-  //const { sceneConfig } = useContext(SceneConfigContext);
-  const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext);
+   const {
+    setScene,
+    setCamera,
+    setControls,
+    sceneConfig,
+    setSceneConfig
+  } = useContext(SceneConfigContext);
+  
+  const { currentModel } = useContext(ModelContext);
+  //const [isApplyingConfig, setIsApplyingConfig] = useState(false);
+
+  // Obter as configurações comuns e específicas do modelo atual
+  const { common } = sceneConfig;
+  const modelConfig = sceneConfig[currentModel] || {};
+
+  // Combinar as configurações
+  const combinedConfig = {
+    ...common,
+    ...modelConfig,
+  };
+
+  // Desestruturar as configurações de combinedConfig
+  const {
+    backgroundColor,
+    camera,
+    renderSettings,
+    water,
+    skyboxSettings,
+    bloomEffect,
+    fogSettings,
+    light,
+    materialSettings,
+    animation,
+  } = combinedConfig;
+
+  // Desestruturar propriedades individuais
+  const {
+    type: cameraType,
+    position: cameraPosition,
+    direction: cameraDirection,
+    autoRotate,
+    autoRotateSpeed,
+    zoomEnabled,
+    movementLimits,
+  } = camera || {};
 
   const {
-    backgroundColor = sceneConfig.backgroundColor,
-    cameraType = sceneConfig.camera.type,
-    cameraPosition = sceneConfig.camera.position,
-    cameraDirection = sceneConfig.camera.direction,
-    autoRotate = sceneConfig.camera.autoRotate,
-    autoRotateSpeed = sceneConfig.camera.autoRotateSpeed,
-    zoomEnabled = sceneConfig.camera.zoomEnabled,
-    movementLimits = sceneConfig.camera.movementLimits,
-    lightType = sceneConfig.light.type,
-    lightIntensity = sceneConfig.light.intensity,
-    lightPosition = sceneConfig.light.position,
-    lightQuantity = sceneConfig.light.quantity,
-    transparencyEnabled = sceneConfig.materialSettings.transparencyEnabled,
-    materialOpacity = sceneConfig.materialSettings.materialOpacity,
-    shadowsEnabled = sceneConfig.light.shadowsEnabled,
-    shadowIntensity = sceneConfig.light.shadowIntensity,
-    lodEnabled = sceneConfig.renderSettings.lodEnabled,
-    lodDistance = sceneConfig.renderSettings.lodDistance,
-    ambientOcclusionEnabled = sceneConfig.renderSettings.ambientOcclusionEnabled,
-    antiAliasingEnabled = sceneConfig.renderSettings.antiAliasingEnabled,
-    pixelRatio = sceneConfig.renderSettings.pixelRatio,
-    particlesEnabled = sceneConfig.renderSettings.particlesEnabled,
-    particleCount = sceneConfig.renderSettings.particleCount,
-    particleSize = sceneConfig.renderSettings.particleSize,
-    particleEffectType = sceneConfig.renderSettings.particleEffectType,
-    fogSettings = sceneConfig.fogSettings,
-    waterEnabled = sceneConfig.water.enabled,
-    waterColor = sceneConfig.water.color, 
-    waterScale = sceneConfig.water.scale,
-    skyboxEnvironmentMapEnabled = sceneConfig.skyboxSettings.environmentMapEnabled, 
-    skyboxTexturePath = sceneConfig.skyboxSettings.texturePath,
-    skyboxEnabled = sceneConfig.skyboxSettings.enabled,
-    metalness = sceneConfig.materialSettings.metalness,
-    roughness = sceneConfig.materialSettings.roughness,
-    toneMappingEnabled = sceneConfig.renderSettings.toneMappingEnabled,
-    envMapIntensity = sceneConfig.renderSettings.envMapIntensity,
-    bloomEnabled = sceneConfig.bloomEffect.enabled,
-    bloomStrength = sceneConfig.bloomEffect.strength,
-    bloomRadius = sceneConfig.bloomEffect.radius,
-    bloomThreshold = sceneConfig.bloomEffect.threshold,
-    bloomStatus = sceneConfig.bloomEffect.status,
-  } = sceneConfig;
+    pixelRatio,
+    antiAliasingEnabled,
+    lodEnabled,
+    lodDistance,
+    ambientOcclusionEnabled,
+    particlesEnabled,
+    particleCount,
+    particleSize,
+    particleEffectType,
+    toneMappingEnabled,
+    envMapIntensity,
+  } = renderSettings || {};
+
+  const {
+    enabled: waterEnabled,
+    color: waterColor,
+    scale: waterScale,
+  } = water || {};
+
+  const {
+    enabled: skyboxEnabled,
+    texturePath: skyboxTexturePath,
+    environmentMapEnabled: skyboxEnvironmentMapEnabled,
+  } = skyboxSettings || {};
+
+  const {
+    enabled: bloomEnabled,
+    strength: bloomStrength,
+    radius: bloomRadius,
+    threshold: bloomThreshold,
+    status: bloomStatus,
+  } = bloomEffect || {};
+
+  const {
+    enabled: fogEnabled,
+    color: fogColor,
+    density: fogDensity,
+  } = fogSettings || {};
+
+  const {
+    type: lightType,
+    intensity: lightIntensity,
+    position: lightPosition,
+    shadowsEnabled,
+    shadowIntensity,
+    quantity: lightQuantity,
+  } = light || {};
+
+  const {
+    transparencyEnabled,
+    materialOpacity,
+    metalness,
+    roughness,
+  } = materialSettings || {};
+
+  const {
+    enabled: animationEnabled,
+    speed: animationSpeed,
+    smoothness: animationSmoothness,
+  } = animation || {};
 
   const minimalSetup = false;
   const cameraRef = useRef(null);
@@ -132,27 +191,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
 
-  /*function onPointerDown(event) {
-    if (!worldRef.current) return;
-
-    const { scene, camera } = worldRef.current;
-
-    // Calculate normalized mouse coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the raycaster with the mouse position and camera
-    raycaster.setFromCamera(mouse, camera);
-
-    // Intersect objects in the scene
-    const intersects = raycaster.intersectObjects(scene.children, true);
-    if (intersects.length > 0) {
-      const object = intersects[0].object;
-      object.layers.toggle(BLOOM_SCENE);
-    }
-  }*/
-  //////////////////////////
-
+  
   const setupCamera = () => {
     let cameraNeedsUpdate = false;
   
@@ -166,7 +205,6 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     }
   
     if (cameraNeedsUpdate) {
-      // Recria a câmera se necessário
       let camera;
       if (cameraType === "perspective") {
         camera = new THREE.PerspectiveCamera(
@@ -179,17 +217,23 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
         camera = new THREE.OrthographicCamera(-50, 50, 50, -50, 1, 1000);
       }
       cameraRef.current = camera;
-      setCamera(camera);      
+      setCamera(camera);
     }
+  
     // Atualiza a posição e direção da câmera
-    cameraRef.current.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
-    cameraRef.current.lookAt(cameraDirection.x, cameraDirection.y, cameraDirection.z);
-    // Atualiza o objeto da câmera nos controles, se existirem
+    if (cameraPosition) {
+      cameraRef.current.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    }
+    if (cameraDirection) {
+      cameraRef.current.lookAt(cameraDirection.x, cameraDirection.y, cameraDirection.z);
+    }
+  
+    // Atualiza os controles se existirem
     if (worldRef.current && worldRef.current.controls) {
       worldRef.current.controls.object = cameraRef.current;
       worldRef.current.controls.update();
     }
-  };
+  };  
 
   const setupControls = () => {
     if (!worldRef.current) return;
@@ -280,7 +324,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     };
   
     const setupFog = (scene) => {
-      const { enabled, color, density } = sceneConfig.fogSettings;
+      const { enabled, color, density } = fogSettings;
       if (enabled) {
         scene.fog = new THREE.FogExp2(color, density);
       } else {
@@ -509,7 +553,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
   const updateMaterialsForEnvironmentMap = (scene, texture) => {
     scene.traverse((object) => {
       if (object.isMesh) {
-        console.log("Oi, tudo bem?");
+        //console.log("Oi, tudo bem?");
         // Armazena o material original caso ainda não tenha sido armazenado
         if (!originalMaterials.current.has(object)) {
           originalMaterials.current.set(object, object.material);
@@ -523,7 +567,7 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
         });
         object.material.envMapIntensity = envMapIntensity; // Define a intensidade do environment map
         object.material.needsUpdate = true; // Força a atualização do material
-        console.log(`Material atualizado para objeto: ${object.name || 'sem nome'}`);
+        //console.log(`Material atualizado para objeto: ${object.name || 'sem nome'}`);
       }
     });
   };
@@ -629,10 +673,10 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
   };
 
 
-  const bloomStatusRef = useRef(sceneConfig.bloomEffect.status);
+  const bloomStatusRef = useRef(bloomEffect.status);
   useEffect(() => {
-    bloomStatusRef.current = sceneConfig.bloomEffect.status;
-  }, [sceneConfig.bloomEffect.status]);
+    bloomStatusRef.current = bloomEffect.status;
+  }, [bloomEffect.status]);
 
   const animate = () => {
     requestAnimationFrame(animate);
@@ -645,7 +689,8 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     // Update controls and other animations
     TWEEN.update(); // If you're using TWEEN
     if (worldRef.current.controls) worldRef.current.controls.update();
-  
+
+      
     const { scene, renderer, camera } = worldRef.current;
     const background = scene.background;
   
@@ -653,8 +698,9 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     scene.traverse((object) => {
       if (object.isMesh) {
         const bloomObject = bloomStatusRef.current[object.uuid];
-  
+        
         if (bloomObject && bloomObject.status) {
+         
           if (bloomObject.oscillate) {
             // Initialize oscillation parameters if not already set
             if (!object.userData.oscillation) {
@@ -682,7 +728,8 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
         }
       }
     });
-  
+
+      
     // Render with Bloom or default rendering
     if (bloomComposerRef.current && finalComposerRef.current) {
       scene.background = null;
@@ -715,7 +762,6 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
     // Configuração dos controles da câmera
     worldRef.current = { scene, renderer, camera };
     setupControls();
-
     
     // Agora que controls foi criado, atualizamos o estado do mundo
     setWorld({
@@ -724,46 +770,18 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
       camera: worldRef.current.camera,
       controls: worldRef.current.controls,
     });
-
     // Funções auxiliares de configuração de luz, materiais, etc.
-    setupLights(scene);
-    
-    
+    setupLights(scene);      
     scene.background = new THREE.Color(sceneConfig.backgroundColor);
-
     // Configuração dos componentes
     const components = new OBC.Components();
     setComponents(components);
-
-    //window.addEventListener('pointerdown', onPointerDown);
+    setScene(scene);
+    setCamera(camera);
+    setControls(worldRef.current.controls);
     
-    // Função de animação principal que inclui TWEEN, controles e o mixer de animação
-    /*const animate = () => {
-      requestAnimationFrame(animate);
-  
-      const delta = clockRef.current.getDelta();
-      if (mixerRef.current) mixerRef.current.update(delta);
-  
-      // Atualizações de controles e outros
-      TWEEN.update(); // Se estiver usando TWEEN
-      if (worldRef.current.controls) worldRef.current.controls.update();
-  
-      const { scene, renderer, camera } = worldRef.current;
-      const background = scene.background;
-  
-      // Renderização com Bloom ou renderização padrão
-      if (bloomComposerRef.current && finalComposerRef.current) {
-        scene.background = null;
-        scene.traverse(nonBloomed);
-        bloomComposerRef.current.render();
-        scene.traverse(restoreMaterial);
-        scene.background = background;
-        finalComposerRef.current.render();
-      } else {
-        renderer.render(scene, camera);
-      }
-    };*/
     animate();
+    
     
 
     // Responsividade ao redimensionar a tela
@@ -807,51 +825,10 @@ export default function SetupScene({ setCamera, modelUrl, setComponents, setWorl
   useEffect(() => {
     updateBloomLayers();
     bloomStatusRef.current = bloomStatus;
-    console.log('bloomStatus:',bloomStatus );
+    console.log('bloomStatus:',bloomStatus);
   }, [bloomStatus]);
 
-  /*const updateBloomLayers = () => {
-    if (!worldRef.current) return;
   
-    const { scene } = worldRef.current;
-    scene.traverse((object) => {
-      if (object.isMesh) {
-        const bloomObject = bloomStatus[object.uuid];
-  
-        if (bloomObject && bloomObject.status) {
-          // Clona o material se ainda não foi clonado
-          if (!object.material.isCloned) {
-            object.material = object.material.clone();
-            object.material.isCloned = true; // Marca o material como clonado
-          }
-  
-          if (bloomObject.name === "Cabeça-Robo") {
-            object.material.roughness = 0.5;
-            object.material.metalness = 0;
-  
-            object.material.emissive = new THREE.Color(0x00bfff);
-            object.material.emissiveIntensity = 2;
-          } else {
-            // Usa a cor base do material como cor emissiva
-            const baseColor = object.material.color.clone();
-            object.material.emissive = baseColor;
-            object.material.emissiveIntensity = bloomObject.emissiveIntensity || 1.0;
-          }
-  
-          object.layers.enable(BLOOM_SCENE);
-        } else {
-          object.layers.disable(BLOOM_SCENE);
-  
-          // Reseta a emissividade do material
-          /*if (object.material.isCloned) {
-            object.material.emissiveIntensity = 0;
-            object.material.emissive = new THREE.Color(0x000000);
-          }*//*
-        }
-      }
-    });
-  };*/
-
   const updateBloomLayers = () => {
     if (!worldRef.current) return;
   
@@ -951,181 +928,6 @@ function onPointerDown(event) {
 }
 
   
-  /*function onPointerDown(event) {
-    if (!worldRef.current) return;
-  
-    const { scene, camera } = worldRef.current;
-  
-    // Calcula as coordenadas normalizadas do mouse
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
-    // Atualiza o raycaster com a posição do mouse e da câmera
-    raycaster.setFromCamera(mouse, camera);
-  
-    // Intersecta os objetos na cena
-    const intersects = raycaster.intersectObjects(scene.children, true);
-    if (intersects.length > 0) {
-      const object = intersects[0].object;
-      const uuid = object.uuid;
-      setBloomStatus((prevStatus) => ({
-        ...prevStatus,
-        [uuid]: !prevStatus[uuid],
-      }));
-    }
-  }*/
-  
-  
-
-  /*useEffect(() => {
-       
-    // Configurações do renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    containerRef.current.appendChild(renderer.domElement);
-
-    // Configurações da cena
-    const scene = new THREE.Scene();
-
-    // Configuração da câmera
-    setupCamera();    
-    const camera = cameraRef.current;
-
-    // Configuração dos controles da câmera
-    worldRef.current = { scene, renderer, camera };
-    setupControls();
-
-    
-    // Agora que controls foi criado, atualizamos o estado do mundo
-    setWorld({
-      scene: worldRef.current.scene,
-      renderer: worldRef.current.renderer,
-      camera: worldRef.current.camera,
-      controls: worldRef.current.controls,
-    });
-
-    const renderScene = new RenderPass(scene, camera);
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      2,
-      0.1,
-      0.1,
-    );
-    const bloomComposer = new EffectComposer(renderer);
-    bloomComposer.addPass(renderScene);
-    bloomComposer.addPass(bloomPass);
-
-    bloomComposer.renderToScreen = false;
-
-    const mixPass = new ShaderPass(
-      new THREE.ShaderMaterial({
-        uniforms: {
-          baseTexture: { value: null },
-          bloomTexture: { value: bloomComposer.renderTarget2.texture },
-        },
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
-      }),
-      'baseTexture'
-    );
-
-
-    const finalComposer = new EffectComposer(renderer);
-    finalComposer.addPass(renderScene);
-    finalComposer.addPass(mixPass);
-
-    const outputPass = new OutputPass();
-    finalComposer.addPass(outputPass);
-
-
-    const BLOOM_SCENE = 1;
-    const bloomLayer = new THREE.Layers();
-    bloomLayer.set(BLOOM_SCENE);
-
-    const darkMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const materials = {};
-
-    function nonBloomed(obj) {
-      if (obj.isMesh && bloomLayer.test(obj.layers) === false) {
-        materials[obj.uuid] = obj.material;
-        obj.material = darkMaterial;
-      }
-    }
-
-    function restoreMaterial(obj) {
-      if (materials[obj.uuid]) {
-        obj.material = materials[obj.uuid];
-        delete materials[obj.uuid];
-      }
-    }
-
-    // Funções auxiliares de configuração de luz, materiais, etc.
-    setupLights(scene);
-    
-    scene.background = new THREE.Color(sceneConfig.backgroundColor);
-
-    // Configuração dos componentes
-    const components = new OBC.Components();
-    setComponents(components);
-
-    const rayCaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    function onPointerDown(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-      rayCaster.setFromCamera(mouse, camera);
-      const intersects = rayCaster.intersectObjects(scene.children);
-      if (intersects.length > 0) {
-        const object = intersects[0].object;
-        object.layers.toggle(BLOOM_SCENE);
-      }
-    }
-
-    window.addEventListener('pointerdown', onPointerDown);
-    
-    // Função de animação principal que inclui TWEEN, controles e o mixer de animação
-    const animate = () => {
-      requestAnimationFrame(animate);
-
-      // Atualizar animações do mixer se ele existir
-      const delta = clockRef.current.getDelta();
-      if (mixerRef.current) mixerRef.current.update(delta);
-
-      TWEEN.update();
-      if (worldRef.current.controls) worldRef.current.controls.update();
-      //renderer.render(scene, cameraRef.current);
-      const background = scene.background;
-      scene.background = null;
-      scene.traverse(nonBloomed);
-      bloomComposer.render();
-      scene.traverse(restoreMaterial);
-      scene.background = background;
-      finalComposer.render();
-    };
-    animate();
-
-    // Responsividade ao redimensionar a tela
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      bloomComposer.setSize(window.innerWidth, window.innerHeight);
-      finalComposer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Limpeza ao desmontar
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      containerRef.current.removeChild(renderer.domElement);
-      if (mixerRef.current) mixerRef.current.stopAllAction();
-    };
-  }, []);*/
-
-  
   // Atualiza configurações de câmera sem recriar a cena
   useEffect(() => {
     if (worldRef.current) {
@@ -1219,42 +1021,6 @@ function onPointerDown(event) {
     }
   }, [autoRotate, autoRotateSpeed]);
 
-  /*useEffect(() => {
-    if (worldRef.current && antiAliasingEnabled !== worldRef.current.antiAliasingEnabled) {
-      console.log('Recriando o renderer para atualizar o anti-aliasing:', { antiAliasingEnabled });
-      
-      // Salva a cena e a câmera atuais
-      const { scene, camera, controls } = worldRef.current;
-  
-      // Cria um novo renderizador com o anti-aliasing atualizado
-      const newRenderer = new THREE.WebGLRenderer({
-        antialias: antiAliasingEnabled,
-      });
-      newRenderer.setSize(window.innerWidth, window.innerHeight);
-      newRenderer.setPixelRatio(pixelRatio); // Aplica o pixel ratio atual
-  
-      // Substitui o renderizador anterior no DOM
-      containerRef.current.removeChild(worldRef.current.renderer.domElement);
-      containerRef.current.appendChild(newRenderer.domElement);
-  
-      // Reatribui o renderizador
-      worldRef.current.renderer = newRenderer;
-      worldRef.current.antiAliasingEnabled = antiAliasingEnabled;
-  
-      // Reconfigura controles e animações com o novo renderizador
-      controls.object = camera;
-      controls.update();
-  
-      // Função de animação para usar o novo renderizador
-      const animate = () => {
-        requestAnimationFrame(animate);
-        controls.update();
-        newRenderer.render(scene, camera); // Renderiza com o novo renderer
-      };
-      animate();
-    }
-  }, [antiAliasingEnabled, pixelRatio]);*/
-  
   
   // Atualiza o sistema de partículas quando o estado do contexto muda
   useEffect(() => {
@@ -1268,10 +1034,10 @@ function onPointerDown(event) {
       if (worldRef.current) {
         setupParticles(
           worldRef.current.scene,
-          sceneConfig.renderSettings.particleEffectType, // Tipo de efeito
-          sceneConfig.renderSettings.particlesEnabled, // Verifica se partículas estão habilitadas
-          sceneConfig.renderSettings.particleCount, // Quantidade de partículas
-          sceneConfig.renderSettings.particleSize // Tamanho das partículas
+          renderSettings.particleEffectType, // Tipo de efeito
+          renderSettings.particlesEnabled, // Verifica se partículas estão habilitadas
+          renderSettings.particleCount, // Quantidade de partículas
+          renderSettings.particleSize // Tamanho das partículas
         );
       }
     }, [particlesEnabled, particleCount, particleSize, particleEffectType]);
@@ -1318,33 +1084,6 @@ function onPointerDown(event) {
   ]);
 
 
-  /*useEffect(() => {
-    if (animations.length > 0 && worldRef.current.scene && mixer) {
-      // Inicializar as ações de animação
-      animations.forEach((clip) => {
-        const action = mixer.clipAction(clip);
-        action.play();
-      });
-      console.log("Animações iniciadas");
-    }
-  }, [animations, mixer]);*/
-
-
-  // Atualizar animação com base no índice selecionado
-  /*useEffect(() => {
-    if (sceneConfig.animationIndex !== undefined && mixer && animations.length > 0) {
-      mixer.stopAllAction(); // Parar todas as animações anteriores
-      const selectedClip = animations[sceneConfig.animationIndex];
-      if (selectedClip) {
-        const action = mixer.clipAction(selectedClip);
-        action.play(); // Reproduzir animação selecionada
-        action.timeScale = sceneConfig.animationSpeed || 1; // Define a velocidade da animação
-        console.log(`Animação selecionada: ${selectedClip.name}`);
-      }
-    }
-  }, [sceneConfig.animationIndex, sceneConfig.animationSpeed, mixer, animations]);*/
-
-  
 
   // Atualizar animação com base no índice selecionado usando playAnimation do contexto
   useEffect(() => {

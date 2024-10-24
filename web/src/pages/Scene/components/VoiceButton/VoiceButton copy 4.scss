@@ -1,0 +1,109 @@
+.voice-button-container {
+  position: fixed;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: auto;
+
+  .bar {
+    position: absolute;
+    width: 90%; /* Define a barra para ser 90% da menor dimensão */
+    height: 90%; /* Mantém a proporção da barra */
+  }
+
+  .voice-button {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 90vmin; /* Usa 90% da menor dimensão entre altura e largura */
+    height: 90vmin; /* Mantém a altura proporcional para criar um círculo */
+    border: solid 5px #eaf1f0;
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.5), 0 0 80px rgba(255, 255, 255, 0.4);
+    animation: pulse 1.5s infinite;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .listening {
+    animation: glow 1s ease-in-out infinite alternate;
+    border: none;
+  }
+}
+
+.status-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.2rem;
+  color: #eaf1f0;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.hint-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #eaf1f0;
+  animation: shake 0.5s ease, fadeOut 1.5s ease forwards;
+  text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-10px);
+  }
+  40%, 80% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 #f8fafa5e;
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.5), 0 0 80px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(245, 244, 244, 0);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 1);
+  }
+  100% {
+    box-shadow: 0 0 80px rgba(255, 255, 255, 1), 0 0 100px rgba(255, 255, 255, 1), 0 0 120px rgba(255, 255, 255, 1);
+  }
+}

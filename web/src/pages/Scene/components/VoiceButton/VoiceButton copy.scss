@@ -1,0 +1,75 @@
+.voice-button-container {
+  position: fixed; /* Fixa o botão na tela */
+  bottom: 1px; /* Ajusta a posição para ficar na parte inferior */
+  left: 50%; /* Centraliza horizontalmente em relação à tela */
+  transform: translateX(-50%); /* Move o botão para centralizá-lo corretamente */
+  z-index: 1000; /* Garante que o botão fique acima de outros elementos */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: auto;
+
+  .bar {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+  }
+
+  .voice-button {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 120px;
+    height: 120px;
+    border: solid 2px #eaf1f0;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.4);
+    animation: pulse 1.5s infinite;
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .listening {
+    animation: glow 1s ease-in-out infinite alternate;
+    border: none;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.7), 0 0 50px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 1);
+  }
+  100% {
+    box-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 60px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 1);
+  }
+}
+
+

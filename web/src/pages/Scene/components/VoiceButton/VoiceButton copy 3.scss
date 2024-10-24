@@ -1,0 +1,64 @@
+.voice-button-container {
+    position: fixed; /* Fixa o botão na tela */
+    bottom: 1px; /* Ajusta a posição para ficar na parte inferior */
+    left: 50%; /* Centraliza horizontalmente em relação à tela */
+    transform: translateX(-50%); /* Move o botão para centralizá-lo corretamente */
+    z-index: 1000; /* Garante que o botão fique acima de outros elementos */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+  
+  
+  .bar-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+  
+    .bar {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+    }
+  
+    .voice-button {
+      position: relative;
+      background-color: transparent;
+      border: none;
+      border-radius: 50%;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      width: 120px;
+      height: 120px;
+      border: solid 2px #eaf1f0;
+      animation: pulse 1.5s infinite;
+    }
+  
+    .listening {
+      animation: none;
+      border: none;
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 #f8fafa5e;
+    }
+    50% {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 15px rgba(252, 252, 252, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(245, 244, 244, 0);
+    }
+  }

@@ -46,9 +46,9 @@ const [controls, setControls] = useState(null);
         scale: 4,
       },
       skyboxSettings: {
-        enabled: true,
+        enabled: false,
         texturePath: "/surround/8.hdr",
-        environmentMapEnabled: true,
+        environmentMapEnabled: false,
       },
       bloomEffect: {
         enabled: true,
@@ -85,11 +85,11 @@ const [controls, setControls] = useState(null);
     model2: {
       camera: {
         type: "perspective",
-        position: { x: 1, y: 1, z: 0 },
-        direction: { x: 0, y: 0.8, z: 0 },
+        position: { x: 4.9, y: 2, z: -22 },
+        direction: { x: 4, y: -3.2, z: 0 },
         autoRotate: false,
         autoRotateSpeed: 2.0,
-        zoomEnabled: false,
+        zoomEnabled: true,
         movementLimits: { y: [0, Math.PI] }, // Adicionado movimento de limite padrão
       },
       renderSettings: {
@@ -103,7 +103,7 @@ const [controls, setControls] = useState(null);
         particleSize: 0.05,
         particleEffectType: "generic",
         toneMappingEnabled: true, // Adicionado para controle do tone mapping
-        envMapIntensity: 0.8, // Adicionado controle de intensidade do envMap
+        envMapIntensity: 0.2, // Adicionado controle de intensidade do envMap
       },
       water: {
         enabled: false,
@@ -112,11 +112,11 @@ const [controls, setControls] = useState(null);
       },
       skyboxSettings: {
         enabled: false,
-        texturePath: "/surround/8.hdr",
-        environmentMapEnabled: false,
+        texturePath: "/surround/3.hdr",
+        environmentMapEnabled: true,
       },
       bloomEffect: {
-        enabled: true,
+        enabled: false,
         strength: 0.5,
         radius: 0.4,
         threshold: 0.1,
@@ -125,7 +125,7 @@ const [controls, setControls] = useState(null);
       fogSettings: {
         enabled: false,
         color: "#ffffff",
-        density: 0.02,
+        density: 0.058,
       },
       light: {
         type: "directional",
@@ -136,10 +136,10 @@ const [controls, setControls] = useState(null);
         quantity: 1,
       },
       materialSettings: {
-        transparencyEnabled: true,
+        transparencyEnabled: false,
         materialOpacity: 1,
-        metalness: 0.02, // Adicionado controle de metalness
-        roughness: 0.02, // Adicionado controle de roughness
+        metalness: 0.99, // Adicionado controle de metalness
+        roughness: 0.1, // Adicionado controle de roughness
       },
       animation: {
         enabled: true,
@@ -150,12 +150,13 @@ const [controls, setControls] = useState(null);
     both: {
       camera: {
         type: "perspective",
-        position: { x: 1, y: 1, z: 0 },
-        direction: { x: 0, y: 0.8, z: 0 },
+        position: { x: 4.9, y: 2, z: -22 },
+        direction: { x: 4, y: -3.2, z: 0 },
         autoRotate: false,
         autoRotateSpeed: 2.0,
         zoomEnabled: false,
-        movementLimits: { y: [0, Math.PI] }, // Adicionado movimento de limite padrão
+        //movementLimits: { y: [0, Math.PI] }, // Adicionado movimento de limite padrão
+       movementLimits: { y: [1.34,1.34] },
       },
       renderSettings: {
         pixelRatio: 1.5,
@@ -168,7 +169,7 @@ const [controls, setControls] = useState(null);
         particleSize: 0.05,
         particleEffectType: "generic",
         toneMappingEnabled: true, // Adicionado para controle do tone mapping
-        envMapIntensity: 0.8, // Adicionado controle de intensidade do envMap
+        envMapIntensity: 0.2, // Adicionado controle de intensidade do envMap
       },
       water: {
         enabled: false,
@@ -176,9 +177,9 @@ const [controls, setControls] = useState(null);
         scale: 4,
       },
       skyboxSettings: {
-        enabled: false,
-        texturePath: "/surround/8.hdr",
-        environmentMapEnabled: false,
+        enabled: true,
+        texturePath: "/surround/3.hdr",
+        environmentMapEnabled: true,
       },
       bloomEffect: {
         enabled: true,
@@ -190,7 +191,7 @@ const [controls, setControls] = useState(null);
       fogSettings: {
         enabled: false,
         color: "#ffffff",
-        density: 0.02,
+        density: 0.058,
       },
       light: {
         type: "directional",
@@ -201,10 +202,10 @@ const [controls, setControls] = useState(null);
         quantity: 1,
       },
       materialSettings: {
-        transparencyEnabled: true,
+        transparencyEnabled: false,
         materialOpacity: 1,
-        metalness: 0.02, // Adicionado controle de metalness
-        roughness: 0.02, // Adicionado controle de roughness
+        metalness: 0.99, // Adicionado controle de metalness
+        roughness: 0.1, // Adicionado controle de roughness
       },
       animation: {
         enabled: true,

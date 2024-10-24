@@ -13,6 +13,7 @@ import "./App.css";
 import { HabitatUserProvider, useHabitatUser } from './context/HabitatUserContext';
 import { SceneConfigProvider } from './context/SceneConfigContext'; // Importa o contexto de configuração da cena
 import { AnimationProvider } from './context/AnimationContext'; // Importa o contexto de animações
+import { ModelProvider } from './context/ModelContext';
 
 export default function App() {
   return (
@@ -61,15 +62,18 @@ function MainApp() {
           path="/scene/:id" 
           element={
             <SceneConfigProvider>
-              <AnimationProvider>
-                <Scene 
-                  key={habitat.id} // Usa habitat.id como key para forçar a recriação do componente
-                  mainFileUrl={habitat.mainFileUrl}
-                  mobileFileUrl={habitat.mobileFileUrl}
-                  fade={habitat.fade}
-                  address={habitat.address}
-                />
-              </AnimationProvider>
+              <ModelProvider>
+                <AnimationProvider>
+                  <Scene 
+                    key={habitat.id} // Usa habitat.id como key para forçar a recriação do componente
+                    mainFileUrl={habitat.mainFileUrl}
+                    mobileFileUrl={habitat.mobileFileUrl}
+                    fade={habitat.fade}
+                    address={habitat.address}
+                    // Pass URLs for both models
+                  />
+                </AnimationProvider>
+              </ModelProvider>
             </SceneConfigProvider>
           } 
         />

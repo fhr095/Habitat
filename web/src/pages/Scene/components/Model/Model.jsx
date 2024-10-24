@@ -11,6 +11,7 @@ export default function Model({ modelUrl, components, world, setArrayName, onLoa
 
   useEffect(() => {
     let isMounted = true;
+    console.log("caregando modelo:", modelUrl);
   
     async function fetchModel() {
       if (modelUrl && components && world && !isLoading) {
