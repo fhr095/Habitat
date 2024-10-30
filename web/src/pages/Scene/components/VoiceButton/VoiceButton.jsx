@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
@@ -13,74 +13,33 @@ export default function VoiceButton({
   onStopListening,
   isDisabled,
   transcript,
-  maxDuration = 30, // Duração em segundos
+  maxDuration = 30, // Duration in seconds
 }) {
   const [progress, setProgress] = useState(0);
-  const [showHint, setShowHint] = useState(false);
+  const [showHint, setShowHint] = useState(false); // Controls the "Segure para falar" hint
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
-  const hintTimeoutRef = useRef(null);
-  const maxDurationMs = maxDuration * 1000;
+  const hintTimeoutRef = useRef(null); // Timeout for hint display
+  const maxDurationMs = maxDuration * 1000; // Convert to milliseconds
 
-  const activeTouches = useRef({});
-  const debounceDelay = 50;
-
-  const touchStartPos = useRef(null);
-  const touchStartTime = useRef(null);
-  const touchMoved = useRef(false);
-  const TOUCH_SLOP = 10; // Limiar de movimento em pixels
-  const MIN_TOUCH_TIME = 100; // Tempo mínimo de toque em ms
-
-  const buttonRef = useRef(null);
-
-  // Função de debounce
-  function debounce(func, delay) {
-    let debounceTimer;
-    return function (...args) {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => func.apply(this, args), delay);
-    };
-  }
-
-  const handleStart = useCallback((event) => {
+  // Handle the start of the button press
+  const handleStart = (event) => {
+    // Prevent default behavior to avoid conflicts (e.g., context menu, scrolling)
     event.preventDefault();
 
-    const touches = event.changedTouches || [event];
-
-    if (touches.length > 1) {
-      // Mais de um toque detectado, ignorar
-      return;
+    // Clear any existing intervals or timeouts
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    if (hintTimeoutRef.current) {
+      clearTimeout(hintTimeoutRef.current);
     }
 
-    const touch = touches[0];
-    const target = event.target;
-
-    const rect = target.getBoundingClientRect();
-    const x = touch.pageX - window.scrollX;
-    const y = touch.pageY - window.scrollY;
-
-    if (
-      x < rect.left ||
-      x > rect.right ||
-      y < rect.top ||
-      y > rect.bottom
-    ) {
-      // Toque fora do botão, ignorar
-      return;
-    }
-
-    touchStartPos.current = { x: touch.pageX, y: touch.pageY };
-    touchStartTime.current = Date.now();
-    touchMoved.current = false;
-
-    activeTouches.current[touch.identifier || "mouse"] = true;
-
-    if (isListening) return;
-
-    clearIntervalsAndTimeouts();
-
-    setShowHint(false);
+    setShowHint(false); // Hide the hint immediately on press
 
     playSound();
     onStartListening();
@@ -88,130 +47,64 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
+    // Update progress bar
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTimeRef.current;
       const newProgress = (elapsedTime / maxDurationMs) * 100;
       setProgress(newProgress);
 
       if (elapsedTime >= maxDurationMs) {
-        handleEnd(); // Para automaticamente após o tempo máximo
+        handleEnd(); // Automatically stop listening after maxDuration
       }
-    }, 100);
-  }, [isListening, onStartListening]);
+    }, 100); // Update every 100 ms for smoother progress
+  };
 
-  const handleMove = useCallback((event) => {
-    event.preventDefault();
-
-    const touches = event.changedTouches || [event];
-    const touch = touches[0];
-
-    if (!touchStartPos.current) return;
-
-    const dx = touch.pageX - touchStartPos.current.x;
-    const dy = touch.pageY - touchStartPos.current.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-
-    if (distance > TOUCH_SLOP) {
-      touchMoved.current = true;
-    }
-  }, []);
-
-  const handleEnd = useCallback((event) => {
-    event.preventDefault();
-
-    const touches = event.changedTouches || [event];
-    const touch = touches[0];
-
-    delete activeTouches.current[touch.identifier || "mouse"];
-
-    const touchDuration = Date.now() - touchStartTime.current;
-
-    if (touchMoved.current || touchDuration < MIN_TOUCH_TIME) {
-      resetTouchState();
-      return;
-    }
-
-    if (Object.keys(activeTouches.current).length > 0) return;
+  // Handle the end of the button press
+  const handleEnd = (event) => {
+    // Prevent default behavior
+    if (event) event.preventDefault();
 
     if (!transcript) {
+      // Show "Segure para falar" if no transcript is detected
       setShowHint(true);
       if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
       hintTimeoutRef.current = setTimeout(() => {
         setShowHint(false);
-      }, 5000);
+      }, 5000); // Show hint for 5 seconds
     }
 
+    // Wait 30 ms before stopping listening
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     timeoutRef.current = setTimeout(() => {
       onStopListening();
-      clearIntervalsAndTimeouts();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setProgress(0);
-    }, 100);
-
-    resetTouchState();
-  }, [onStopListening, transcript]);
-
-  const debouncedHandleStart = useCallback(
-    debounce(handleStart, debounceDelay),
-    [handleStart]
-  );
-
-  const debouncedHandleEnd = useCallback(
-    debounce(handleEnd, debounceDelay),
-    [handleEnd]
-  );
-
-  function resetTouchState() {
-    touchStartPos.current = null;
-    touchStartTime.current = null;
-    touchMoved.current = false;
-  }
-
-  function clearIntervalsAndTimeouts() {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }
+    }, 100); // 30 ms delay after releasing the button
+  };
 
   useEffect(() => {
     if (!isListening) {
-      clearIntervalsAndTimeouts();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setProgress(0);
     }
-    activeTouches.current = {};
-    resetTouchState();
   }, [isListening]);
 
   const playSound = () => {
     const synth = new Tone.Synth().toDestination();
     synth.triggerAttackRelease("C4", "8n");
   };
-
-  // Adicionar os event listeners manualmente
-  useEffect(() => {
-    const buttonElement = buttonRef.current;
-
-    if (!buttonElement) return;
-
-    // Adicionar os event listeners com passive: false
-    buttonElement.addEventListener("touchstart", debouncedHandleStart, { passive: false });
-    buttonElement.addEventListener("touchmove", handleMove, { passive: false });
-    buttonElement.addEventListener("touchend", debouncedHandleEnd, { passive: false });
-
-    // Limpar os event listeners ao desmontar
-    return () => {
-      buttonElement.removeEventListener("touchstart", debouncedHandleStart);
-      buttonElement.removeEventListener("touchmove", handleMove);
-      buttonElement.removeEventListener("touchend", debouncedHandleEnd);
-    };
-  }, [debouncedHandleStart, handleMove, debouncedHandleEnd]);
 
   return (
     <div className="voice-button-container">
@@ -229,9 +122,10 @@ export default function VoiceButton({
           />
         )}
         <button
-          ref={buttonRef}
-          onMouseDown={debouncedHandleStart}
-          onMouseUp={debouncedHandleEnd}
+          onPointerDown={handleStart}
+          onPointerUp={handleEnd}
+          onPointerCancel={handleEnd}
+          onPointerLeave={handleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
