@@ -16,17 +16,22 @@ export default function VoiceButton({
   maxDuration = 30, // Duração em segundos
 }) {
   const [progress, setProgress] = useState(0);
-  const [showHint, setShowHint] = useState(false); // Controla o hint "Segure para falar"
+  const [showHint, setShowHint] = useState(false);
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
   const startTimeRef = useRef(null);
-  const hintTimeoutRef = useRef(null); // Timeout para exibir o hint
-  const maxDurationMs = maxDuration * 1000; // Converter para milissegundos
+  const hintTimeoutRef = useRef(null);
+  const maxDurationMs = maxDuration * 1000;
 
-  const activeTouches = useRef({}); // Controle de toques ativos
-  const debounceDelay = 50; // Delay para debounce
+  const activeTouches = useRef({});
+  const debounceDelay = 50;
 
-  // Função de debounce
+  const touchStartPos = useRef(null);
+  const touchStartTime = useRef(null);
+  const touchMoved = useRef(false);
+  const TOUCH_SLOP = 10; // Limiar de movimento em pixels
+  const MIN_TOUCH_TIME = 100; // Tempo mínimo de toque em ms
+
   function debounce(func, delay) {
     let debounceTimer;
     return function (...args) {
@@ -35,29 +40,47 @@ export default function VoiceButton({
     };
   }
 
-  // Funções com debounce aplicado
   const debouncedHandleStart = debounce(handleStart, debounceDelay);
   const debouncedHandleEnd = debounce(handleEnd, debounceDelay);
 
-  // Manipulador para início do toque
   function handleStart(event) {
     event.preventDefault();
 
     const touches = event.changedTouches || [event];
-    for (let touch of touches) {
-      activeTouches.current[touch.identifier || "mouse"] = {
-        startTime: Date.now(),
-        isActive: true,
-      };
+
+    if (touches.length > 1) {
+      // Mais de um toque detectado, ignorar
+      return;
     }
 
-    // Se já estiver escutando, não faça nada
+    const touch = touches[0];
+    const target = event.target;
+
+    const rect = target.getBoundingClientRect();
+    const x = touch.pageX - window.scrollX;
+    const y = touch.pageY - window.scrollY;
+
+    if (
+      x < rect.left ||
+      x > rect.right ||
+      y < rect.top ||
+      y > rect.bottom
+    ) {
+      // Toque fora do botão, ignorar
+      return;
+    }
+
+    touchStartPos.current = { x: touch.pageX, y: touch.pageY };
+    touchStartTime.current = Date.now();
+    touchMoved.current = false;
+
+    activeTouches.current[touch.identifier || "mouse"] = true;
+
     if (isListening) return;
 
-    // Limpa intervalos e timeouts anteriores
     clearIntervalsAndTimeouts();
 
-    setShowHint(false); // Esconde o hint imediatamente ao pressionar
+    setShowHint(false);
 
     playSound();
     onStartListening();
@@ -65,7 +88,6 @@ export default function VoiceButton({
     startTimeRef.current = Date.now();
     setProgress(0);
 
-    // Atualiza a barra de progresso
     intervalRef.current = setInterval(() => {
       const elapsedTime = Date.now() - startTimeRef.current;
       const newProgress = (elapsedTime / maxDurationMs) * 100;
@@ -74,31 +96,51 @@ export default function VoiceButton({
       if (elapsedTime >= maxDurationMs) {
         handleEnd(); // Para automaticamente após o tempo máximo
       }
-    }, 100); // Atualiza a cada 100 ms para uma progressão mais suave
+    }, 100);
   }
 
-  // Manipulador para fim do toque
-  function handleEnd(event) {
-    if (event) event.preventDefault();
+  function handleMove(event) {
+    event.preventDefault();
 
     const touches = event.changedTouches || [event];
-    for (let touch of touches) {
-      delete activeTouches.current[touch.identifier || "mouse"];
+    const touch = touches[0];
+
+    if (!touchStartPos.current) return;
+
+    const dx = touch.pageX - touchStartPos.current.x;
+    const dy = touch.pageY - touchStartPos.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance > TOUCH_SLOP) {
+      touchMoved.current = true;
+    }
+  }
+
+  function handleEnd(event) {
+    event.preventDefault();
+
+    const touches = event.changedTouches || [event];
+    const touch = touches[0];
+
+    delete activeTouches.current[touch.identifier || "mouse"];
+
+    const touchDuration = Date.now() - touchStartTime.current;
+
+    if (touchMoved.current || touchDuration < MIN_TOUCH_TIME) {
+      resetTouchState();
+      return;
     }
 
-    // Se ainda houver toques ativos, não pare de escutar
     if (Object.keys(activeTouches.current).length > 0) return;
 
     if (!transcript) {
-      // Exibe "Segure para falar" se nenhum transcript for detectado
       setShowHint(true);
       if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
       hintTimeoutRef.current = setTimeout(() => {
         setShowHint(false);
-      }, 5000); // Exibe o hint por 5 segundos
+      }, 5000);
     }
 
-    // Aguarda um pequeno delay antes de parar de escutar
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -106,10 +148,17 @@ export default function VoiceButton({
       onStopListening();
       clearIntervalsAndTimeouts();
       setProgress(0);
-    }, 100); // Delay de 100 ms após soltar o botão
+    }, 100);
+
+    resetTouchState();
   }
 
-  // Função para limpar intervalos e timeouts
+  function resetTouchState() {
+    touchStartPos.current = null;
+    touchStartTime.current = null;
+    touchMoved.current = false;
+  }
+
   function clearIntervalsAndTimeouts() {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -126,8 +175,8 @@ export default function VoiceButton({
       clearIntervalsAndTimeouts();
       setProgress(0);
     }
-    // Limpa toques ativos quando parar de escutar
     activeTouches.current = {};
+    resetTouchState();
   }, [isListening]);
 
   const playSound = () => {
@@ -152,8 +201,10 @@ export default function VoiceButton({
         )}
         <button
           onTouchStart={debouncedHandleStart}
+          onTouchMove={handleMove}
           onTouchEnd={debouncedHandleEnd}
           onMouseDown={debouncedHandleStart}
+          onMouseMove={handleMove}
           onMouseUp={debouncedHandleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}

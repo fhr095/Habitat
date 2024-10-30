@@ -122,8 +122,8 @@ export default function Transcript({ setTranscript }) {
 
   return (
     <div>
-      {vad.userSpeaking ? "Usuário está falando..." : "Aguardando fala..."}
-      {isListening && <p>Reconhecimento ativo...</p>}
+      {/*vad.userSpeaking ? "Usuário está falando..." : "Aguardando fala..."}
+      {isListening && <p>Reconhecimento ativo...</p>*/}
     </div>
   );
 }
