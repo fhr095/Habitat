@@ -193,12 +193,14 @@ export default function VoiceButton({
     [handleEnd]
   );
 
+  // Função para resetar o estado do toque
   function resetTouchState() {
     touchStartPos.current = null;
-    touchStartTime.current = null;
+    // touchStartTime.current = null; // NÃO resetar touchStartTime aqui
     touchMoved.current = false;
     console.log(`[${getTimestamp()}] Estado do toque resetado`);
-  }
+  }  
+
 
   function clearIntervalsAndTimeouts() {
     if (intervalRef.current) {
@@ -222,6 +224,7 @@ export default function VoiceButton({
     activeTouches.current = {};
     resetTouchState();
   }, [isListening]);
+
 
   const playSound = () => {
     const synth = new Tone.Synth().toDestination();
