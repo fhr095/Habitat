@@ -29,7 +29,7 @@ export default function VoiceButton({
   const touchStartPos = useRef(null);
   const touchStartTime = useRef(null);
   const touchMoved = useRef(false);
-  const TOUCH_SLOP = 100; // Limiar de movimento em pixels
+  const TOUCH_SLOP = 10; // Limiar de movimento em pixels
   const MIN_TOUCH_TIME = 100; // Tempo mínimo de toque em ms
 
   const buttonRef = useRef(null);
@@ -81,7 +81,9 @@ export default function VoiceButton({
 
     activeTouches.current[touch.identifier || "mouse"] = true;
 
-    console.log(`[${getTimestamp()}] Toque iniciado em (${touch.pageX}, ${touch.pageY})`);
+    console.log(
+      `[${getTimestamp()}] Toque iniciado em (${touch.pageX}, ${touch.pageY})`
+    );
 
     if (isListening) {
       console.log(`[${getTimestamp()}] Já está escutando, retornando`);
@@ -106,7 +108,9 @@ export default function VoiceButton({
       setProgress(newProgress);
 
       if (elapsedTime >= maxDurationMs) {
-        console.log(`[${getTimestamp()}] Tempo máximo atingido, chamando handleEnd`);
+        console.log(
+          `[${getTimestamp()}] Tempo máximo atingido, chamando handleEnd`
+        );
         handleEnd();
       }
     }, 100);
@@ -125,7 +129,11 @@ export default function VoiceButton({
     const dy = touch.pageY - touchStartPos.current.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    console.log(`[${getTimestamp()}] Movimento detectado: distância = ${distance.toFixed(2)} pixels`);
+    console.log(
+      `[${getTimestamp()}] Movimento detectado: distância = ${distance.toFixed(
+        2
+      )} pixels`
+    );
 
     if (distance > TOUCH_SLOP) {
       touchMoved.current = true;
@@ -133,58 +141,63 @@ export default function VoiceButton({
     }
   }, []);
 
-  const handleEnd = useCallback((event) => {
-    if (event) event.preventDefault();
-    console.log(`[${getTimestamp()}] handleEnd chamado`);
+  const handleEnd = useCallback(
+    (event) => {
+      if (event) event.preventDefault();
+      console.log(`[${getTimestamp()}] handleEnd chamado`);
 
-    const touches = event && event.changedTouches ? event.changedTouches : [event];
-    const touch = touches[0];
+      const touches =
+        event && event.changedTouches ? event.changedTouches : [event];
+      const touch = touches[0];
 
-    delete activeTouches.current[touch && touch.identifier || "mouse"];
+      delete activeTouches.current[touch && touch.identifier || "mouse"];
 
-    const touchDuration = Date.now() - touchStartTime.current;
+      const touchDuration = Date.now() - touchStartTime.current;
 
-    console.log(`[${getTimestamp()}] Duração do toque: ${touchDuration} ms`);
+      console.log(`[${getTimestamp()}] Duração do toque: ${touchDuration} ms`);
 
-    if (touchMoved.current) {
-      console.log(`[${getTimestamp()}] Toque movido além do limiar, ignorando`);
+      if (touchMoved.current) {
+        console.log(`[${getTimestamp()}] Toque movido além do limiar, ignorando`);
+        resetTouchState();
+        // Não retornar aqui; continue para garantir que a escuta seja parada
+        // return;
+      }
+
+      if (touchDuration < MIN_TOUCH_TIME) {
+        console.log(`[${getTimestamp()}] Toque muito curto, ignorando`);
+        resetTouchState();
+        // Não retornar aqui; continue para garantir que a escuta seja parada
+        // return;
+      }
+
+      if (Object.keys(activeTouches.current).length > 0) {
+        console.log(`[${getTimestamp()}] Ainda existem toques ativos, não parando`);
+        return;
+      }
+
+      if (!transcript) {
+        setShowHint(true);
+        if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
+        hintTimeoutRef.current = setTimeout(() => {
+          setShowHint(false);
+        }, 5000);
+      }
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        console.log(`[${getTimestamp()}] Parando a escuta após timeout`);
+        setIsListening(false);
+        onStopListening();
+        clearIntervalsAndTimeouts();
+        setProgress(0);
+      }, 100);
+
       resetTouchState();
-      return;
-    }
-
-    if (touchDuration < MIN_TOUCH_TIME) {
-      console.log(`[${getTimestamp()}] Toque muito curto, ignorando`);
-      resetTouchState();
-      // Não retornar aqui; continue para garantir que a escuta seja parada
-      // return;
-    }
-
-    if (Object.keys(activeTouches.current).length > 0) {
-      console.log(`[${getTimestamp()}] Ainda existem toques ativos, não parando`);
-      return;
-    }
-
-    if (!transcript) {
-      setShowHint(true);
-      if (hintTimeoutRef.current) clearTimeout(hintTimeoutRef.current);
-      hintTimeoutRef.current = setTimeout(() => {
-        setShowHint(false);
-      }, 5000);
-    }
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      console.log(`[${getTimestamp()}] Parando a escuta após timeout`);
-      setIsListening(false);
-      onStopListening();
-      clearIntervalsAndTimeouts();
-      setProgress(0);
-    }, 100);
-
-    resetTouchState();
-  }, [isListening, onStopListening, transcript]);
+    },
+    [isListening, onStopListening, transcript]
+  );
 
   const debouncedHandleStart = useCallback(
     debounce(handleStart, debounceDelay),
@@ -228,7 +241,7 @@ export default function VoiceButton({
   }, [isListening]);
 
   const playSound = () => {
-    if (typeof Tone !== 'undefined') {
+    if (typeof Tone !== "undefined") {
       Tone.start(); // Necessário para alguns navegadores
       const synth = new Tone.Synth().toDestination();
       synth.triggerAttackRelease("C4", "8n");
@@ -243,9 +256,13 @@ export default function VoiceButton({
     if (!buttonElement) return;
 
     // Adicionar os event listeners com passive: false
-    buttonElement.addEventListener("touchstart", debouncedHandleStart, { passive: false });
+    buttonElement.addEventListener("touchstart", debouncedHandleStart, {
+      passive: false,
+    });
     buttonElement.addEventListener("touchmove", handleMove, { passive: false });
-    buttonElement.addEventListener("touchend", debouncedHandleEnd, { passive: false });
+    buttonElement.addEventListener("touchend", debouncedHandleEnd, {
+      passive: false,
+    });
 
     // Limpar os event listeners ao desmontar
     return () => {
@@ -256,7 +273,8 @@ export default function VoiceButton({
   }, [debouncedHandleStart, handleMove, debouncedHandleEnd]);
 
   // Detectar se o dispositivo é de toque
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTouchDevice =
+    "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
   return (
     <div className="voice-button-container">
