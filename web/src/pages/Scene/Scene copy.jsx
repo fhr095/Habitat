@@ -62,19 +62,6 @@ const [isListening, setIsListening] = useState(false);
   const resetPorcupineTimerRef = useRef(null);
   const activationAudioRef = useRef(new Audio(activationSound));
 
-
-/*
-  // Function to handle start listening
-  const handleStartListening = () => {
-    
-    setIsListening(true);
-  };
-
-  // Function to handle stop listening
-  const handleStopListening = () => {
-    setIsListening(false);
-  };
-*/
   // Function to handle start listening
 const handleStartListening = () => {
   setIsVoiceButtonPressed(true);
@@ -84,9 +71,6 @@ const handleStartListening = () => {
 const handleStopListening = () => {
   setIsVoiceButtonPressed(false);
 };
-
-
-
   // Inicializa o áudio uma vez
   useEffect(() => {
     activationAudioRef.current.volume = 1.0; // Volume máximo
@@ -120,54 +104,6 @@ const handleStopListening = () => {
   // Funções específicas para iniciar e parar a oscilação
   const startOscillation = (objectName) => toggleOscillation(objectName, true);
   const stopOscillation = (objectName) => toggleOscillation(objectName, false);
-
-  // Função genérica para iniciar o temporizador de reset
-  const startResetTimer = (resetType) => {
-    const timerRef =
-      resetType === 'touch' ? resetScreenTouchTimerRef : resetPorcupineTimerRef;
-    const stopFunction =
-      resetType === 'touch' ? () => setIsScreenTouched(false) : () => setIsPorcupine(false);
-
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      if (transcript === '') {
-        stopFunction();
-        stopOscillation("Peito");
-        console.log(`Nenhum áudio detectado após 7 segundos, resetando ${resetType}`);
-      }
-    }, 7000); // Resetar após 7 segundos
-  };
-/*
-  // Efeitos para monitorar isScreenTouched e isPorcupine
-  useEffect(() => {
-    if (isScreenTouched) {
-      activationAudioRef.current.play();
-      startOscillation("Peito");
-      startResetTimer('touch');
-    } else {
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-        resetScreenTouchTimerRef.current = null;
-        stopOscillation("Peito");
-      }
-    }
-  }, [isScreenTouched]);
-
-  useEffect(() => {
-    if (isPorcupine) {
-      activationAudioRef.current.play();
-      startOscillation("Peito");
-      startResetTimer('porcupine');
-    } else {
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-        resetPorcupineTimerRef.current = null;
-        stopOscillation("Peito");
-      }
-    }
-  }, [isPorcupine]);
-*/
-  // Remove the existing useEffect hooks for isScreenTouched and isPorcupine
 
 // Add a new useEffect to manage isListening
 useEffect(() => {
@@ -225,108 +161,6 @@ useEffect(() => {
       }
     }
   }, [transcript]);
-
-  // Limpeza de temporizadores ao desmontar o componente
- /* useEffect(() => {
-    return () => {
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-        stopOscillation("Peito");
-      }
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-        stopOscillation("Peito");
-      }
-    };
-  }, []);*/
-
-  // Lógica de toque na tela (long press)
- /*useEffect(() => {
-    let touchTimer = null;
-    let startX = null;
-    let startY = null;
-
-    const touchThreshold = 5; // Limite de movimento em pixels
-
-    const onTouchStart = (e) => {
-      if (e.target.closest('.voice-button-container')) {
-        return;
-      }
-      if (e.touches && e.touches.length > 0) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-      } else {
-        startX = e.clientX;
-        startY = e.clientY;
-      }
-
-      touchTimer = setTimeout(() => {
-        setIsScreenTouched(true);
-        console.log("Tela pressionada por 1 segundo");
-      }, 1000); // Duração do long press: 1 segundo
-    };
-
-    const onTouchMove = (e) => {
-      if (e.target.closest('.voice-button-container')) {
-        return;
-      }
-      if (startX === null || startY === null) return;
-
-      let currentX, currentY;
-      if (e.touches && e.touches.length > 0) {
-        currentX = e.touches[0].clientX;
-        currentY = e.touches[0].clientY;
-      } else {
-        currentX = e.clientX;
-        currentY = e.clientY;
-      }
-
-      const deltaX = Math.abs(currentX - startX);
-      const deltaY = Math.abs(currentY - startY);
-
-      if (deltaX > touchThreshold || deltaY > touchThreshold) {
-        if (touchTimer) {
-          clearTimeout(touchTimer);
-          touchTimer = null;
-        }
-        startX = null;
-        startY = null;
-      }
-    };
-
-    const onTouchEnd = () => {
-      
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-        touchTimer = null;
-      }
-      startX = null;
-      startY = null;
-    };
-
-    // Adicionar event listeners
-    document.addEventListener("mousedown", onTouchStart);
-    document.addEventListener("touchstart", onTouchStart);
-    document.addEventListener("mousemove", onTouchMove);
-    document.addEventListener("touchmove", onTouchMove);
-    document.addEventListener("mouseup", onTouchEnd);
-    document.addEventListener("touchend", onTouchEnd);
-    document.addEventListener("mouseleave", onTouchEnd);
-
-    // Limpeza ao desmontar
-    return () => {
-      if (touchTimer) {
-        clearTimeout(touchTimer);
-      }
-      document.removeEventListener("mousedown", onTouchStart);
-      document.removeEventListener("touchstart", onTouchStart);
-      document.removeEventListener("mousemove", onTouchMove);
-      document.removeEventListener("touchmove", onTouchMove);
-      document.removeEventListener("mouseup", onTouchEnd);
-      document.removeEventListener("touchend", onTouchEnd);
-      document.removeEventListener("mouseleave", onTouchEnd);
-    };
-  }, []);*/
 
   // Fetch dos dados do habitat
   useEffect(() => {
@@ -415,16 +249,16 @@ useEffect(() => {
     <div className="scene-container">
       {/*<ControlPanel />*/}
       {/* Setup da cena */}
-      {/*<SetupScene
+      <SetupScene
         //setCamera={setCamera}
         modelUrl={modelUrl}
         setComponents={setComponents}
         setWorld={setWorld}
-      />*/}
+      />
 
 
       {/*<ModelSelector />*/}
-      {/*components && world && modelUrlMain && modelUrlMain.length > 0 && (
+      {components && world && modelUrlMain && modelUrlMain.length > 0 && (
         <Model1
           modelUrl={modelUrlMain}
           components={components}
@@ -441,10 +275,6 @@ useEffect(() => {
           onLoad={onLoadModel2}
         />
       )}
-    {/* Botão para enviar "funcionamento" para o transcript */}
-    {/*<button onClick={() => setTranscript('estacionamentos')}>
-      Enviar "funcionamento"
-    </button>*/}
 
       {/* Outros componentes */}
       <Response
@@ -461,9 +291,6 @@ useEffect(() => {
         setHistory={setHistory}
       />
 
-      {/*(isScreenTouched || /*isPersonDetected || isPorcupine) && !showQuestion && transcript === '' && isFinished && (
-        <Transcript setTranscript={setTranscript} />
-      )*/}
 {console.log(isListening,!showQuestion, transcript === '', isFinished)}
 {isListening && !showQuestion && transcript === ''/* && isFinished*/ && (
   <Transcript setTranscript={setTranscript} />
@@ -476,14 +303,7 @@ useEffect(() => {
 
       <AnimationController />
 
-      {/*<VoiceButton
-          setTranscript={(newTranscript) => {
-            setTranscript(newTranscript);
-            setShowQuestionAndResponse(true);
-            setIsResponseLoading(true);
-          }}
-          newTranscript={transcript}
-        />*/}
+      
 
 <VoiceButton
     isListening={isListening}
@@ -494,7 +314,7 @@ useEffect(() => {
   />
 
 
-      {/*components && world && model1Loaded && (
+      {components && world && model1Loaded && (
         <Welcome
           isPersonDetected={isPersonDetected}
           isPorcupine={isPorcupine}
@@ -505,13 +325,8 @@ useEffect(() => {
           persons={persons}
           setIsFinished={setIsFinished}
         />
-      )*/}
+      )}
 
-      {<WebCan
-        setIsPersonDetected={setIsPersonDetected}
-        setPersons={setPersons}
-        setCurrentPerson={setCurrentPerson}
-      />}
     </div>
   );
 }

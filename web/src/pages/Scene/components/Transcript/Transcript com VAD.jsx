@@ -94,19 +94,17 @@ export default function Transcript({ setTranscript }) {
         }
       };
 
-      
+      const stopRecognition = () => {
+        if (recognizerRef.current) {
+          recognizerRef.current.stop();
+          recognizerRef.current = null;
+        }
+      };
 
       recognizerRef.current = recognizer;
       recognizer.start();
     } catch (error) {
       console.error("Error initializing recognition:", error);
-    }
-  };
-
-  const stopRecognition = () => {
-    if (recognizerRef.current) {
-      recognizerRef.current.stop();
-      recognizerRef.current = null;
     }
   };
 

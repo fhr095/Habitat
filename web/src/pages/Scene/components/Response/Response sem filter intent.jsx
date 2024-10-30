@@ -32,76 +32,39 @@ export default function Response({
     const { setCurrentModel } = useContext(ModelContext); // Pega a função para controlar o modelo exibido
     const { scene, camera, controls, setSceneConfig } = useContext(SceneConfigContext); // Usar SceneConfigContext para pegar cena e câmera
 
+
     useEffect(() => {
-        const filterTranscript = async (transcript) => {
-            console.log("Filtering transcript:", transcript);
-            try {
-                const source = axios.CancelToken.source();
-                const timeoutId = setTimeout(() => {
-                    source.cancel("Request timed out.");
-                }, 5000); // Timeout de 5 segundos para a requisição de filter
-
-                const filterResponse = await axios.post(
-                    "https://habitat-chatbot-test.netlify.app/.netlify/functions/filter",
-                    { message: transcript },
-                    { cancelToken: source.token }
-                );
-
-                clearTimeout(timeoutId);
-                console.log("Filter response para:", transcript);
-                console.log("Filter response:", filterResponse.data);
-                return filterResponse.data;
-
-            } catch (error) {
-                if (axios.isCancel(error)) {
-                    console.warn("Filter request timed out. Sending transcript directly.");
-                    // Em caso de timeout, envia diretamente o transcript
-                    sendTranscript(transcript);
-                } else {
-                    console.error("Error filtering transcript: ", error);
-                }
-                return { status: "error" };
-            }
-        };
-
-        const sendTranscript = async (transcript, confirmacao = false) => {
+        const sendTranscript = async (transcript) => {
             setLoading(true);
             setShowQuestion(true);
 
             try {
-                const source = axios.CancelToken.source();
-                const timeoutId = setTimeout(() => {
-                    source.cancel("Request timed out.");
-                }, 20000); // Timeout de 20 segundos para a requisição de sendTranscript
-
-                const res = await axios.post(
-                    "https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1",
-                    {
-                        msg: transcript,
-                        avt: "centroadm",
-                        history: history,
-                        confirmacao,
-                    },
-                    { cancelToken: source.token }
-                );
-
-                clearTimeout(timeoutId);
-                console.log("Sending transcript:", transcript);
+                
+                const res = await axios.post(/*"https://13.59.188.36:1880/talkwithifc"*/"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1",/*"https://habitat-avatar.netlify.app/.netlify/functions/response"*/ {
+                    msg: transcript,
+                    avt: "centroadm",
+                    history: history, 
+                });
+                console.log("ENVIO:", transcript);
                 setResponse(res.data);
                 setLoading(false);
-                console.log("Received response:", res.data);
-
+                //setAnimation("falando-sorrindo");
+                console.log("ENVIO2:", res.data);
                 // Atualiza o histórico com a nova interação
-                setHistory((prevHistory) => {
+                setHistory(prevHistory => {
                     let newHistory = [
                         ...prevHistory,
                         {
                             question: transcript,
-                            answer: res.data.comandos.map((c) => ({
+                            /*answer: res.data.map(c => ({
+                                texto: c.response,
+                                fade: c.fade,
+                            })),*/
+                            answer: res.data.comandos.map(c => ({
                                 texto: c.texto,
                                 fade: c.fade,
                             })),
-                        },
+                        }
                     ];
 
                     // Limitar o histórico a 3 itens, removendo os 2 primeiros se necessário
@@ -111,19 +74,17 @@ export default function Response({
 
                     return newHistory;
                 });
-            } catch (error) {
-                if (axios.isCancel(error)) {
-                    console.warn("sendTranscript request timed out. Resetting to allow new attempt.");
-                } else {
-                    console.error("Error sending transcript: ", error);
-                }
 
-                // Resetar estados em caso de erro ou timeout
+            } catch (error) {
+                console.error("Error sending transcript: ", error);
                 setLoading(false);
                 setShowFeedback(false);
                 setResponse({ comandos: [] });
+                //setAnimation("pensando");
                 setShowQuestion(false);
-                setProgress(0);
+                setProgress(0); // Reset progress bar
+    
+                // Reseta o transcript somente após todas as respostas serem processadas
                 setTranscript("");
                 eventBus.emit('processingEnded');
                 previousTranscriptRef.current = "";
@@ -132,42 +93,21 @@ export default function Response({
 
         if (transcript && transcript !== previousTranscriptRef.current) {
             previousTranscriptRef.current = transcript;
-            
-            (async () => {
-                const filterResult = await filterTranscript(transcript);
-                
-                if (filterResult.status === "true") {
-                    // Envia diretamente se o filtro retornou "true"
-                    sendTranscript(transcript);
-                    eventBus.emit('processingStarted');
-                } else if (filterResult.status === "undf") {
-                    // Envia com campo "confirmacao" se o filtro retornou "undf"
-                    sendTranscript(transcript, true);
-                    eventBus.emit('processingStarted');
-                } else {
-                    // Se o status for "false", apenas loga e não faz nada
-                    console.log("Transcript ignored by filter:", filterResult.justification);
-                    setLoading(false);
-                    setShowFeedback(false);
-                    setResponse({ comandos: [] });
-                    setShowQuestion(false);
-                    setProgress(0);
-                    setTranscript("");
-                    eventBus.emit('processingEnded');
-                    previousTranscriptRef.current = "";
-                }
-            })();
+            sendTranscript(transcript);
+            //setAnimation("pensando");
+            eventBus.emit('processingStarted');
+
         }
     }, [transcript, avt, setFade, history, setHistory]);
 
     // Esse useEffect controla a mudança de modelo quando a resposta chega
     useEffect(() => {
-        console.log("Current response:", response);
+        console.log("ENVIO3:", response);
         if (!loading && response.comandos.length > 0) {            
-            //setCurrentModel("model1"); // Exibir ambos os modelos quando a resposta chegar
+            setCurrentModel("model1"); // Exibir ambos os modelos quando a resposta chegar
             playAudioSequentially(0);
         } else {
-            //setCurrentModel("model1"); // Voltar para o modelo 1 quando não há resposta
+            setCurrentModel("model1"); // Voltar para o modelo 1 quando não há resposta
         }
     }, [loading, response, setCurrentModel]);
 
@@ -184,24 +124,33 @@ export default function Response({
         });
       };
       
+    // Response.jsx
     const playAudioSequentially = async (index) => {
-        console.log("Playing command index:", index);
+        console.log("ENVIO5:", index);
         if (index < response.comandos.length) {
           setCurrentIndex(index);
           const comando = response.comandos[index];
       
-          let audioDuration = 2000;
-          let audioPromise = Promise.resolve();
-          let focusPromise = Promise.resolve();
+          let audioDuration = 2000; // Default duration
+          let audioPromise = Promise.resolve(); // Default resolved promise
+          let focusPromise = Promise.resolve(); // Default resolved promise
       
           if (comando.audio) {
+            
             try {
+              // **Load the audio and get the duration**
               const { audio, duration } = await loadAudio(comando.audio);
-              audioDuration = Math.max(duration, 2000);
-              setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
+              audioDuration = Math.max(duration, 2000); // Ensure at least 2000 ms
+      
+              // **Set fade with the correct duration**
+              setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]); // Add 2 seconds of margin
+      
+              // **Start audio playback**
               audio.play();
               eventBus.emit('processingEnded');
               eventBus.emit('audioStarted');
+      
+              // **Set up a promise that resolves when the audio ends**
               audioPromise = new Promise((resolve) => {
                 audio.onended = () => {
                   eventBus.emit('audioEnded');
@@ -210,21 +159,42 @@ export default function Response({
               });
             } catch (error) {
               console.error(`Failed to load audio: ${comando.audio}`, error);
+              // Continue without audio
             }
           } else {
-            audioDuration = 2000;
-            setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
+            // No audio
+            audioDuration = 2000; // Keep default duration
+      
+            // **Set fade with the default duration**
+            setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]); // Add 2 seconds of margin
           }
       
-          if (comando.fade && comando.fade !== "Cidade Administrativa de MG" && comando.fade !== "null") {
-            //focusPromise = focusOnObject(comando.fade, scene, camera, controls, setSceneConfig, audioDuration);
+          // **Start focus on the object if 'fade' is defined**
+          if (comando.fade && comando.fade != "Cidade Administrativa de MG" && comando.fade != "null") {
+            console.log("FADE:", comando.fade);
+            console.log("Scene:", scene);
+            console.log("Camera:", camera);
+            console.log("Controls:", controls);
+            console.log("TEM AUDIO:", audioDuration);
+            //setUltimo(false);
+            setCurrentModel("model1");
+            const isUltimo = (response.comandos.length - index === 1);
+            const isPrimeiro = (index ===0);
+            console.log("UTLTOMO SET:",response.comandos.length-index, isUltimo)            
+            // **Start the focus operation**
+            focusPromise = focusOnObject(comando.fade, scene, camera, controls, setSceneConfig, audioDuration);
+            
           } else {
-            //setCurrentModel("model1");
+            setCurrentModel("model1");
           }
       
+          // **Wait for both audio playback and focus operation to complete**
           await Promise.all([audioPromise, focusPromise]);
+      
+          // **Proceed to the next command**
           playAudioSequentially(index + 1);
         } else {
+          // **All commands have been processed**
           setShowFeedback(true);
           startProgressBar();
           setTimeout(() => {
@@ -237,6 +207,8 @@ export default function Response({
           }, 3000);
         }
       };
+      
+    
 
     const startProgressBar = () => {
         let progressValue = 0;
@@ -256,6 +228,7 @@ export default function Response({
             feedback: type,
         };
 
+        // Logica de feedback aqui
         try {
             const feedbackRef = doc(collection(db, `habitats/${habitatId}/feedback`));
             await setDoc(feedbackRef, feedbackData);
