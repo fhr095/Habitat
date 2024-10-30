@@ -415,7 +415,7 @@ useEffect(() => {
     <div className="scene-container">
       {/*<ControlPanel />*/}
       {/* Setup da cena */}
-      {<SetupScene
+      {/*<SetupScene
         //setCamera={setCamera}
         modelUrl={modelUrl}
         setComponents={setComponents}
@@ -424,7 +424,7 @@ useEffect(() => {
 
 
       {/*<ModelSelector />*/}
-      {components && world && modelUrlMain && modelUrlMain.length > 0 && (
+      {/*components && world && modelUrlMain && modelUrlMain.length > 0 && (
         <Model1
           modelUrl={modelUrlMain}
           components={components}
@@ -470,7 +470,7 @@ useEffect(() => {
 )}
 
 
-      {!isPorcupine && (
+      {/*!isPorcupine && (
         <Porcupine setIsPorcupine={setIsPorcupine} />
       )}
 
@@ -494,7 +494,7 @@ useEffect(() => {
   />
 
 
-      {components && world && model1Loaded && (
+      {/*components && world && model1Loaded && (
         <Welcome
           isPersonDetected={isPersonDetected}
           isPorcupine={isPorcupine}
