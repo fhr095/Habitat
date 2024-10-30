@@ -23,7 +23,8 @@ export default function VoiceButton({
   const hintTimeoutRef = useRef(null);
   const maxDurationMs = maxDuration * 1000;
 
-  const activeTouches = useRef({});
+  const isTouchActive = useRef(false); // Usando uma flag simples
+
   const debounceDelay = 50;
 
   const touchStartPos = useRef(null);
@@ -75,8 +76,7 @@ export default function VoiceButton({
       touchStartTime.current = Date.now();
       touchMoved.current = false;
 
-      const touchId = touch.identifier != null ? touch.identifier : "mouse";
-      activeTouches.current[touchId] = true;
+      isTouchActive.current = true; // Indica que há um toque ativo
 
       console.log(
         `[${getTimestamp()}] Toque iniciado em (${touch.pageX}, ${touch.pageY})`
@@ -145,12 +145,7 @@ export default function VoiceButton({
       if (event && event.cancelable) event.preventDefault();
       console.log(`[${getTimestamp()}] handleEnd chamado`);
 
-      const touches =
-        event && event.changedTouches ? event.changedTouches : [event];
-      const touch = touches[0];
-
-      const touchId = touch && touch.identifier != null ? touch.identifier : "mouse";
-      delete activeTouches.current[touchId];
+      isTouchActive.current = false; // Nenhum toque ativo
 
       let touchDuration = 0;
       if (touchStartTime.current == null) {
@@ -175,12 +170,11 @@ export default function VoiceButton({
         // Não retornar aqui; continue para garantir que a escuta seja parada
       }
 
-      if (Object.keys(activeTouches.current).length > 0) {
-        console.log(
-          `[${getTimestamp()}] Ainda existem toques ativos, não parando`
-        );
-        return;
-      }
+      // Remover a verificação de toques ativos
+      // if (isTouchActive.current) {
+      //   console.log(`[${getTimestamp()}] Ainda existem toques ativos, não parando`);
+      //   return;
+      // }
 
       if (!transcript) {
         setShowHint(true);
@@ -227,7 +221,7 @@ export default function VoiceButton({
   // Função para resetar o estado do toque
   function resetTouchState() {
     touchStartPos.current = null;
-    touchStartTime.current = null; // Resetar aqui
+    touchStartTime.current = null;
     touchMoved.current = false;
     console.log(`[${getTimestamp()}] Estado do toque resetado`);
   }
@@ -250,7 +244,7 @@ export default function VoiceButton({
     if (!isListening) {
       clearIntervalsAndTimeouts();
       setProgress(0);
-      activeTouches.current = {};
+      isTouchActive.current = false;
       resetTouchState();
     }
   }, [isListening]);
