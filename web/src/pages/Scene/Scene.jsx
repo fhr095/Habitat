@@ -395,7 +395,7 @@ useEffect(() => {
     if (transcript === "") {
       setIsPorcupine(false);
       setIsScreenTouched(false);
-      //setIsListening(false);
+      setIsListening(false);
     }
   }, [transcript]);
 

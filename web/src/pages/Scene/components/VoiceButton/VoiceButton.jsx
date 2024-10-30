@@ -8,13 +8,13 @@ import * as Tone from "tone";
 import "./VoiceButton.scss";
 
 export default function VoiceButton({
-  isListening,
   onStartListening,
   onStopListening,
   isDisabled,
   transcript,
   maxDuration = 30, // Duração em segundos
 }) {
+  const [isListening, setIsListening] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const intervalRef = useRef(null);
@@ -94,6 +94,7 @@ export default function VoiceButton({
 
     playSound();
     console.log(`[${getTimestamp()}] Iniciando a escuta`);
+    setIsListening(true);
     onStartListening();
 
     startTimeRef.current = Date.now();
@@ -175,6 +176,7 @@ export default function VoiceButton({
     }
     timeoutRef.current = setTimeout(() => {
       console.log(`[${getTimestamp()}] Parando a escuta após timeout`);
+      setIsListening(false);
       onStopListening();
       clearIntervalsAndTimeouts();
       setProgress(0);
@@ -199,8 +201,7 @@ export default function VoiceButton({
     // touchStartTime.current = null; // NÃO resetar touchStartTime aqui
     touchMoved.current = false;
     console.log(`[${getTimestamp()}] Estado do toque resetado`);
-  }  
-
+  }
 
   function clearIntervalsAndTimeouts() {
     if (intervalRef.current) {
@@ -220,16 +221,18 @@ export default function VoiceButton({
     if (!isListening) {
       clearIntervalsAndTimeouts();
       setProgress(0);
+      activeTouches.current = {};
+      resetTouchState();
     }
-    activeTouches.current = {};
-    resetTouchState();
   }, [isListening]);
 
-
   const playSound = () => {
-    const synth = new Tone.Synth().toDestination();
-    synth.triggerAttackRelease("C4", "8n");
-    console.log(`[${getTimestamp()}] Som de ativação reproduzido`);
+    if (typeof Tone !== 'undefined') {
+      Tone.start(); // Necessário para alguns navegadores
+      const synth = new Tone.Synth().toDestination();
+      synth.triggerAttackRelease("C4", "8n");
+      console.log(`[${getTimestamp()}] Som de ativação reproduzido`);
+    }
   };
 
   // Adicionar os event listeners manualmente
@@ -251,6 +254,9 @@ export default function VoiceButton({
     };
   }, [debouncedHandleStart, handleMove, debouncedHandleEnd]);
 
+  // Detectar se o dispositivo é de toque
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   return (
     <div className="voice-button-container">
       <span className="bar-container">
@@ -268,8 +274,8 @@ export default function VoiceButton({
         )}
         <button
           ref={buttonRef}
-          onMouseDown={debouncedHandleStart}
-          onMouseUp={debouncedHandleEnd}
+          onMouseDown={!isTouchDevice ? debouncedHandleStart : undefined}
+          onMouseUp={!isTouchDevice ? debouncedHandleEnd : undefined}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
