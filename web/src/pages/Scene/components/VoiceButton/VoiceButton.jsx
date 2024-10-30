@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
@@ -32,6 +32,9 @@ export default function VoiceButton({
   const TOUCH_SLOP = 10; // Limiar de movimento em pixels
   const MIN_TOUCH_TIME = 100; // Tempo mínimo de toque em ms
 
+  const buttonRef = useRef(null);
+
+  // Função de debounce
   function debounce(func, delay) {
     let debounceTimer;
     return function (...args) {
@@ -40,10 +43,7 @@ export default function VoiceButton({
     };
   }
 
-  const debouncedHandleStart = debounce(handleStart, debounceDelay);
-  const debouncedHandleEnd = debounce(handleEnd, debounceDelay);
-
-  function handleStart(event) {
+  const handleStart = useCallback((event) => {
     event.preventDefault();
 
     const touches = event.changedTouches || [event];
@@ -97,9 +97,9 @@ export default function VoiceButton({
         handleEnd(); // Para automaticamente após o tempo máximo
       }
     }, 100);
-  }
+  }, [isListening, onStartListening]);
 
-  function handleMove(event) {
+  const handleMove = useCallback((event) => {
     event.preventDefault();
 
     const touches = event.changedTouches || [event];
@@ -114,9 +114,9 @@ export default function VoiceButton({
     if (distance > TOUCH_SLOP) {
       touchMoved.current = true;
     }
-  }
+  }, []);
 
-  function handleEnd(event) {
+  const handleEnd = useCallback((event) => {
     event.preventDefault();
 
     const touches = event.changedTouches || [event];
@@ -151,7 +151,17 @@ export default function VoiceButton({
     }, 100);
 
     resetTouchState();
-  }
+  }, [onStopListening, transcript]);
+
+  const debouncedHandleStart = useCallback(
+    debounce(handleStart, debounceDelay),
+    [handleStart]
+  );
+
+  const debouncedHandleEnd = useCallback(
+    debounce(handleEnd, debounceDelay),
+    [handleEnd]
+  );
 
   function resetTouchState() {
     touchStartPos.current = null;
@@ -184,6 +194,25 @@ export default function VoiceButton({
     synth.triggerAttackRelease("C4", "8n");
   };
 
+  // Adicionar os event listeners manualmente
+  useEffect(() => {
+    const buttonElement = buttonRef.current;
+
+    if (!buttonElement) return;
+
+    // Adicionar os event listeners com passive: false
+    buttonElement.addEventListener("touchstart", debouncedHandleStart, { passive: false });
+    buttonElement.addEventListener("touchmove", handleMove, { passive: false });
+    buttonElement.addEventListener("touchend", debouncedHandleEnd, { passive: false });
+
+    // Limpar os event listeners ao desmontar
+    return () => {
+      buttonElement.removeEventListener("touchstart", debouncedHandleStart);
+      buttonElement.removeEventListener("touchmove", handleMove);
+      buttonElement.removeEventListener("touchend", debouncedHandleEnd);
+    };
+  }, [debouncedHandleStart, handleMove, debouncedHandleEnd]);
+
   return (
     <div className="voice-button-container">
       <span className="bar-container">
@@ -200,11 +229,8 @@ export default function VoiceButton({
           />
         )}
         <button
-          onTouchStart={debouncedHandleStart}
-          onTouchMove={handleMove}
-          onTouchEnd={debouncedHandleEnd}
+          ref={buttonRef}
           onMouseDown={debouncedHandleStart}
-          onMouseMove={handleMove}
           onMouseUp={debouncedHandleEnd}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
