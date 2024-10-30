@@ -155,7 +155,8 @@ export default function VoiceButton({
     if (touchDuration < MIN_TOUCH_TIME) {
       console.log(`[${getTimestamp()}] Toque muito curto, ignorando`);
       resetTouchState();
-      return;
+      // Não retornar aqui; continue para garantir que a escuta seja parada
+      // return;
     }
 
     if (Object.keys(activeTouches.current).length > 0) {
@@ -183,7 +184,7 @@ export default function VoiceButton({
     }, 100);
 
     resetTouchState();
-  }, [onStopListening, transcript]);
+  }, [isListening, onStopListening, transcript]);
 
   const debouncedHandleStart = useCallback(
     debounce(handleStart, debounceDelay),
