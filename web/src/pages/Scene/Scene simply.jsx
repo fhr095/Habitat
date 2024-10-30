@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext, useCallback } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase";
@@ -12,7 +12,6 @@ import activationSound from '/sounds/button-on.mp3';
 
 import "./Scene.scss";
 
-
 export default function Scene({ habitatId, mainFileUrl, mobileFileUrl }) {
   const { id } = useParams();
   const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext);
@@ -23,8 +22,6 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl }) {
   const [modelUrl, setModelUrl] = useState("");
   const [modelUrlMain, setModelUrlMain] = useState(null);
   const [modelUrlMobile, setModelUrlMobile] = useState(null);
- 
-
 
   // Estados relacionados à interação
   const [transcript, setTranscript] = useState("");
@@ -36,31 +33,11 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl }) {
   const [isFinished, setIsFinished] = useState(false);
   const [isPorcupine, setIsPorcupine] = useState(false);
   const [isScreenTouched, setIsScreenTouched] = useState(false);
-  const [isVoiceButtonPressed, setIsVoiceButtonPressed] = useState(false);
-const [isListening, setIsListening] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   // Referências para temporizadores e áudio
-  const resetScreenTouchTimerRef = useRef(null);
-  const resetPorcupineTimerRef = useRef(null);
+  const resetTimerRef = useRef(null);
   const activationAudioRef = useRef(new Audio(activationSound));
-
-
-  // Function to handle start listening
-const handleStartListening = () => {
-  setIsVoiceButtonPressed(true);
-};
-
-// Function to handle stop listening
-const handleStopListening = () => {
-  setIsVoiceButtonPressed(false);
-};
-
-
-
-  // Inicializa o áudio uma vez
-  useEffect(() => {
-    activationAudioRef.current.volume = 1.0; // Volume máximo
-  }, []);
 
   // Função para alternar a oscilação de um objeto
   const toggleOscillation = (objectName, shouldOscillate) => {
@@ -86,32 +63,18 @@ const handleStopListening = () => {
       };
     });
   };
-  
+
   // Funções específicas para iniciar e parar a oscilação
   const startOscillation = (objectName) => toggleOscillation(objectName, true);
   const stopOscillation = (objectName) => toggleOscillation(objectName, false);
 
-
-// Add a new useEffect to manage isListening
-useEffect(() => {
-  if (isScreenTouched || isPorcupine || isVoiceButtonPressed) {
+  // Função para iniciar a escuta
+  const handleStartListening = () => {
     setIsListening(true);
-    console.log("Ouvindo?:", isListening)
-  } else {
-    setIsListening(false);
-  }
-}, [isScreenTouched, isPorcupine, isVoiceButtonPressed]);
-
-
-
-
-const resetTimerRef = useRef(null);
-
-useEffect(() => {
-  if (isListening) {
     activationAudioRef.current.play();
     startOscillation("Peito");
 
+    // Iniciar o temporizador para resetar se não houver entrada de áudio
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
 
     resetTimerRef.current = setTimeout(() => {
@@ -121,35 +84,35 @@ useEffect(() => {
         console.log("No audio detected after 7 seconds, resetting listening");
       }
     }, 7000);
-  } else {
+  };
+
+  // Função para parar a escuta
+  const handleStopListening = () => {
+    setIsListening(false);
+    stopOscillation("Peito");
+
     if (resetTimerRef.current) {
       clearTimeout(resetTimerRef.current);
       resetTimerRef.current = null;
-      stopOscillation("Peito");
     }
-  }
-}, [isListening]);
+  };
 
+  // Inicializa o áudio uma vez
+  useEffect(() => {
+    activationAudioRef.current.volume = 1.0; // Volume máximo
+  }, []);
 
-
-
-  // Efeito para monitorar transcript e limpar temporizadores quando necessário
+  // Efeito para monitorar o transcript e limpar temporizadores quando necessário
   useEffect(() => {
     if (transcript !== '') {
-      if (resetScreenTouchTimerRef.current) {
-        clearTimeout(resetScreenTouchTimerRef.current);
-        resetScreenTouchTimerRef.current = null;
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
         stopOscillation("Peito");
       }
-      if (resetPorcupineTimerRef.current) {
-        clearTimeout(resetPorcupineTimerRef.current);
-        resetPorcupineTimerRef.current = null;
-        stopOscillation("Peito");
-      }
+      // Outros resets se necessário
     }
   }, [transcript]);
-
-  
 
   // Fetch dos dados do habitat
   useEffect(() => {
@@ -158,15 +121,15 @@ useEffect(() => {
         // Obter referência ao documento do Firebase
         const habitatRef = doc(db, "habitats", id);
         const habitatDoc = await getDoc(habitatRef);
-  
+
         if (habitatDoc.exists()) {
           const habitatData = habitatDoc.data();
           setHabitatData(habitatData);
-          console.log("habitatDocdata: ",habitatData);
-  
+          console.log("habitatDocdata: ", habitatData);
+
           // Verificar se o dispositivo é móvel
           const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
-  
+
           // Selecionar a URL correta com base no dispositivo
           const selectedUrl = isMobileDevice ? habitatData.mobileFileUrl : habitatData.mainFileUrl;
           setModelUrl(selectedUrl);
@@ -175,18 +138,15 @@ useEffect(() => {
           setIsValidUrl(true);
         } else {
           console.error("No such document!");
-          //setIsValidUrl(false);
           setModelUrlMobile(habitatData.mobileFileUrl);
         }
       } catch (error) {
         console.error("Error fetching habitat data: ", error);
       }
     };
-  
+
     fetchHabitatData();
   }, [id]); // O efeito depende do ID do habitat
-  
-  
 
   // Verifica se é um dispositivo móvel e ajusta a URL do modelo
   useEffect(() => {
@@ -198,8 +158,6 @@ useEffect(() => {
     } else {
       setIsValidUrl(false);
     }
-
-  
   }, [habitatId, mainFileUrl, mobileFileUrl]);
 
   // Lidar com a ausência de currentPerson
@@ -219,12 +177,8 @@ useEffect(() => {
     }
   }, [transcript]);
 
-
-
   return (
     <div className="scene-container">
-      
-
       {/* Outros componentes */}
       <Response
         habitatId={id}
@@ -240,23 +194,17 @@ useEffect(() => {
         setHistory={setHistory}
       />
 
-     
-{console.log(isListening,!showQuestion, transcript === '', isFinished)}
-{isListening && !showQuestion && transcript === ''/* && isFinished*/ && (
-  <Transcript setTranscript={setTranscript} />
-)}
+      {console.log(isListening, !showQuestion, transcript === '', isFinished)}
+      {isListening && !showQuestion && transcript === '' /* && isFinished */ && (
+        <Transcript setTranscript={setTranscript} />
+      )}
 
-
-     
-<VoiceButton
-    isListening={isListening}
-    onStartListening={handleStartListening}
-    onStopListening={handleStopListening}
-    isDisabled={false}
-    transcript={transcript}
-  />
-
-
+      <VoiceButton
+        onStartListening={handleStartListening}
+        onStopListening={handleStopListening}
+        isDisabled={false}
+        transcript={transcript}
+      />
     </div>
   );
 }
