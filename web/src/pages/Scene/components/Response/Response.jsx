@@ -8,6 +8,12 @@ import eventBus from '../../../../eventBus';
 import { focusOnObject } from "../Model/FocusOnObject"; // Função para focar no objeto
 import Avatar from "./Avatar";
 import "./Response.scss";
+import https from 'https';
+
+const httpsAgent = new https.Agent({  
+    rejectUnauthorized: false
+});
+
 
 export default function Response({
     habitatId,
@@ -82,7 +88,7 @@ export default function Response({
                         history: history,
                         confirmacao,
                     },
-                    { cancelToken: source.token }
+                    { cancelToken: source.token, httpsAgent }
                 );
 
                 clearTimeout(timeoutId);
