@@ -30,7 +30,7 @@ export default function VoiceButton({
   const touchStartPos = useRef(null);
   const touchStartTime = useRef(null);
   const touchMoved = useRef(false);
-  const TOUCH_SLOP = 10; // Limiar de movimento em pixels
+  const TOUCH_SLOP = 40; // Limiar de movimento em pixels
   const MIN_TOUCH_TIME = 100; // Tempo mínimo de toque em ms
 
   const buttonRef = useRef(null);

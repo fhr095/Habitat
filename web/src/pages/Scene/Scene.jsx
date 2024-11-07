@@ -451,7 +451,7 @@ useEffect(() => {
         />
       )}
 
-      {components && world && modelUrlMobile && modelUrlMobile.length > 0 && (
+      {/*components && world && modelUrlMobile && modelUrlMobile.length > 0 && (
         <Model2
           modelUrl={modelUrlMobile}
           components={components}
@@ -460,9 +460,9 @@ useEffect(() => {
         />
       )}
     {/* Botão para enviar "funcionamento" para o transcript */}
-    {<button onClick={() => setTranscript('estacionamentos')}>
+    {/*<button onClick={() => setTranscript('estacionamentos')}>
       Enviar "funcionamento"
-    </button>}
+    </button>*/}
 
       {/* Outros componentes */}
       <Response
