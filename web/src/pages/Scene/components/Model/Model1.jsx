@@ -38,10 +38,30 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
 
           if (isMounted && scene) {
             modelRef.current = scene;
-            world.scene.add(scene);
+            //world.scene.add(scene);
+            //scene.frustumCulled = false
+            world.camera.add(scene);
+            world.scene.add(world.camera);
+            scene.position.set(2.5, -0.5, -2); // Ajuste os valores conforme necessário
+            scene.rotation.y = -Math.PI/1.2;
+            
+
+        // Ajustar a escala do modelo:
+        //scene.scale.set(1, 1, 1);
+        // Garante que o modelo mantenha a rotação fixa, se necessário
+        scene.onBeforeRender = () => {
+          scene.rotation.copy(new THREE.Euler(0, 0, 0));
+        };
+
+          
+    scene.traverse((child) => {
+      console.log("Child in Model1:", child.name, child);
+    });
+
 
             // Controla a visibilidade inicial
-            scene.visible = currentModel === "model1" || currentModel === "both";
+            //scene.visible = currentModel === "model1" || currentModel === "both";
+            scene.visible = true;
             console.log("Model1: modelo carregado e adicionado à cena");
 
             //scene.position.set(-18,7,2)
@@ -113,6 +133,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
       modelRef.current.visible = currentModel === "model1" || currentModel === "both";
     }
   }, [currentModel]);
+  
 
   return null;
 }

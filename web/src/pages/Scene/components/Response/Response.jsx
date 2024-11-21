@@ -9,7 +9,6 @@ import { focusOnObject } from "../Model/FocusOnObject"; // Função para focar n
 import Avatar from "./Avatar";
 import "./Response.scss";
 
-
 export default function Response({
     habitatId,
     avt,
@@ -32,6 +31,10 @@ export default function Response({
     const [ultimo, setUltimo] = useState(false);
     const { setCurrentModel } = useContext(ModelContext); // Pega a função para controlar o modelo exibido
     const { scene, camera, controls, setSceneConfig } = useContext(SceneConfigContext); // Usar SceneConfigContext para pegar cena e câmera
+
+    // **Adicionamos referências para armazenar a posição original da câmera e o alvo dos controles**
+    const originalCameraPositionRef = useRef();
+    const originalControlsTargetRef = useRef();
 
     useEffect(() => {
         const filterTranscript = async (transcript) => {
@@ -76,7 +79,8 @@ export default function Response({
                 }, 20000); // Timeout de 20 segundos para a requisição de sendTranscript
 
                 const res = await axios.post(
-                    /*"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"*/"https://nodered.appiaarquitetura.com.br/talkwithifc",
+                    /*"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"/*"https://nodered.appiaarquitetura.com.br/talkwithifc"*/"https://vps.felipehenriquerafael.tech/nodered/talkwithifc",
+
                     {
                         msg: transcript,
                         avt: "centroadm",
@@ -135,9 +139,9 @@ export default function Response({
             previousTranscriptRef.current = transcript;
             
             (async () => {
-                const filterResult = await filterTranscript(transcript);
+                //const filterResult = await filterTranscript(transcript);
                 
-                if (filterResult.status === "true") {
+                if (/*filterResult.status === "true"*/true) {
                     // Envia diretamente se o filtro retornou "true"
                     sendTranscript(transcript);
                     eventBus.emit('processingStarted');
@@ -174,70 +178,115 @@ export default function Response({
 
     const loadAudio = (audioUrl) => {
         return new Promise((resolve, reject) => {
-          const audio = new Audio(audioUrl);
-          audio.onloadedmetadata = () => {
-            const duration = audio.duration * 1000; // Convert to milliseconds
-            resolve({ audio, duration });
-          };
-          audio.onerror = () => {
-            reject(new Error('Failed to load audio'));
-          };
+            const audio = new Audio(audioUrl);
+            audio.onloadedmetadata = () => {
+                const duration = audio.duration * 1000; // Convert to milliseconds
+                resolve({ audio, duration });
+            };
+            audio.onerror = () => {
+                reject(new Error('Failed to load audio'));
+            };
         });
-      };
-      
+    };
+
     const playAudioSequentially = async (index) => {
         console.log("Playing command index:", index);
-        if (index < response.comandos.length) {
-          setCurrentIndex(index);
-          const comando = response.comandos[index];
-      
-          let audioDuration = 2000;
-          let audioPromise = Promise.resolve();
-          let focusPromise = Promise.resolve();
-      
-          if (comando.audio) {
-            try {
-              const { audio, duration } = await loadAudio(comando.audio);
-              audioDuration = Math.max(duration, 2000);
-              setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
-              audio.play();
-              eventBus.emit('processingEnded');
-              eventBus.emit('audioStarted');
-              audioPromise = new Promise((resolve) => {
-                audio.onended = () => {
-                  eventBus.emit('audioEnded');
-                  resolve();
-                };
-              });
-            } catch (error) {
-              console.error(`Failed to load audio: ${comando.audio}`, error);
+        if (index === 0) {
+            // **Armazena a posição e o alvo originais da câmera no início da sequência**
+            if (camera && controls) {
+                originalCameraPositionRef.current = camera.position.clone();
+                originalControlsTargetRef.current = controls.target.clone();
             }
-          } else {
-            audioDuration = 2000;
-            setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
-          }
-      
-          if (comando.fade && comando.fade !== "Cidade Administrativa de MG" && comando.fade !== "null") {
-            //focusPromise = focusOnObject(comando.fade, scene, camera, controls, setSceneConfig, audioDuration);
-          } else {
-            //setCurrentModel("model1");
-          }
-      
-          await Promise.all([audioPromise, focusPromise]);
-          playAudioSequentially(index + 1);
+        }
+        if (index < response.comandos.length) {
+            setCurrentIndex(index);
+            const comando = response.comandos[index];
+
+            let audioDuration = 2000;
+            let audioPromise = Promise.resolve();
+            let focusPromise = Promise.resolve();
+
+            if (comando.audio) {
+                try {
+                    const { audio, duration } = await loadAudio(comando.audio);
+                    audioDuration = Math.max(duration, 2000);
+                    setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
+                    audio.play();
+                    eventBus.emit('processingEnded');
+                    eventBus.emit('audioStarted');
+                    audioPromise = new Promise((resolve) => {
+                        audio.onended = () => {
+                            eventBus.emit('audioEnded');
+                            resolve();
+                        };
+                    });
+                } catch (error) {
+                    console.error(`Failed to load audio: ${comando.audio}`, error);
+                }
+            } else {
+                audioDuration = 2000;
+                setFade([{ fade: comando.fade, duration: audioDuration + 2000 }]);
+            }
+
+            if (comando.fade && comando.fade !== "Cidade Administrativa de MG" && comando.fade !== "null") {
+                //setCurrentModel("model2");
+                focusPromise = focusOnObject(comando.fade, scene, camera, controls, setSceneConfig, audioDuration);
+            } else {
+                //setCurrentModel("model1");
+            }
+
+            await Promise.all([audioPromise, focusPromise]);
+            playAudioSequentially(index + 1);
         } else {
-          setShowFeedback(true);
-          startProgressBar();
-          setTimeout(() => {
+            // **Após todas as animações, retorna a câmera à posição original**
+            if (
+                camera &&
+                controls &&
+                originalCameraPositionRef.current &&
+                originalControlsTargetRef.current
+            ) {
+                new TWEEN.Tween(camera.position)
+                    .to(originalCameraPositionRef.current, 3500) // Duração da animação de retorno
+                    .easing(TWEEN.Easing.Cubic.InOut)
+                    .onUpdate(() => {
+                        // Interpola o alvo dos controles
+                        controls.target.lerpVectors(
+                            controls.target,
+                            originalControlsTargetRef.current,
+                            camera.position.distanceTo(controls.target) /
+                                camera.position.distanceTo(originalCameraPositionRef.current)
+                        );
+                        controls.update();
+                    })
+                    .onComplete(() => {
+                        // Garante que a posição e o alvo da câmera sejam exatamente os originais
+                        camera.position.copy(originalCameraPositionRef.current);
+                        controls.target.copy(originalControlsTargetRef.current);
+                        controls.update();
+
+                        // Restaura outros estados, se necessário
+                        resetStates();
+                    })
+                    .start();
+            } else {
+                // Se a câmera ou os controles não estiverem disponíveis, apenas restaura os estados
+                resetStates();
+            }
+        }
+    };
+
+    const resetStates = () => {
+        setShowFeedback(true);
+        startProgressBar();
+        setTimeout(() => {
             setShowFeedback(false);
             setResponse({ comandos: [] });
             setShowQuestion(false);
             setProgress(0);
             setTranscript("");
             previousTranscriptRef.current = "";
-          }, 3000);
-        }
-      };
+        }, 3000);
+    };
 
     const startProgressBar = () => {
         let progressValue = 0;

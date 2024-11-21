@@ -227,6 +227,8 @@ export default function SetupScene({ /*setCamera*/ modelUrl, setComponents, setW
     if (cameraDirection) {
       cameraRef.current.lookAt(cameraDirection.x, cameraDirection.y, cameraDirection.z);
     }
+    
+    console.log("Camera Direction (lookAt):", cameraDirection);
   
     // Atualiza os controles se existirem
     if (worldRef.current && worldRef.current.controls) {
@@ -945,6 +947,7 @@ function onPointerDown(event) {
     if (worldRef.current) {
       // Atualiza a câmera
       setupControls();
+
     }
   }, [
     cameraDirection,

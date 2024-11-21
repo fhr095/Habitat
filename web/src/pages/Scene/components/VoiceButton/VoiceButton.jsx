@@ -37,6 +37,7 @@ export default function VoiceButton({
   };
 
   const stopListening = () => {
+    
     if (!isListening) return; // Evita chamadas se não estiver escutando
 
     clearTimeout(timerRef.current);
@@ -84,14 +85,18 @@ export default function VoiceButton({
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
         >
-          <FaMicrophone color="#eaf1f0" size={25} />
+          <FaMicrophone color="#eaf1f0" size={35} />
         </button>
       </span>
       <div className="text-container">
         <p className={`status-text ${isListening ? "listening-text" : ""}`}>
           {isListening ? "Escutando..." : ""}
         </p>
+        {!isListening && transcript === "" && (
+          <p className="hint-text">Segure para falar</p>
+        )}
       </div>
+      
     </div>
   );
 }

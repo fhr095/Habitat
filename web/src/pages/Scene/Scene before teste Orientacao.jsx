@@ -429,27 +429,9 @@ useEffect(() => {
     setModel2Loaded(true);
   }, [setModel2Loaded]);
 
-  const [animationKey, setAnimationKey] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAnimationKey(prevKey => prevKey + 1);
-    }, 15000); // 15000 milissegundos = 15 segundos
-  
-    return () => clearInterval(interval); // Limpa o intervalo quando o componente é desmontado
-  }, []);
-  
 
   return (
     <div className="scene-container">
-      <div className="welcome-container">
-        {!isListening && transcript ==="" && (
-          <p className="welcome" key={animationKey}>
-          <span className="typing">Olá, me faça uma pergunta!</span>
-        </p>
-        
-        )}
-      </div>
-
       {/*<ControlPanel />*/}
       {/* Setup da cena */}
       {<SetupScene
@@ -479,7 +461,7 @@ useEffect(() => {
         />
       )}
     {/* Botão para enviar "funcionamento" para o transcript */}
-    {/*<button onClick={() => setTranscript('estacionamentos')}>
+    {<button onClick={() => setTranscript('estacionamentos')}>
       Enviar "funcionamento"
     </button>}
 
@@ -522,42 +504,12 @@ useEffect(() => {
           newTranscript={transcript}
         />*/}
 
-    {transcript === "" && (
-        <div className="buttons-container">
-          <div className="fastButtons-list">
-  <button
-    onClick={() => setTranscript("Onde fica o banheiro mais próximo?")}
-    className="fastButton"
-    style={{ "--order": 1 }}
-  >
-    Onde fica o banheiro mais próximo?
-  </button>
-  <button
-    onClick={() => setTranscript("Estou com fome, onde me recomenda comer?")}
-    className="fastButton"
-    style={{ "--order": 2 }}
-  >
-    Estou com fome, onde me recomenda comer?
-  </button>
-  <button
-    onClick={() => setTranscript("Como faço para protocolar um projeto?")}
-    className="fastButton"
-    style={{ "--order": 3 }}
-  >
-    Como faço para protocolar um projeto?
-  </button>
-</div>
-
-
-          
-        </div>
-      )}
-
 <VoiceButton
-            onStartListening={handleStartListening}
-            onStopListening={handleStopListening}
-            isDisabled={false}
-            transcript={transcript}  />
+    onStartListening={handleStartListening}
+    onStopListening={handleStopListening}
+    isDisabled={false}
+    transcript={transcript}
+  />
 
 
       {components && world && model1Loaded && (

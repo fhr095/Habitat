@@ -31,9 +31,10 @@ export default function Model2({ modelUrl, components, world, onLoad }) {
           if (/*isMounted &&*/ scene) {
             modelRef.current = scene;
             world.scene.add(scene);
+            scene.position.set(0, 0, 0);
 
             // Controla a visibilidade inicial
-            scene.visible = currentModel === "model2" /*|| currentModel === "both"*/;
+            scene.visible = currentModel === "model2" || currentModel === "both";
             console.log("Model2: modelo carregado e adicionado à cena");
 
             // Armazena animações e mixer
@@ -129,7 +130,7 @@ export default function Model2({ modelUrl, components, world, onLoad }) {
 
   useEffect(() => {
     if (modelRef.current) {
-      modelRef.current.visible = currentModel === "model2" /*|| currentModel === "both"*/;
+      modelRef.current.visible = currentModel === "model2" || currentModel === "both";
     }
   }, [currentModel]);
 
