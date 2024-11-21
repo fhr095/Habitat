@@ -1,6 +1,6 @@
 .voice-button-container {
   position: fixed;
-  bottom: 5px;
+  bottom: 0%; /* Proporcional à altura da tela */
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -8,7 +8,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 2vh; /* Espaço entre elementos proporcional */
 }
 
 .bar-container {
@@ -20,8 +20,8 @@
 
   .bar {
     position: absolute;
-    width: 120px;
-    height: 120px;
+    width: 8vw; /* Proporcional à largura da tela */
+    height: 8vw;
   }
 
   .voice-button {
@@ -29,15 +29,15 @@
     background-color: transparent;
     border: none;
     border-radius: 50%;
-    padding: 20px;
+    padding: 2vh; /* Proporcional ao tamanho da tela */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    width: 120px;
-    height: 120px;
-    border: solid 2px #cce4f8;
-    box-shadow: 0 0 20px rgba(0, 140, 255, 0.6), 0 0 30px rgba(0, 140, 255, 0.5), 0 0 40px rgba(0, 140, 255, 0.4);
+    width: 9.5vw; /* Proporcional à largura da tela */
+    height: 9.5vw; /* Proporcional à largura da tela */
+    border: solid 0.2vw #cce4f8;
+    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.5), 0 0 4vh rgba(0, 140, 255, 0.4);
     animation: pulse 1.5s infinite;
     transition: box-shadow 0.3s ease-in-out;
   }
@@ -49,34 +49,25 @@
 }
 
 .text-container {
-  height: 30px; /* Define a fixed height for the text area to avoid movement */
+  height: 5vh; /* Proporcional ao tamanho da tela */
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.welcome-container {
-  height: 30px; /* Define a fixed height for the text area to avoid movement */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  top: 10px;
 }
 
 .status-text {
   font-family: 'Roboto', sans-serif;
-  font-size: 1.2rem;
+  font-size: 3vh; /* Texto proporcional à altura da tela */
   color: #1a3b5d;
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .hint-text {
   font-family: 'Roboto', sans-serif;
-  font-size: 1.2rem;
+  font-size: 3vh;
   color: #080808;
-  //animation: shake 0.5s ease, fadeOut 3s ease forwards;
-  animation: shake 0.5s ease;
-  text-shadow: 1px 1px 10px rgba(0, 0, 0, 0.4);
+  animation: shake 0.5s ease, fadeOut 3s ease forwards;
+  text-shadow: 1px 1px 1vh rgba(0, 0, 0, 0.4);
 }
 
 @keyframes shake {
@@ -84,10 +75,10 @@
     transform: translateX(0);
   }
   20%, 60% {
-    transform: translateX(-10px);
+    transform: translateX(-1vw);
   }
   40%, 80% {
-    transform: translateX(10px);
+    transform: translateX(1vw);
   }
 }
 
@@ -107,7 +98,7 @@
   }
   50% {
     transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(0, 140, 255, 0.6), 0 0 30px rgba(0, 140, 255, 0.5), 0 0 40px rgba(0, 140, 255, 0.4);
+    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.5), 0 0 4vh rgba(0, 140, 255, 0.4);
   }
   100% {
     transform: scale(1);
@@ -117,9 +108,9 @@
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 20px rgba(0, 140, 255, 0.6), 0 0 30px rgba(0, 140, 255, 0.8), 0 0 40px rgba(0, 140, 255, 1);
+    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.8), 0 0 4vh rgba(0, 140, 255, 1);
   }
   100% {
-    box-shadow: 0 0 40px rgba(0, 140, 255, 1), 0 0 60px rgba(0, 140, 255, 1), 0 0 80px rgba(0, 140, 255, 1);
+    box-shadow: 0 0 4vh rgba(0, 140, 255, 1), 0 0 6vh rgba(0, 140, 255, 1), 0 0 8vh rgba(0, 140, 255, 1);
   }
 }
