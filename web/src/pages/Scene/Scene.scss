@@ -56,7 +56,7 @@
   .welcome-container {
     position: absolute;
     top: 10%; /* Ajuste proporcional à altura da tela */
-    right: 10%; /* Ajuste proporcional à largura da tela */
+    right: 20%; /* Ajuste proporcional à largura da tela */
     z-index: 10;
     display: flex;
     align-items: center;
@@ -80,7 +80,7 @@
         content: '';
         position: absolute;
         top: 50%;
-        right: -2vw;
+        right: -1.9vw;
         transform: translateY(-50%);
         border-width: 1.5vh 0 1.5vh 2vw;
         border-style: solid;
