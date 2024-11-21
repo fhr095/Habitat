@@ -12,7 +12,7 @@ export default function AnimationController() {
   const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext);
   const idleTimerRef = useRef(null);
   const idleAnimationIntervalRef = useRef(null);
-  const idleAnimations = [/*'RodandoCurto',*/ 'MinasPiscando', 'MinasPiscando']; // Array de animações ociosas
+  const idleAnimations = [/*'RodandoCurto',*/ 'MinasPiscando', 'Acenando-2']; // Array de animações ociosas
 
   // Referências para o inspetor e o ator
   const inspectorRef = useRef(null);
@@ -204,14 +204,14 @@ export default function AnimationController() {
           break;
 
         case 'waving1':
-          //playAnimationRef.current('Acenando');
-          playAnimationRef.current('MinasPiscando');
+          playAnimationRef.current('Acenando');
+          //playAnimationRef.current('MinasPiscando');
           adjustCameraForAnimation('Acenando');
           break;
 
         case 'waving2':
-          //playAnimationRef.current('Acenando-2');
-          playAnimationRef.current('MinasPiscando');
+          playAnimationRef.current('Acenando-2');
+          //playAnimationRef.current('MinasPiscando');
           adjustCameraForAnimation('Acenando-2');
           break;
 
@@ -224,7 +224,7 @@ export default function AnimationController() {
           break;
 
         case 'processing':
-          //playAnimationRef.current('Confuso');
+          playAnimationRef.current('Confuso');
           break;
 
         case 'talking':
