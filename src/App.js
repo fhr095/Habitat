@@ -9,6 +9,8 @@ function App() {
   const [isMoving, setIsMoving] = useState(false);
   const [touchCount, setTouchCount] = useState(0);
   const [activeTouches, setActiveTouches] = useState([]);
+  const [eventIndicators, setEventIndicators] = useState({});
+  const [usePointerEvents, setUsePointerEvents] = useState(false); // Toggle entre eventos
 
   // Referência para o temporizador de movimento
   const moveTimeout = useRef(null);
@@ -54,8 +56,25 @@ function App() {
     setActiveTouches(touchPositions);
   };
 
-  // Handlers de toque
+  // Função para acender indicadores de eventos
+  const triggerEventIndicator = (eventName) => {
+    setEventIndicators((prevIndicators) => ({
+      ...prevIndicators,
+      [eventName]: true,
+    }));
+
+    // Apaga o indicador após um curto período
+    setTimeout(() => {
+      setEventIndicators((prevIndicators) => ({
+        ...prevIndicators,
+        [eventName]: false,
+      }));
+    }, 500); // Duração do indicador aceso (ms)
+  };
+
+  // Handlers de eventos (Mouse/Touch)
   const handleTouchStart = (event) => {
+    triggerEventIndicator('touchstart');
     setTouchCount(event.touches.length);
     updateActiveTouches(event.touches);
 
@@ -66,10 +85,10 @@ function App() {
   };
 
   const handleTouchMove = (event) => {
+    triggerEventIndicator('touchmove');
     setIsMoving(true);
     updateActiveTouches(event.touches);
 
-    // Reinicia o temporizador de movimento
     if (moveTimeout.current) clearTimeout(moveTimeout.current);
     moveTimeout.current = setTimeout(() => {
       setIsMoving(false);
@@ -77,16 +96,15 @@ function App() {
   };
 
   const handleTouchEnd = (event) => {
+    triggerEventIndicator('touchend');
     setTouchCount(event.touches.length);
     updateActiveTouches(event.touches);
 
-    // Se não houver mais toques, redefina os estados
     if (event.touches.length === 0) {
       setButtonActive(false);
       setIsMoving(false);
       setActiveTouches([]);
 
-      // Limpa o temporizador de movimento
       if (moveTimeout.current) {
         clearTimeout(moveTimeout.current);
         moveTimeout.current = null;
@@ -94,8 +112,16 @@ function App() {
     }
   };
 
-  // Handlers de mouse
+  const handleTouchCancel = (event) => {
+    triggerEventIndicator('touchcancel');
+    setButtonActive(false);
+    setIsMoving(false);
+    setTouchCount(event.touches.length);
+    updateActiveTouches(event.touches);
+  };
+
   const handleMouseDown = (event) => {
+    triggerEventIndicator('mousedown');
     setTouchCount(1);
     updateActiveTouches([event]);
 
@@ -106,11 +132,11 @@ function App() {
   };
 
   const handleMouseMove = (event) => {
-    if (event.buttons === 1) { // Verifica se o botão do mouse está pressionado
+    triggerEventIndicator('mousemove');
+    if (event.buttons === 1) {
       setIsMoving(true);
       updateActiveTouches([event]);
 
-      // Reinicia o temporizador de movimento
       if (moveTimeout.current) clearTimeout(moveTimeout.current);
       moveTimeout.current = setTimeout(() => {
         setIsMoving(false);
@@ -119,28 +145,155 @@ function App() {
   };
 
   const handleMouseUp = (event) => {
+    triggerEventIndicator('mouseup');
     setButtonActive(false);
     setIsMoving(false);
     setTouchCount(0);
     setActiveTouches([]);
 
-    // Limpa o temporizador de movimento
     if (moveTimeout.current) {
       clearTimeout(moveTimeout.current);
       moveTimeout.current = null;
     }
   };
 
+  const handleContextMenu = (event) => {
+    triggerEventIndicator('contextmenu');
+    // event.preventDefault(); // Opcional: comentar se quiser ver o menu de contexto
+  };
+
+  // Handlers de eventos de ponteiro (Pointer Events)
+  const handlePointerDown = (event) => {
+    triggerEventIndicator('pointerdown');
+    setTouchCount(1);
+    updateActiveTouches([event]);
+
+    if (isEventInsideButton(event)) {
+      setButtonActive(true);
+      setIsMoving(false);
+    }
+  };
+
+  const handlePointerMove = (event) => {
+    triggerEventIndicator('pointermove');
+    if (event.pressure > 0 || event.buttons === 1) { // Verifica se o ponteiro está pressionado
+      setIsMoving(true);
+      updateActiveTouches([event]);
+
+      if (moveTimeout.current) clearTimeout(moveTimeout.current);
+      moveTimeout.current = setTimeout(() => {
+        setIsMoving(false);
+      }, 100);
+    }
+  };
+
+  const handlePointerUp = (event) => {
+    triggerEventIndicator('pointerup');
+    setButtonActive(false);
+    setIsMoving(false);
+    setTouchCount(0);
+    setActiveTouches([]);
+
+    if (moveTimeout.current) {
+      clearTimeout(moveTimeout.current);
+      moveTimeout.current = null;
+    }
+  };
+
+  const handlePointerCancel = (event) => {
+    triggerEventIndicator('pointercancel');
+    setButtonActive(false);
+    setIsMoving(false);
+    setTouchCount(0);
+    setActiveTouches([]);
+  };
+
+  const handlePointerOver = (event) => {
+    triggerEventIndicator('pointerover');
+  };
+
+  const handlePointerOut = (event) => {
+    triggerEventIndicator('pointerout');
+  };
+
+  const handlePointerEnter = (event) => {
+    triggerEventIndicator('pointerenter');
+  };
+
+  const handlePointerLeave = (event) => {
+    triggerEventIndicator('pointerleave');
+  };
+
+  // Renderização
   return (
     <div
       className="App"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      {...(usePointerEvents
+        ? {
+            onPointerDown: handlePointerDown,
+            onPointerMove: handlePointerMove,
+            onPointerUp: handlePointerUp,
+            onPointerCancel: handlePointerCancel,
+            onPointerOver: handlePointerOver,
+            onPointerOut: handlePointerOut,
+            onPointerEnter: handlePointerEnter,
+            onPointerLeave: handlePointerLeave,
+            onContextMenu: handleContextMenu,
+          }
+        : {
+            onTouchStart: handleTouchStart,
+            onTouchMove: handleTouchMove,
+            onTouchEnd: handleTouchEnd,
+            onTouchCancel: handleTouchCancel,
+            onMouseDown: handleMouseDown,
+            onMouseMove: handleMouseMove,
+            onMouseUp: handleMouseUp,
+            onContextMenu: handleContextMenu,
+          })}
     >
+      {/* Botão para alternar entre eventos */}
+      <button
+        className="toggle-button"
+        onClick={() => setUsePointerEvents(!usePointerEvents)}
+      >
+        Usando {usePointerEvents ? 'Pointer Events' : 'Mouse/Touch Events'}
+      </button>
+
+      {/* Lista de indicadores de eventos */}
+      <div className="event-indicators">
+        {usePointerEvents ? (
+          <>
+            {['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'pointerover', 'pointerout', 'pointerenter', 'pointerleave', 'contextmenu'].map(
+              (eventName) => (
+                <div
+                  key={eventName}
+                  className={`event-indicator ${
+                    eventIndicators[eventName] ? 'active' : ''
+                  }`}
+                >
+                  {eventName}
+                </div>
+              )
+            )}
+          </>
+        ) : (
+          <>
+            {['touchstart', 'touchmove', 'touchend', 'touchcancel', 'mousedown', 'mousemove', 'mouseup', 'contextmenu'].map(
+              (eventName) => (
+                <div
+                  key={eventName}
+                  className={`event-indicator ${
+                    eventIndicators[eventName] ? 'active' : ''
+                  }`}
+                >
+                  {eventName}
+                </div>
+              )
+            )}
+          </>
+        )}
+      </div>
+
       {/* Botão circular */}
       <div
         className="circle-button"

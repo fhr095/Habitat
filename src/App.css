@@ -44,3 +44,33 @@
   background-color: rgba(255, 0, 0, 0.3);
   pointer-events: none;
 }
+
+/* Estilos para o botão de toggle */
+.toggle-button {
+  position: absolute;
+  top: 140px;
+  left: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+/* Estilos para os indicadores de eventos */
+.event-indicators {
+  position: absolute;
+  top: 180px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-indicator {
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  background-color: rgba(200, 200, 200, 0.5);
+  border-radius: 4px;
+}
+
+.event-indicator.active {
+  background-color: rgba(0, 200, 0, 0.7);
+  color: white;
+}
