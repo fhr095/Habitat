@@ -9,6 +9,10 @@
   touch-action: none; /* Previne comportamentos padrão indesejados */
 }
 
+.App, .App * {
+  user-select: none; /* Impede seleção de texto */
+}
+
 .circle-button {
   position: absolute;
   background-color: #007bff;
@@ -54,10 +58,24 @@
   font-size: 16px;
 }
 
+/* Estilos para os botões de gravação */
+.recording-controls {
+  position: absolute;
+  top: 220px;
+  left: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.record-button, .save-button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
 /* Estilos para os indicadores de eventos */
 .event-indicators {
   position: absolute;
-  top: 180px;
+  top: 260px;
   left: 20px;
   display: flex;
   flex-direction: column;

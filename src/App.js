@@ -11,6 +11,8 @@ function App() {
   const [activeTouches, setActiveTouches] = useState([]);
   const [eventIndicators, setEventIndicators] = useState({});
   const [usePointerEvents, setUsePointerEvents] = useState(false); // Toggle entre eventos
+  const [isRecording, setIsRecording] = useState(false);
+  const [eventLog, setEventLog] = useState([]);
 
   // Referência para o temporizador de movimento
   const moveTimeout = useRef(null);
@@ -63,6 +65,12 @@ function App() {
       [eventName]: true,
     }));
 
+    // Registra o evento se a gravação estiver ativa
+    if (isRecording) {
+      const timestamp = new Date().toISOString();
+      setEventLog((prevLog) => [...prevLog, { event: eventName, timestamp }]);
+    }
+
     // Apaga o indicador após um curto período
     setTimeout(() => {
       setEventIndicators((prevIndicators) => ({
@@ -70,6 +78,20 @@ function App() {
         [eventName]: false,
       }));
     }, 500); // Duração do indicador aceso (ms)
+  };
+
+  // Função para salvar o relatório
+  const saveEventLog = () => {
+    const dataStr = JSON.stringify(eventLog, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `event_log_${new Date().toISOString()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   // Handlers de eventos (Mouse/Touch)
@@ -120,6 +142,14 @@ function App() {
     updateActiveTouches(event.touches);
   };
 
+  const handleTouchEnter = (event) => {
+    triggerEventIndicator('touchenter');
+  };
+
+  const handleTouchLeave = (event) => {
+    triggerEventIndicator('touchleave');
+  };
+
   const handleMouseDown = (event) => {
     triggerEventIndicator('mousedown');
     setTouchCount(1);
@@ -157,9 +187,25 @@ function App() {
     }
   };
 
+  const handleMouseEnter = (event) => {
+    triggerEventIndicator('mouseenter');
+  };
+
+  const handleMouseLeave = (event) => {
+    triggerEventIndicator('mouseleave');
+  };
+
+  const handleMouseOver = (event) => {
+    triggerEventIndicator('mouseover');
+  };
+
+  const handleMouseOut = (event) => {
+    triggerEventIndicator('mouseout');
+  };
+
   const handleContextMenu = (event) => {
     triggerEventIndicator('contextmenu');
-    // event.preventDefault(); // Opcional: comentar se quiser ver o menu de contexto
+    event.preventDefault(); // Previne o menu de contexto
   };
 
   // Handlers de eventos de ponteiro (Pointer Events)
@@ -176,7 +222,7 @@ function App() {
 
   const handlePointerMove = (event) => {
     triggerEventIndicator('pointermove');
-    if (event.pressure > 0 || event.buttons === 1) { // Verifica se o ponteiro está pressionado
+    if (event.pressure > 0 || event.buttons === 1) {
       setIsMoving(true);
       updateActiveTouches([event]);
 
@@ -245,9 +291,15 @@ function App() {
             onTouchMove: handleTouchMove,
             onTouchEnd: handleTouchEnd,
             onTouchCancel: handleTouchCancel,
+            onTouchEnter: handleTouchEnter,
+            onTouchLeave: handleTouchLeave,
             onMouseDown: handleMouseDown,
             onMouseMove: handleMouseMove,
             onMouseUp: handleMouseUp,
+            onMouseEnter: handleMouseEnter,
+            onMouseLeave: handleMouseLeave,
+            onMouseOver: handleMouseOver,
+            onMouseOut: handleMouseOut,
             onContextMenu: handleContextMenu,
           })}
     >
@@ -259,37 +311,83 @@ function App() {
         Usando {usePointerEvents ? 'Pointer Events' : 'Mouse/Touch Events'}
       </button>
 
+      {/* Botões para gravação e salvamento */}
+      <div className="recording-controls">
+        <button
+          className="record-button"
+          onClick={() => {
+            if (isRecording) {
+              // Parar gravação
+              setIsRecording(false);
+            } else {
+              // Iniciar nova gravação (descarta a anterior)
+              setEventLog([]);
+              setIsRecording(true);
+            }
+          }}
+        >
+          {isRecording ? 'Parar Gravação' : 'Iniciar Gravação'}
+        </button>
+
+        {!isRecording && eventLog.length > 0 && (
+          <button className="save-button" onClick={saveEventLog}>
+            Salvar Relatório
+          </button>
+        )}
+      </div>
+
       {/* Lista de indicadores de eventos */}
       <div className="event-indicators">
         {usePointerEvents ? (
           <>
-            {['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'pointerover', 'pointerout', 'pointerenter', 'pointerleave', 'contextmenu'].map(
-              (eventName) => (
-                <div
-                  key={eventName}
-                  className={`event-indicator ${
-                    eventIndicators[eventName] ? 'active' : ''
-                  }`}
-                >
-                  {eventName}
-                </div>
-              )
-            )}
+            {[
+              'pointerdown',
+              'pointermove',
+              'pointerup',
+              'pointercancel',
+              'pointerover',
+              'pointerout',
+              'pointerenter',
+              'pointerleave',
+              'contextmenu',
+            ].map((eventName) => (
+              <div
+                key={eventName}
+                className={`event-indicator ${
+                  eventIndicators[eventName] ? 'active' : ''
+                }`}
+              >
+                {eventName}
+              </div>
+            ))}
           </>
         ) : (
           <>
-            {['touchstart', 'touchmove', 'touchend', 'touchcancel', 'mousedown', 'mousemove', 'mouseup', 'contextmenu'].map(
-              (eventName) => (
-                <div
-                  key={eventName}
-                  className={`event-indicator ${
-                    eventIndicators[eventName] ? 'active' : ''
-                  }`}
-                >
-                  {eventName}
-                </div>
-              )
-            )}
+            {[
+              'touchstart',
+              'touchmove',
+              'touchend',
+              'touchcancel',
+              'touchenter',
+              'touchleave',
+              'mousedown',
+              'mousemove',
+              'mouseup',
+              'mouseenter',
+              'mouseleave',
+              'mouseover',
+              'mouseout',
+              'contextmenu',
+            ].map((eventName) => (
+              <div
+                key={eventName}
+                className={`event-indicator ${
+                  eventIndicators[eventName] ? 'active' : ''
+                }`}
+              >
+                {eventName}
+              </div>
+            ))}
           </>
         )}
       </div>
