@@ -1,0 +1,52 @@
+site_name: 'Documentação da Integração Arkmeds ↔ SAP'
+site_url: 'https://seusite.com'
+theme:
+  name: 'readthedocs'
+nav:
+  - Início: index.md
+  - Visão Geral:
+      - Introdução: overview/introducao.md
+      - Arquitetura do Sistema: overview/arquitetura_sistema.md
+      - Componentes Chave: overview/componentes_chave.md
+  - Fluxos:
+      - Fluxo 1 - Ordens de Serviço (OS):
+          - Visão Geral: flows/fluxo1/visao_geral.md
+          - Nós e Processos: flows/fluxo1/nos_processos.md
+          - Transformação de Dados: flows/fluxo1/transformacao_dados.md
+          - Tratamento de Erros: flows/fluxo1/tratamento_erros.md
+      - Fluxo 2 - Criação e Fechamento:
+          - Visão Geral: flows/fluxo2/visao_geral.md
+          - Nós e Processos: flows/fluxo2/nos_processos.md
+          - Integração SAP: flows/fluxo2/transformacao_dados.md
+          - Tratamento de Erros: flows/fluxo2/tratamento_erros.md
+          # Adicione outros arquivos relevantes para o Fluxo 2 conforme necessário
+      - Fluxo 3 - Consultar Apontamentos:
+          - Visão Geral: flows/fluxo3/visao_geral.md
+          - Nós e Processos: flows/fluxo3/nos_processos.md
+          - Validação Dados: flows/fluxo3/transformacao_dados.md
+          - Tratamento de Erros: flows/fluxo3/tratamento_erros.md
+          # Adicione outros arquivos relevantes para o Fluxo 3 conforme necessário
+      - Fluxo 4 - Criar Nota no SAP:
+          - Visão Geral: flows/fluxo4/visao_geral.md
+          - Nós e Processos: flows/fluxo4/nos_processos.md
+          - Transformação de Dados: flows/fluxo4/transformacao_dados.md
+          - Tratamento de Erros: flows/fluxo4/tratamento_erros.md
+          # Adicione outros arquivos relevantes para o Fluxo 4 conforme necessário
+      - Fluxo 5 - Encerrar Nota e Ordem PM:
+          - Visão Geral: flows/fluxo5/visao_geral.md
+          - Nós e Processos: flows/fluxo5/nos_processos.md
+          - Transformação de Dados: flows/fluxo5/transformacao_dados.md
+          - Tratamento de Erros: flows/fluxo5/tratamento_erros.md
+          # Adicione outros arquivos relevantes para o Fluxo 5 conforme necessário
+  - Referência Técnica:
+      - Descrição dos Nós: referencia_tecnica/descricao_nos.md
+      - APIs e Endpoints: referencia_tecnica/apis_endpoints.md
+      - Modelos de Dados: referencia_tecnica/modelos_dados.md
+  - Solução de Problemas:
+      - Problemas Comuns: solucao_problemas/problemas_comuns.md
+      - Códigos de Erro: solucao_problemas/codigos_erro.md
+      - Contatos de Suporte: solucao_problemas/contatos_suporte.md
+  - Anexos:
+      - Glossário: anexos/glossario.md
+      - Siglas: anexos/siglas.md
+      - Registro de Mudanças: anexos/registro_mudancas.md
