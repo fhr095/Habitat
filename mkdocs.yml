@@ -1,5 +1,5 @@
 site_name: 'Documentação da Integração Arkmeds ↔ SAP'
-site_url: 'https://seusite.com'
+site_url: 'https://docmwm.netlify.app'
 theme:
   name: 'readthedocs'
 nav:
