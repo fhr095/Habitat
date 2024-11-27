@@ -522,6 +522,12 @@ useEffect(() => {
           newTranscript={transcript}
         />*/}
 
+<VoiceButton
+            onStartListening={handleStartListening}
+            onStopListening={handleStopListening}
+            isDisabled={false}
+            transcript={transcript}  />
+
     {transcript === "" && (
         <div className="buttons-container">
           <div className="fastButtons-list">
@@ -553,11 +559,7 @@ useEffect(() => {
         </div>
       )}
 
-<VoiceButton
-            onStartListening={handleStartListening}
-            onStopListening={handleStopListening}
-            isDisabled={false}
-            transcript={transcript}  />
+
 
 
       {components && world && model1Loaded && (

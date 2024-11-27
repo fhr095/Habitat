@@ -79,7 +79,7 @@ export default function Response({
                 }, 20000); // Timeout de 20 segundos para a requisição de sendTranscript
 
                 const res = await axios.post(
-                    /*"https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"/*"https://nodered.appiaarquitetura.com.br/talkwithifc"*/"https://vps.felipehenriquerafael.tech/nodered/talkwithifc",
+                    "https://habitat-chatbot-test.netlify.app/.netlify/functions/respondgpt1"/*"https://nodered.appiaarquitetura.com.br/talkwithifc"/*"https://vps.felipehenriquerafael.tech/nodered/talkwithifc"*/,
 
                     {
                         msg: transcript,

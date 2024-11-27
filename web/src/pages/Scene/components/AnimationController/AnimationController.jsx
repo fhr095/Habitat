@@ -269,7 +269,7 @@ export default function AnimationController() {
         clearInterval(idleAnimationIntervalRef.current);
       }
     };
-  }, [/*playAnimation*/]);
+  }, [playAnimation]);
 
   return null;
 }

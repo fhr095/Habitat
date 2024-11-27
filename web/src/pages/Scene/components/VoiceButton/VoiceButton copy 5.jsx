@@ -37,6 +37,7 @@ export default function VoiceButton({
   };
 
   const stopListening = () => {
+    
     if (!isListening) return; // Evita chamadas se não estiver escutando
 
     clearTimeout(timerRef.current);
@@ -57,6 +58,10 @@ export default function VoiceButton({
     };
   }, []);
 
+  // Detectar se o dispositivo é de toque
+  const isTouchDevice =
+    "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
   return (
     <div className="voice-button-container">
       <span className="bar-container">
@@ -73,12 +78,9 @@ export default function VoiceButton({
           />
         )}
         <button
-          onMouseDown={startListening}
-          onMouseUp={stopListening}
-          onMouseLeave={isListening ? stopListening : null}
-          onTouchStart={startListening}
-          onTouchEnd={stopListening}
-          onTouchCancel={isListening ? stopListening : null}
+          onPointerDown={startListening}
+          onPointerUp={stopListening}
+          onPointerLeave={isListening ? stopListening : null}
           disabled={isDisabled || transcript !== ""}
           className={`voice-button ${isListening ? "listening" : ""}`}
           style={{ display: transcript !== "" ? "none" : "block" }}
@@ -94,6 +96,7 @@ export default function VoiceButton({
           <p className="hint-text">Segure para falar</p>
         )}
       </div>
+      
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
             //scene.frustumCulled = false
             world.camera.add(scene);
             world.scene.add(world.camera);
-            scene.position.set(2.3, -0.5, -2); // Ajuste os valores conforme necessário
+            scene.position.set(2, -0.5, -2); // Ajuste os valores conforme necessário
             scene.rotation.y = -Math.PI/1.2;
             
 

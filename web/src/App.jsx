@@ -10,6 +10,7 @@ import LoginRegister from "./pages/LoginRegister/LoginRegister";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "./App.css";
+import { fetchDocumentAsJSON } from "./data.js"
 import { HabitatUserProvider, useHabitatUser } from './context/HabitatUserContext';
 import { SceneConfigProvider } from './context/SceneConfigContext'; // Importa o contexto de configuração da cena
 import { AnimationProvider } from './context/AnimationContext'; // Importa o contexto de animações

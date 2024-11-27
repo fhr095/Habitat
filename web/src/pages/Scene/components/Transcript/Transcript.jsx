@@ -26,6 +26,7 @@ export default function Transcript({ setTranscript }) {
       recognizer.lang = "pt-BR";
       recognizer.continuous = true;
       recognizer.interimResults = false;
+      
 
       recognizer.onstart = () => {
         console.log("Reconhecimento de voz iniciado.");
