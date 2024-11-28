@@ -538,21 +538,38 @@ useEffect(() => {
     console.log("Fast Button Clicked");
     setTranscript("Onde fica o banheiro mais próximo?");
   }}
-  onTouchStart={() => console.log("Fast Button Touched")}
+  onTouchStart={() => {
+    console.log("Fast Button Touched");
+    setTranscript("Onde fica o banheiro mais próximo?");
+  }}
   className="fastButton"
   style={{ "--order": 1 }}
 >
   Onde fica o banheiro mais próximo?
 </button>
   <button
-    onClick={() => setTranscript("Estou com fome, onde me recomenda comer?")}
+  onClick={() => {
+    console.log("Fast Button Clicked");
+    setTranscript("Estou com fome, onde me recomenda comer?");
+  }}
+  onTouchStart={() => {
+    console.log("Fast Button Touched");
+    setTranscript("Estou com fome, onde me recomenda comer?");
+  }}
     className="fastButton"
     style={{ "--order": 2 }}
   >
     Estou com fome, onde me recomenda comer?
   </button>
   <button
-    onClick={() => setTranscript("Como faço para protocolar um projeto?")}
+  onClick={() => {
+    console.log("Fast Button Clicked");
+    setTranscript("Como faço para protocolar um projeto?");
+  }}
+  onTouchStart={() => {
+    console.log("Fast Button Touched");
+    setTranscript("Como faço para protocolar um projeto?");
+  }}
     className="fastButton"
     style={{ "--order": 3 }}
   >
