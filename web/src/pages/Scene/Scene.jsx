@@ -530,7 +530,7 @@ useEffect(() => {
 
     
 
-    {/*transcript === "" && (
+    {transcript === "" && (
         <div className="buttons-container">
           <div className="fastButtons-list">
           <button
@@ -563,7 +563,7 @@ useEffect(() => {
 
           
         </div>
-      )*/}
+      )}
 
 
 
