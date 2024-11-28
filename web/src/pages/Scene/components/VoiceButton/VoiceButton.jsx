@@ -21,6 +21,8 @@ export default function VoiceButton({
     e.preventDefault();
   };
 
+  const touchEventOptions = { passive: false };
+
   const startListening = () => {
     if (isListening) return; // Evita múltiplas chamadas
 
@@ -39,10 +41,10 @@ export default function VoiceButton({
       setProgress((prev) => Math.min(prev + 1, 100));
     }, interval);
 
-    // Adicionar event listeners para prevenir eventos de toque e movimento
-    document.addEventListener("touchstart", preventDefault, { passive: false });
-    document.addEventListener("touchmove", preventDefault, { passive: false });
-    document.addEventListener("touchend", preventDefault, { passive: false });
+    // Adicionar event listeners para prevenir eventos de toque e gesto
+    document.addEventListener("touchstart", preventDefault, touchEventOptions);
+    document.addEventListener("touchmove", preventDefault, touchEventOptions);
+    document.addEventListener("touchend", preventDefault, touchEventOptions);
     document.addEventListener("gesturestart", preventDefault);
     document.addEventListener("gesturechange", preventDefault);
     document.addEventListener("gestureend", preventDefault);
@@ -61,9 +63,9 @@ export default function VoiceButton({
     setProgress(0);
 
     // Remover event listeners quando parar de escutar
-    document.removeEventListener("touchstart", preventDefault);
-    document.removeEventListener("touchmove", preventDefault);
-    document.removeEventListener("touchend", preventDefault);
+    document.removeEventListener("touchstart", preventDefault, touchEventOptions);
+    document.removeEventListener("touchmove", preventDefault, touchEventOptions);
+    document.removeEventListener("touchend", preventDefault, touchEventOptions);
     document.removeEventListener("gesturestart", preventDefault);
     document.removeEventListener("gesturechange", preventDefault);
     document.removeEventListener("gestureend", preventDefault);
@@ -75,9 +77,9 @@ export default function VoiceButton({
       clearTimeout(timerRef.current);
       clearInterval(progressTimerRef.current);
       // Remover event listeners ao desmontar
-      document.removeEventListener("touchstart", preventDefault);
-      document.removeEventListener("touchmove", preventDefault);
-      document.removeEventListener("touchend", preventDefault);
+      document.removeEventListener("touchstart", preventDefault, touchEventOptions);
+      document.removeEventListener("touchmove", preventDefault, touchEventOptions);
+      document.removeEventListener("touchend", preventDefault, touchEventOptions);
       document.removeEventListener("gesturestart", preventDefault);
       document.removeEventListener("gesturechange", preventDefault);
       document.removeEventListener("gestureend", preventDefault);
