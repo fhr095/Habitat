@@ -528,16 +528,22 @@ useEffect(() => {
             isDisabled={false}
             transcript={transcript}  />
 
-    {transcript === "" && (
+    
+
+    {/*transcript === "" && (
         <div className="buttons-container">
           <div className="fastButtons-list">
-  <button
-    onClick={() => setTranscript("Onde fica o banheiro mais próximo?")}
-    className="fastButton"
-    style={{ "--order": 1 }}
-  >
-    Onde fica o banheiro mais próximo?
-  </button>
+          <button
+  onClick={() => {
+    console.log("Fast Button Clicked");
+    setTranscript("Onde fica o banheiro mais próximo?");
+  }}
+  onTouchStart={() => console.log("Fast Button Touched")}
+  className="fastButton"
+  style={{ "--order": 1 }}
+>
+  Onde fica o banheiro mais próximo?
+</button>
   <button
     onClick={() => setTranscript("Estou com fome, onde me recomenda comer?")}
     className="fastButton"
@@ -557,7 +563,7 @@ useEffect(() => {
 
           
         </div>
-      )}
+      )*/}
 
 
 

@@ -12,13 +12,15 @@
   .response {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 15px; // Aumentado para acomodar fontes maiores
     border-radius: 10px;
     color: $text;
-    max-width: 400px; /* Ajuste conforme necessário */
+    max-width: 50vw; // Proporcional à largura da tela
     animation-duration: 0.5s;
     animation-timing-function: ease-out;
     position: relative;
+    font-size: 1.4rem; // Fonte ajustada para maior legibilidade
+    line-height: 1.2;
   }
 
   .question {
@@ -27,11 +29,16 @@
     align-self: flex-end;
     animation-name: slideInFromRight;
 
+    p {
+      font-size: 1.4rem; // Aumentar tamanho da fonte
+      line-height: 1.2;
+    }
+
     &:after {
       content: "";
       position: absolute;
       top: 50%;
-      right: -9px; /* Ajuste conforme necessário */
+      right: -9px;
       width: 0;
       height: 0;
       border-left: 10px solid $primary-color;
@@ -41,54 +48,7 @@
     }
   }
 
-  .loading-response {
-    align-self: flex-start;
-    animation-name: slideInFromLeft;
-    display: flex;
-    align-items: center;
-
-    .avatar-container {
-      width: 100px; /* Ajuste conforme necessário */
-      height: 100px; /* Ajuste conforme necessário */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-right: 10px; /* Espaço entre o avatar e o texto */
-    }
-
-    .avatar-gif {
-      width: 70%;
-      height: 70%;
-      object-fit: contain; /* Garante que o GIF cubra toda a área do avatar */
-    }
-
-    .loading-response-text {
-      background-color: $light-gray;
-      padding: 10px;
-      border-radius: 10px;
-      color: $text;
-      width: 100%;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      &:after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: -9px; /* Ajuste conforme necessário */
-        width: 0;
-        height: 0;
-        border-right: 10px solid $light-gray;
-        border-top: 10px solid transparent;
-        border-bottom: 10px solid transparent;
-        transform: translateY(-50%);
-      }
-    }
-  }
-
+  .loading-response,
   .response {
     align-self: flex-start;
     animation-name: slideInFromLeft;
@@ -96,37 +56,44 @@
     align-items: center;
 
     .avatar-container {
-      width: 100px; /* Ajuste conforme necessário */
-      height: 100px; /* Ajuste conforme necessário */
+      width: 120px; // Ajustado para balões maiores
+      height: 120px;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-right: 10px; /* Espaço entre o avatar e o texto */
+      margin-right: 15px;
     }
 
     .avatar-gif {
-      width: 70%;
-      height: 70%;
-      object-fit: contain; /* Garante que o GIF cubra toda a área do avatar */
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
+    .loading-response-text,
     .response-text {
       background-color: $light-gray;
-      padding: 10px;
+      padding: 15px; // Aumentado para fontes maiores
       border-radius: 10px;
       color: $text;
-      max-width: 100%; /* Ajuste conforme necessário */
+      max-width: 80vw; // Proporcional à largura da tela
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
 
+      p {
+        font-size: 1.4rem; // Aumentar tamanho da fonte
+        line-height: 1.2;
+        text-align: left; // Opcional para melhor legibilidade
+      }
+
       &:after {
         content: "";
         position: absolute;
         top: 50%;
-        left: -9px; /* Ajuste conforme necessário */
+        left: -9px;
         width: 0;
         height: 0;
         border-right: 10px solid $light-gray;
@@ -141,7 +108,7 @@
         flex-direction: column;
         align-items: center;
 
-        .button-group{
+        .button-group {
           display: flex;
           justify-content: space-around;
           width: 100%;
@@ -150,14 +117,14 @@
           button {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.8rem; // Botões proporcionais
             cursor: pointer;
-            margin-bottom: 10px; /* Espaço para a barra de progresso */
-  
+            margin-bottom: 10px;
+
             &.like:hover {
               color: green;
             }
-  
+
             &.dislike:hover {
               color: red;
             }
@@ -169,7 +136,7 @@
           background-color: $light-gray;
           border-radius: 5px;
           overflow: hidden;
-          height: 5px;
+          height: 6px; // Aumentado para melhor visibilidade
           margin-top: 5px;
 
           .progress {
@@ -217,5 +184,24 @@
 
   .response-exit {
     animation-name: slideOutToLeft;
+  }
+}
+
+// Media query para ajustar em telas menores
+@media (max-width: 600px) {
+  .response-container {
+    bottom: 10px;
+    right: 10px;
+
+    .question,
+    .loading-response,
+    .response {
+      padding: 10px;
+      max-width: 90vw;
+
+      p {
+        font-size: 1.4rem; // Ajuste para dispositivos menores
+      }
+    }
   }
 }
