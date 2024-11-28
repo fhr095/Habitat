@@ -17,6 +17,10 @@ export default function VoiceButton({
   const timerRef = useRef(null);
   const progressTimerRef = useRef(null);
 
+  const preventDefault = (e) => {
+    e.preventDefault();
+  };
+
   const startListening = () => {
     if (isListening) return; // Evita múltiplas chamadas
 
@@ -34,6 +38,14 @@ export default function VoiceButton({
     progressTimerRef.current = setInterval(() => {
       setProgress((prev) => Math.min(prev + 1, 100));
     }, interval);
+
+    // Adicionar event listeners para prevenir eventos de toque e movimento
+    document.addEventListener("touchstart", preventDefault, { passive: false });
+    document.addEventListener("touchmove", preventDefault, { passive: false });
+    document.addEventListener("touchend", preventDefault, { passive: false });
+    document.addEventListener("gesturestart", preventDefault);
+    document.addEventListener("gesturechange", preventDefault);
+    document.addEventListener("gestureend", preventDefault);
   };
 
   const stopListening = () => {
@@ -47,6 +59,14 @@ export default function VoiceButton({
     setIsListening(false);
     onStopListening();
     setProgress(0);
+
+    // Remover event listeners quando parar de escutar
+    document.removeEventListener("touchstart", preventDefault);
+    document.removeEventListener("touchmove", preventDefault);
+    document.removeEventListener("touchend", preventDefault);
+    document.removeEventListener("gesturestart", preventDefault);
+    document.removeEventListener("gesturechange", preventDefault);
+    document.removeEventListener("gestureend", preventDefault);
   };
 
   useEffect(() => {
@@ -54,6 +74,13 @@ export default function VoiceButton({
     return () => {
       clearTimeout(timerRef.current);
       clearInterval(progressTimerRef.current);
+      // Remover event listeners ao desmontar
+      document.removeEventListener("touchstart", preventDefault);
+      document.removeEventListener("touchmove", preventDefault);
+      document.removeEventListener("touchend", preventDefault);
+      document.removeEventListener("gesturestart", preventDefault);
+      document.removeEventListener("gesturechange", preventDefault);
+      document.removeEventListener("gestureend", preventDefault);
     };
   }, []);
 
