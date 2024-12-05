@@ -20,18 +20,34 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
       const scene = modelRef.current;
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      const baseWindowWidth = (1366/768) * windowHeight;
-      const basePositionX = 3; 
+
+      // Calcula a largura de referência com base na altura atual
+      const baseWindowWidth = (1366 / 768) * windowHeight;
+
+      let basePositionX;
+      let positionY;
+      let positionZ;
+
+      if (windowHeight > windowWidth) {
+        // Orientação retrato
+        basePositionX = 3;
+        positionY = 0;
+        positionZ = -2.5;
+      } else {
+        // Orientação paisagem
+        basePositionX = 2;
+        positionY = -0.5;
+        positionZ = -2;
+      }
 
       // Calcula a nova posição X proporcional à largura da janela
-      const newPositionX = basePositionX * (windowWidth / baseWindowWidth) ** 0.9;
+      const newPositionX = basePositionX * (windowWidth / baseWindowWidth);
+
       // Atualiza a posição do modelo
-     // scene.position.set(newPositionX, -0.5, -2);
-      scene.position.set(newPositionX, 0, -2.5);
+      scene.position.set(newPositionX, positionY, positionZ);
 
       // Ajusta a rotação, se necessário
-      //scene.rotation.y = -Math.PI / 1.2;
-      scene.rotation.y = -Math.PI /(1.02 * (windowWidth / baseWindowWidth) ** 0.8);
+      scene.rotation.y = -Math.PI / 1.2;
     }
   };
 
