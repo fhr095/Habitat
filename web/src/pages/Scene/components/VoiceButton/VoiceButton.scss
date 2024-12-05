@@ -1,6 +1,6 @@
 .voice-button-container {
-  position: fixed;
-  bottom: 20%; /* Proporcional à altura da tela */
+  position: fixed; /* Alterado de absolute para fixed */
+  bottom: 15%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -8,20 +8,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2vh; /* Espaço entre elementos proporcional */
+  gap: 2vmin;
 }
+
+
 
 .bar-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: auto;
   height: auto;
 
   .bar {
     position: absolute;
-    width: 8vw; /* Proporcional à largura da tela */
-    height: 8vw;
+    width: 15vmin; /* Proporcional ao menor lado da tela */
+    height: 15vmin;
   }
 
   .voice-button {
@@ -29,17 +31,22 @@
     background-color: transparent;
     border: none;
     border-radius: 50%;
-    padding: 2vh; /* Proporcional ao tamanho da tela */
+    padding: 2vmin; /* Proporcional ao tamanho da tela */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    width: 9.5vw; /* Proporcional à largura da tela */
-    height: 9.5vw; /* Proporcional à largura da tela */
-    border: solid 0.2vw #cce4f8;
-    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.5), 0 0 4vh rgba(0, 140, 255, 0.4);
+    width: 18vmin; /* Proporcional ao menor lado da tela */
+    height: 18vmin;
+    border: solid 0.5vmin #cce4f8;
+    box-shadow: 0 0 2vmin rgba(0, 140, 255, 0.6), 0 0 3vmin rgba(0, 140, 255, 0.5), 0 0 4vmin rgba(0, 140, 255, 0.4);
     animation: pulse 1.5s infinite;
     transition: box-shadow 0.3s ease-in-out;
+
+    svg {
+      width: 8vmin;
+      height: 8vmin;
+    }
   }
 
   .listening {
@@ -49,25 +56,23 @@
 }
 
 .text-container {
-  height: 5vh; /* Proporcional ao tamanho da tela */
+  height: auto;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.status-text {
+.status-text, .hint-text {
   font-family: 'Roboto', sans-serif;
-  font-size: 3vh; /* Texto proporcional à altura da tela */
+  font-size: 3vmin; /* Texto proporcional ao menor lado da tela */
   color: #1a3b5d;
   transition: color 0.3s ease, transform 0.3s ease;
+  text-align: center;
 }
 
 .hint-text {
-  font-family: 'Roboto', sans-serif;
-  font-size: 3vh;
-  color: #080808;
   animation: shake 0.5s ease, fadeOut 3s ease forwards;
-  text-shadow: 1px 1px 1vh rgba(0, 0, 0, 0.4);
+  text-shadow: 1px 1px 1vmin rgba(0, 0, 0, 0.4);
 }
 
 @keyframes shake {
@@ -75,10 +80,10 @@
     transform: translateX(0);
   }
   20%, 60% {
-    transform: translateX(-1vw);
+    transform: translateX(-1vmin);
   }
   40%, 80% {
-    transform: translateX(1vw);
+    transform: translateX(1vmin);
   }
 }
 
@@ -98,7 +103,7 @@
   }
   50% {
     transform: scale(1.1);
-    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.5), 0 0 4vh rgba(0, 140, 255, 0.4);
+    box-shadow: 0 0 2vmin rgba(0, 140, 255, 0.6), 0 0 3vmin rgba(0, 140, 255, 0.5), 0 0 4vmin rgba(0, 140, 255, 0.4);
   }
   100% {
     transform: scale(1);
@@ -108,9 +113,9 @@
 
 @keyframes glow {
   0% {
-    box-shadow: 0 0 2vh rgba(0, 140, 255, 0.6), 0 0 3vh rgba(0, 140, 255, 0.8), 0 0 4vh rgba(0, 140, 255, 1);
+    box-shadow: 0 0 2vmin rgba(0, 140, 255, 0.6), 0 0 3vmin rgba(0, 140, 255, 0.8), 0 0 4vmin rgba(0, 140, 255, 1);
   }
   100% {
-    box-shadow: 0 0 4vh rgba(0, 140, 255, 1), 0 0 6vh rgba(0, 140, 255, 1), 0 0 8vh rgba(0, 140, 255, 1);
+    box-shadow: 0 0 4vmin rgba(0, 140, 255, 1), 0 0 6vmin rgba(0, 140, 255, 1), 0 0 8vmin rgba(0, 140, 255, 1);
   }
 }

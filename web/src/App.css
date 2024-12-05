@@ -1,6 +1,15 @@
+/* App.css ou um arquivo CSS global */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .app-container {
   width: 100%;
   height: 100%;
+  overflow: hidden; /* Evita scroll indesejado */
 }
 
 .loading-page {
@@ -13,15 +22,17 @@
   justify-content: center;
   align-items: center;
   background-color: transparent;
+  z-index: 1000; /* Certifique-se de que está acima de outros elementos */
 
   .spinner-border {
-    width: 3rem;
-    height: 3rem;
-    border: 0.4rem solid #ccc;
-    border-top: 0.4rem solid #004736;
+    width: 5vmin;
+    height: 5vmin;
+    border: 0.5vmin solid #ccc;
+    border-top: 0.5vmin solid #004736;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 
+  
     .visually-hidden {
       position: absolute;
       width: 1px;
