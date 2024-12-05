@@ -18,6 +18,7 @@ export default defineConfig({
         short_name: 'Habitat',
         description: 'Interaja com a Cidade Administrativa',
         theme_color: '#ffffff',
+        start_url: "/scene/zDcY5K8H26IBJ4xZt3mg",
         icons: [
           {
             src: 'pwa-192x192.png',
