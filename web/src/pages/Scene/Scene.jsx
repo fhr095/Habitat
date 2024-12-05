@@ -13,6 +13,8 @@ import Porcupine from "./components/Porcupine/Porcupine";
 import SetupScene from "./components/SetupScene/SetupScene";
 import VoiceButton from "./components/VoiceButton/VoiceButton";
 import AnimationController from "./components/AnimationController/AnimationController";
+import RotateIndicator from './components/RotateIndicator/RotateIndicator'; // Ajuste o caminho conforme necessário
+
 import WebCan from "./components/WebCan/WebCan";
 import ControlPanel from "./components/ControlPanel/ControlPanel";
 
@@ -441,6 +443,7 @@ useEffect(() => {
 
   return (
     <div className="scene-container">
+        <RotateIndicator />
       <div className="welcome-container">
         {!isListening && transcript ==="" && (
           <p className="welcome" key={animationKey}>
@@ -478,11 +481,14 @@ useEffect(() => {
           onLoad={onLoadModel2}
         />
       )}
+
+
+
     {/* Botão para enviar "funcionamento" para o transcript */}
     {/*<button onClick={() => setTranscript('estacionamentos')}>
       Enviar "funcionamento"
     </button>}
-
+      
       {/* Outros componentes */}
       <Response
         habitatId={id}
