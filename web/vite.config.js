@@ -14,9 +14,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Seu Nome de Aplicação',
-        short_name: 'Nome Curto',
-        description: 'Descrição da sua aplicação',
+        name: 'HABITAT',
+        short_name: 'Habitat',
+        description: 'Interaja com a Cidade Administrativa',
         theme_color: '#ffffff',
         icons: [
           {
