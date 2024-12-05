@@ -20,19 +20,18 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
       const scene = modelRef.current;
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      const baseWindowHeight = 768; // Altura de referência
-      //const baseWindowWidth = 1366;
       const baseWindowWidth = (1366/768) * windowHeight;
-      const basePositionX = 2; 
+      const basePositionX = 3; 
 
       // Calcula a nova posição X proporcional à largura da janela
-      const newPositionX = (windowWidth / baseWindowWidth) * basePositionX;
-
+      const newPositionX = basePositionX * (windowWidth / baseWindowWidth) ** 0.9;
       // Atualiza a posição do modelo
-      scene.position.set(newPositionX, -0.5, -2);
+     // scene.position.set(newPositionX, -0.5, -2);
+      scene.position.set(newPositionX, 0, -2.5);
 
       // Ajusta a rotação, se necessário
-      scene.rotation.y = -Math.PI / 1.2;
+      //scene.rotation.y = -Math.PI / 1.2;
+      scene.rotation.y = -Math.PI /(1.02 * (windowWidth / baseWindowWidth) ** 0.8);
     }
   };
 
