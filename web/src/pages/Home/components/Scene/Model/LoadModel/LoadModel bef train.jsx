@@ -1,4 +1,3 @@
-// src/components/Scene/Model/LoadModel/LoadModel.jsx
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { openDB, getFromDB, saveToDB } from "../Cache/Cache";
 import * as OBC from "@thatopen/components";
@@ -63,10 +62,8 @@ async function loadGlb(buffer, world) {
 }
 
 async function IfcModelProcessor({ components, model }) {
-  return model.children.map((child, index) => {
-    const id = child.name || `obj_${index}`; // Gera um ID único se o "name" estiver vazio
-    const name = child.name || `Objeto sem nome ${index + 1}`; // Nome fallback
-    return { id, name };
-  });
+  return model.children.map((child) => ({
+    id: child.name,
+    name: child.name,
+  }));
 }
-

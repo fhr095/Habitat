@@ -15,6 +15,7 @@ import { HabitatUserProvider, useHabitatUser } from './context/HabitatUserContex
 import { SceneConfigProvider } from './context/SceneConfigContext'; // Importa o contexto de configuração da cena
 import { AnimationProvider } from './context/AnimationContext'; // Importa o contexto de animações
 import { ModelProvider } from './context/ModelContext';
+import Dashboard from './pages/Home/components/Analytics/Dashboard.jsx';
 
 export default function App() {
   return (
@@ -80,6 +81,7 @@ function MainApp() {
         />
         <Route path="/" element={<Home user={userData} />} />
         <Route path="/habitat/:id" element={<Home />} />
+        <Route path="/analytics" element={<Dashboard />} />
       </Routes>
     </div>
   );

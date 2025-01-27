@@ -100,7 +100,7 @@ export default function ChatContainer() {
 
     if (chatType === "bot") {
       try {
-        const response = await axios.post("https://roko.flowfuse.cloud/talkwithifc", {
+        const response = await axios.post("https://vps.felipehenriquerafael.tech/nodered/talkwithifc", {
           msg: newMessage,
           avt: chatBot.avt,
         });
@@ -113,9 +113,9 @@ export default function ChatContainer() {
 
         await addDoc(messagesRef, botReply);
 
-        if (response.data.comandos[0].fade) {
+        /*if (response.data.comandos[0].fade) {
           setFade(response.data.comandos[0].fade);
-        }
+        }*/
       } catch (error) {
         console.error("Erro ao enviar mensagem para o bot: ", error);
       }

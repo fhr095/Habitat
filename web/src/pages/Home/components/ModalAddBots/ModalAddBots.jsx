@@ -78,7 +78,7 @@ export default function ModalAddBots({ onClose, habitatId }) {
       const { name, personality, creativity, context, avt, data } = botData;
       const botDataForAPI = { name, personality, creativity, context, avt, data };
 
-      const response = await axios.post("https://roko.flowfuse.cloud/trainDataJSON", botDataForAPI, {
+      const response = await axios.post("https://vps.felipehenriquerafael.tech/nodered/trainDataJSON", botDataForAPI, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Basic ${btoa(`${username}:${password}`)}`
@@ -90,6 +90,7 @@ export default function ModalAddBots({ onClose, habitatId }) {
       }
 
       // Save bot data in Firestore
+      console.log("IDHABITAT", habitatId)
       const newBotRef = doc(collection(db, `habitats/${habitatId}/avatars`));
       await setDoc(newBotRef, {
         name: botData.name,

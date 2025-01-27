@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaTimes } from "react-icons/fa";
 import "./ModalEditBot.scss";
@@ -6,6 +6,8 @@ import Scene from "./Scene";
 
 const username = "habitat";
 const password = "lobomau";
+
+
 
 export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
     const [botData, setBotData] = useState({
@@ -19,7 +21,7 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
     const [fade, setFade] = useState({});
 
     useEffect(() => {
-        console.log("Fade atualizado:", fade);
+        console.log("fade", fade);
     }, [fade]);
 
     useEffect(() => {
@@ -31,20 +33,13 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
                         password
                     }
                 });
-
-                // Garantindo que `data` sempre seja um array
-                setBotData({
-                    ...response.data,
-                    data: response.data.data || [{ info: "", fade: "", name: "" }]
-                });
+                setBotData(response.data);
             } catch (error) {
                 console.error("Erro ao buscar dados do bot: ", error);
             }
         };
 
-        if (selectedBot) {
-            fetchBotData();
-        }
+        fetchBotData();
     }, [selectedBot]);
 
     useEffect(() => {
@@ -91,9 +86,7 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
     return (
         <div className="edit-bot-page">
             <div className="page-content">
-                <span className="close" onClick={handleClose}>
-                    <FaTimes />
-                </span>
+                <span className="close" onClick={handleClose}><FaTimes /></span>
                 <h2>Editar Bot</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-section">
@@ -134,10 +127,7 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
                         </label>
                     </div>
                     <div className="form-section">
-                        <p>
-                            Digite: "Você está aqui" e selecione um local no modelo caso queira definir um ponto inicial
-                            para quem for visualizar
-                        </p>
+                        <p>Digite: "Você está aqui" e selecione um local no modelo caso queira definir um ponto inicial para quem for visualizar</p>
                         {botData.data.map((item, index) => (
                             <div key={index} className="info-section">
                                 <label>
@@ -151,11 +141,13 @@ export default function ModalEditBot({ selectedBot, ifcFileUrl, onClose }) {
                                 </label>
                                 <label>
                                     Nome do Fade:
-                                    <input type="text" value={item.name || ""} readOnly />
+                                    <input
+                                        type="text"
+                                        value={item.name || ""}
+                                        readOnly
+                                    />
                                 </label>
-                                <button type="button" onClick={() => handleRemoveInfo(index)}>
-                                    Remover
-                                </button>
+                                <button type="button" onClick={() => handleRemoveInfo(index)}>Remover</button>
                             </div>
                         ))}
                     </div>

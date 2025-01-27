@@ -11,31 +11,112 @@
   }
 }
 
+.access-resizable-box {
+  position: relative;
+  height: 100%;
+}
+
+.custom-handle {
+  position: absolute;
+  width: 10px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  cursor: ew-resize;
+  z-index: 100;
+  background: transparent;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background-color: $light-gray; // Ou outra cor que preferir
+    left: 4px;
+    top: 0;
+  }
+}
+
 .access-container {
-  width: 350px;
-  height: calc(100% - 20px);
+  width: 100%;
+  height: 100%;
   background-color: $white;
   display: flex;
   flex-direction: column;
   padding: 20px;
-  border-radius: 5px;
-  margin: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px 0 0 5px; // Ajuste para combinar com a borda redimensionável
+  margin: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); // Sombra para destacar a área
   z-index: 10;
-  gap: 10px;
   position: relative;
   animation: slideInZoom 0.3s ease;
+
+  // Permitindo rolagem vertical
+  overflow-y: auto;
+
+  // Estilização da barra de rolagem no Chrome, Safari e Edge
+  &::-webkit-scrollbar {
+    width: 8px; 
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f4f4f9;
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #00bfa6;
+    border-radius: 8px;
+    &:hover {
+      background: #008e79;
+    }
+  }
+
+  // Estilização da barra de rolagem para Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #00bfa6 #f4f4f9;
 
   header {
     width: 100%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: space-between; // Espaço entre header-left e header-right
     position: relative;
 
-    .text {
-      font-size: 1.2rem;
-      color: $text;
+    .header-left {
+      display: flex;
+      align-items: center;
+
+      .text {
+        font-size: 1.2rem;
+        color: $text;
+      }
+
+      .analytics-icon {
+        background: none;
+        border: none;
+        padding: 0;
+        color: $text;
+        font-size: 1.2rem; // Tamanho reduzido para ser mais discreto
+        cursor: pointer;
+        margin-left: 8px; // Espaçamento entre o texto e o ícone
+        transition: color 0.3s ease, transform 0.3s ease;
+
+        &:hover {
+          color: $primary-color;
+          transform: scale(1.2);
+        }
+
+        &:focus {
+          outline: none;
+          color: $primary-color;
+        }
+      }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
     }
 
     .context-menu {
@@ -87,11 +168,9 @@
 
   .topics {
     width: 100%;
-    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin-bottom: 100px;
 
     header {
       display: flex;
@@ -118,7 +197,6 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      overflow: auto;
 
       .member-container,
       .group-container,
@@ -126,7 +204,7 @@
         width: 100%;
         display: flex;
         align-items: center;
-        position: relative; /* Add position relative to member-container */
+        position: relative;
 
         .member-item,
         .group-item,
@@ -194,6 +272,21 @@
           }
         }
       }
+    }
+  }
+
+  /* Estilos para o Resizer */
+  .resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    cursor: ew-resize;
+    background-color: transparent;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1); // Cor de fundo ao passar o mouse
     }
   }
 }

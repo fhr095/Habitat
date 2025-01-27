@@ -52,8 +52,8 @@ export default function Habitats() {
   }, [user?.email]);
 
   const toggleCreateModal = () => {
-    setIsCreateModalOpen(prevState => !prevState);
-    setIsListModalOpen(false);
+    //setIsCreateModalOpen(prevState => !prevState);
+    //setIsListModalOpen(false);
   };
 
   const closeCreateModal = () => {
@@ -61,7 +61,7 @@ export default function Habitats() {
   };
 
   const toggleListModal = () => {
-    setIsListModalOpen(prevState => !prevState);
+    //setIsListModalOpen(prevState => !prevState);
   };
 
   const toggleProfileMenu = () => {

@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaEllipsisV, FaArrowLeft } from "react-icons/fa";
+import { FaPlus, FaEllipsisV } from "react-icons/fa";
 import { collection, query, where, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
-import { useHabitatUser } from "../../../../context/HabitatUserContext";
+import { useHabitatUser } from "../../../../context/HabitatUserContext"; 
 import "./Equipe.scss";
 import ModalEditMember from "../ModalEditMember/ModalEditMember";
 import ModalAddMembers from "../ModalAddMembers/ModalAddMembers";
 import ModalEditGroup from "../ModalEditGroup/ModalEditGroup";
 import ModalAddGroups from "../ModalAddGroups/ModalAddGroups";
+import ModalEditBot from "../ModalEditBot/ModalEditBot";
 import ModalAddBots from "../ModalAddBots/ModalAddBots";
-import EditBotPanel from "../EditBotPanel/EditBotPanel";
+
 
 export default function Equipe() {
-  const { habitat, user, setChatMember, setChatGroup, setChatBot } = useHabitatUser();
+  const { habitat, user, setChatMember, setChatGroup, setChatBot } = useHabitatUser(); 
   const userEmail = user?.email;
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [bots, setBots] = useState([]);
-
-  // Estados para navegação e seleção
-  const [viewMode, setViewMode] = useState("list"); // 'list' ou 'edit'
-  const [selectedBot, setSelectedBot] = useState(null);
+  
+  // Estados para membros, grupos e bots selecionados
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedBot, setSelectedBot] = useState(null);
 
   const [modals, setEquipeModals] = useState({
     members: false,
@@ -32,6 +32,7 @@ export default function Equipe() {
     bots: false,
     editMember: false,
     editGroup: false,
+    editBot: false,
   });
 
   useEffect(() => {
@@ -96,65 +97,51 @@ export default function Equipe() {
       setChatMember(member);
     }
   };
-
+  
   const handleGroupClick = (group) => {
     if (setChatGroup) {
       setChatGroup(group);
     }
   };
-
+  
   const handleBotClick = (bot) => {
     if (setChatBot) {
-      setChatBot(bot); // Define o bot no contexto de chat
+      setChatBot(bot);
     }
   };
 
-  const handleBotEdit = (bot) => {
-    setSelectedBot(bot);
-    setViewMode("edit"); // Alterna para o painel de edição
+  const handleToggleModal = (modalName, value) => {
+    setEquipeModals((prevModals) => ({
+      ...prevModals,
+      [modalName]: value,
+    }));
   };
-
-  const handleBackToList = () => {
-    setViewMode("list"); // Retorna à lista
-    setSelectedBot(null);
-  };
-
-  if (viewMode === "edit") {
-    return (
-      <div className="edit-bot-panel-container">
-        <button className="back-button" onClick={handleBackToList}>
-          <FaArrowLeft /> Voltar
-        </button>
-        <EditBotPanel selectedBot={selectedBot} ifcFileUrl={habitat.ifcFileUrl} />
-      </div>
-    );
-  }
 
   return (
     <>
-      {/* Membros */}
       <div className="topics">
         <header>
           <div className="text">Membros</div>
           {isAdmin && (
-            <button onClick={() => setEquipeModals((prev) => ({ ...prev, members: true }))}>
+            <button onClick={() => handleToggleModal("members", true)}>
               <FaPlus size={15} />
             </button>
           )}
         </header>
         <div className="members-list">
-          {members.map((member) => (
+          {members.length > 0 && members.map((member) => (
             <div className="member-container" key={member.id}>
               <div className="member-item" onClick={() => handleMemberClick(member)}>
                 <img src={member.profileImageUrl} alt={member.name} />
                 <div className="text">{member.name}</div>
+                <span style={{ color: member.color }}>{member.tag}</span>
               </div>
               {isAdmin && (
                 <button
                   className="edit-button"
                   onClick={() => {
-                    setSelectedMember(member);
-                    setEquipeModals((prev) => ({ ...prev, editMember: true }));
+                    setSelectedMember(member.id);
+                    handleToggleModal("editMember", true);
                   }}
                 >
                   <FaEllipsisV size={15} />
@@ -165,19 +152,18 @@ export default function Equipe() {
         </div>
       </div>
 
-      {/* Grupos */}
       <div className="divider" />
       <div className="topics">
         <header>
           <div className="text">Grupos</div>
           {isAdmin && (
-            <button onClick={() => setEquipeModals((prev) => ({ ...prev, groups: true }))}>
+            <button onClick={() => handleToggleModal("groups", true)}>
               <FaPlus size={15} />
             </button>
           )}
         </header>
         <div className="groups-list">
-          {groups.map((group) => (
+          {groups.length > 0 && groups.map((group) => (
             <div className="group-container" key={group.id}>
               <div className="group-item" onClick={() => handleGroupClick(group)}>
                 <img src={group.imgUrl} alt={group.name} />
@@ -187,8 +173,8 @@ export default function Equipe() {
                 <button
                   className="edit-button"
                   onClick={() => {
-                    setSelectedGroup(group);
-                    setEquipeModals((prev) => ({ ...prev, editGroup: true }));
+                    setSelectedGroup(group.id);
+                    handleToggleModal("editGroup", true);
                   }}
                 >
                   <FaEllipsisV size={15} />
@@ -199,33 +185,29 @@ export default function Equipe() {
         </div>
       </div>
 
-      {/* Bots */}
       <div className="divider" />
       <div className="topics">
         <header>
           <div className="text">Bots e Assistentes</div>
           {isAdmin && (
-            <button onClick={() => setEquipeModals((prev) => ({ ...prev, bots: true }))}>
+            <button onClick={() => handleToggleModal("bots", true)}>
               <FaPlus size={15} />
             </button>
           )}
         </header>
         <div className="bots-list">
-          {bots.map((bot) => (
+          {bots.length > 0 && bots.map((bot) => (
             <div className="bot-container" key={bot.id}>
-              <div
-                className="bot-item"
-                onClick={() => handleBotClick(bot)} // Clique para abrir o chat
-              >
+              <div className="bot-item" onClick={() => handleBotClick(bot)}>
                 <img src={bot.imageUrl} alt={bot.name} />
                 <div className="text">{bot.name}</div>
               </div>
               {isAdmin && (
                 <button
                   className="edit-button"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Evita abrir o chat ao clicar no botão de edição
-                    handleBotEdit(bot); // Alterna para o painel de edição
+                  onClick={() => {
+                    setSelectedBot(bot.id);
+                    handleToggleModal("editBot", true);
                   }}
                 >
                   <FaEllipsisV size={15} />
@@ -236,22 +218,29 @@ export default function Equipe() {
         </div>
       </div>
 
-      {/* Modals */}
-      {modals.members && <ModalAddMembers onClose={() => setEquipeModals((prev) => ({ ...prev, members: false }))} habitatId={habitat.id} />}
-      {modals.groups && <ModalAddGroups onClose={() => setEquipeModals((prev) => ({ ...prev, groups: false }))} habitatId={habitat.id} />}
-      {modals.bots && <ModalAddBots onClose={() => setEquipeModals((prev) => ({ ...prev, bots: false }))} habitatId={habitat.id}/>}
+      {modals.members && <ModalAddMembers onClose={() => handleToggleModal("members", false)} habitatId={habitat.id} />}
+      {modals.groups && <ModalAddGroups onClose={() => handleToggleModal("groups", false)} habitatId={habitat.id} userEmail={userEmail} />}
+      {modals.bots && <ModalAddBots onClose={() => handleToggleModal("bots", false)} habitatId={habitat.id} />}
+      
       {modals.editMember && (
         <ModalEditMember
           habitatId={habitat.id}
           selectedMember={selectedMember}
-          onClose={() => setEquipeModals((prev) => ({ ...prev, editMember: false }))}
+          onClose={() => handleToggleModal("editMember", false)}
         />
       )}
       {modals.editGroup && (
         <ModalEditGroup
           habitatId={habitat.id}
           selectedGroup={selectedGroup}
-          onClose={() => setEquipeModals((prev) => ({ ...prev, editGroup: false }))}
+          onClose={() => handleToggleModal("editGroup", false)}
+        />
+      )}
+      {modals.editBot && (
+        <ModalEditBot
+          selectedBot={selectedBot}
+          ifcFileUrl={habitat.ifcFileUrl}
+          onClose={() => handleToggleModal("editBot", false)}
         />
       )}
     </>

@@ -1,4 +1,3 @@
-// src/components/Scene/SetupScene/SetupScene.jsx
 import * as OBC from "@thatopen/components";
 import * as THREE from "three";
 
@@ -16,14 +15,11 @@ export default function SetupScene(containerRef, setCamera) {
   const controls = world.camera.controls;
   controls.setLookAt(10, 10, 10, 0, 0, 0);
 
-  components.init(); // Inicia o sistema OBC, incluindo loop de render
-  console.log("Câmera configurada:", world.camera);
-console.log("Câmera atual (currentCamera):", world.camera.currentCamera);
-
+  components.init();
 
   world.scene.three.background = null;
 
-  // Define posição inicial da câmera se não houver uma definida
+  // Certifique-se de inicializar a posição da câmera
   if (!world.camera.position) {
     world.camera.position = new THREE.Vector3(10, 10, 10);
   }

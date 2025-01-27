@@ -33,15 +33,15 @@ export default function AnimationController() {
 
   useEffect(() => {
     // Inicializa o inspetor apenas uma vez
-    if (!inspectorRef.current) {
+    /*if (!inspectorRef.current) {
       inspectorRef.current = createBrowserInspector();
       inspectorRef.current.start();
-    }
+    }*/
 
     // Inicializa o ator apenas uma vez
     if (!actorRef.current) {
       actorRef.current = createActor(animationMachine, {
-        inspect: inspectorRef.current.inspect, // Corrigido aqui
+        //inspect: inspectorRef.current.inspect, // Corrigido aqui
       });
       actorRef.current.start();
     }

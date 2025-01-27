@@ -1,0 +1,213 @@
+/* src/components/Access/EditBotPanel/EditBotPanel.scss */
+.edit-bot-panel {
+  width: 100%;
+  max-width: 800px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    label {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f4f4f9;
+      transition: border-color 0.3s ease;
+      padding: 12px;
+      &:focus {
+        border-color: #00bfa6;
+        outline: none;
+      }
+    }
+
+    /* Campos modificados recebem borda verde */
+    .modified {
+      border-color: #23d160 !important; /* ou outra cor de destaque */
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .search-block {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      input {
+        width: 100%;
+        padding: 12px 12px 12px 40px; // espaço pro ícone
+        font-size: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f4f4f9;
+        margin-bottom: 20px;
+        transition: border-color 0.3s ease;
+        &:focus {
+          border-color: #00bfa6;
+          outline: none;
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 20px;
+        transform: translateY(-50%);
+        color: #aaa;
+        font-size: 1.2rem;
+      }
+    }
+
+    .fade-info-block {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid #ddd;
+
+      .field-fade,
+      .field-info {
+        display: flex;
+        flex-direction: column;
+        width: 40%;
+        position: relative;
+      }
+
+      .field-fade {
+        .fade-autocomplete-wrapper {
+          position: relative;
+          input[type="text"] {
+            background-color: #f9f9fc;
+          }
+          .fade-suggestions {
+            position: absolute;
+            top: 45px;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-height: 180px;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            z-index: 999;
+            li {
+              padding: 10px;
+              font-size: 0.95rem;
+              color: #555;
+              cursor: pointer;
+              transition: background-color 0.2s ease;
+              &:hover {
+                background-color: #f4f4f9;
+              }
+            }
+          }
+        }
+
+        .fade-warning {
+          font-size: 0.85rem;
+          color: #e74c3c;
+          margin-top: 3px;
+        }
+      }
+
+      .field-info {
+        textarea {
+          background-color: #f9f9fc;
+        }
+      }
+
+      .delete-button {
+        margin-top: 25px;
+        align-self: center;
+        padding: 10px 20px;
+        font-size: 1rem;
+        color: white;
+        background-color: #e74c3c;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        .delete-icon {
+          font-size: 1.2rem;
+        }
+        &:hover {
+          background-color: #c0392b;
+          transform: translateY(-2px);
+        }
+      }
+    }
+
+    button[type="submit"] {
+      margin-top: 20px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background-color: #00bfa6;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      &:hover {
+        background-color: #008e79;
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  .form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  @media (max-width: 600px) {
+    form .fade-info-block {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      .field-fade,
+      .field-info {
+        width: 100%;
+      }
+      .delete-button {
+        margin-top: 0;
+        align-self: flex-end;
+      }
+    }
+  }
+}

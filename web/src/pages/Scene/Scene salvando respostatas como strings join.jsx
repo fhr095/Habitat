@@ -288,8 +288,8 @@ const isCapturingRef = useRef(false);
    useEffect(() => {
     console.log("usersDetected:", usersDetected);
     if (response && response.comandos && response.comandos.length > 0 && usersDetected.length > 0) {
-      //const response_text = response.comandos.map(c => c.texto).join(" ");
-      //const response_fade = response.comandos.map(c => c.fade).join(",");
+      const response_text = response.comandos.map(c => c.texto).join(" ");
+      const response_fade = response.comandos.map(c => c.fade).join(",");
       const question = transcript;
       const id_interaction = uuidv4();
       const ratings = null;
@@ -336,9 +336,8 @@ const isCapturingRef = useRef(false);
           id_interaction,
           question,
           ratings,
-          response_comandos: response.comandos,
-          //response_text,
-          //response_fade,
+          response_text,
+          response_fade,
           user_id: user.id,
           age: user.age,
           gender: user.gender,
@@ -483,7 +482,7 @@ const isCapturingRef = useRef(false);
         />
       )}
 
-{/*debugInfo && (
+{debugInfo && (
   <div style={{
     position: 'absolute',
     top: 0,
@@ -532,7 +531,7 @@ const isCapturingRef = useRef(false);
       </div>
     ))}
   </div>
-)*/}
+)}
 
       <WebCan ref={webCanRef} />
     </div>

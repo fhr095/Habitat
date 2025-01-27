@@ -90,6 +90,6 @@ export const animationMachine = createMachine(
   },
   {
     guards,
-    devTools: true,
+    devTools: false,
   }
 );

@@ -1,0 +1,11 @@
+{
+    "fileExtensions": ["js", "jsx", "ts", "tsx"],
+    "exclude": ["node_modules", "dist", "build", "**/*.test.js", "**/*.spec.js"],
+    "alias": {
+      "^@assets/(.*)$": "src/assets/$1",
+      "^@context/(.*)$": "src/context/$1",
+      "^@pages/(.*)$": "src/pages/$1",
+      "^@styles/(.*)$": "src/styles/$1"
+    }
+  }
+  
