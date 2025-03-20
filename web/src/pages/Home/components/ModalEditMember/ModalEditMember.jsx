@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
-import "./ModalEditMember.scss";
+//import "./ModalEditMember.scss";
 
 export default function ModalEditMember({ habitatId, selectedMember, onClose }) {
   const [tag, setTag] = useState("");

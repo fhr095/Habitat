@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { collection, query, getDocs, doc, setDoc } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
-import "./ModalAddMembers.scss";
+//import "./ModalAddMembers.scss";
 
 export default function ModalAddMembers({ onClose, habitatId }) {
   const [allUsers, setAllUsers] = useState([]);

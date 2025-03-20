@@ -1,41 +1,41 @@
+@import "../../../../styles/variables.scss";
+
 .rotate-indicator {
-    position: fixed;
-    top: 0%;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    text-align: center;
-    animation: fadeIn 1s ease-in-out;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-4;
+  background: rgba($neutral-900, 0.8);
+  backdrop-filter: blur(12px);
+  border-radius: $border-radius-xl;
+  padding: $spacing-6;
+  color: $neutral-100;
+  z-index: 1000;
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
   
-    .icon {
-      width: 10vmin;
-      height: 10vmin;
-      margin: 0 auto;
-      background-image: url('/image/rotate.png'); // Substitua pelo caminho do ícone
-      background-size: contain;
-      background-repeat: no-repeat;
-      animation: rotate 2s infinite linear;
-    }
-  
-    p {
-      font-size: 2.5vmin;
-      color: #ffffff;
-      margin-top: 1vmin;
-      text-shadow: 0 0 5px rgba(0,0,0,0.5);
-    }
+  .rotate-icon {
+    font-size: 48px;
+    animation: rotate 2s ease-in-out infinite;
   }
   
-  @keyframes rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+  .rotate-text {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    margin: $spacing-2 0 0 0;
   }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

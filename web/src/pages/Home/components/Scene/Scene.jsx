@@ -38,10 +38,7 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, fade = ""
     if (mainFileUrl || mobileFileUrl) {
       const isMobileDevice = /Mobi|Android/i.test(navigator.userAgent);
       const selectedUrl = isMobileDevice ? mobileFileUrl : mainFileUrl;
-      //setModelUrl(selectedUrl);
-      //modelo hardcoded
-      setModelUrl('https://firebasestorage.googleapis.com/v0/b/habitat-8e75e.appspot.com/o/habitats%2Fteste2.glb?alt=media&token=8df87f1a-63a7-47f3-84ec-4b4246d31cb1');
-      console.log("ModelURL1", selectedUrl);
+      setModelUrl(selectedUrl);
       setIsValidUrl(true);
 
       const { components: sceneComponents, world: sceneWorld, controls: orbitControls } = SetupScene(containerRef, setCamera);
@@ -205,7 +202,6 @@ export default function Scene({ habitatId, mainFileUrl, mobileFileUrl, fade = ""
     }
   };  
   
-
   return (
     <div ref={containerRef} className="scene">
       {isValidUrl && components && world && (

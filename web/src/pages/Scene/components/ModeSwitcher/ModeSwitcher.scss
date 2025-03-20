@@ -1,0 +1,124 @@
+@import "../../../../styles/variables.scss";
+
+.mode-switcher {
+  position: fixed;
+  top: $spacing-4;
+  left: $spacing-4;
+  z-index: 100;
+  
+  .mode-toggle {
+    display: flex;
+    align-items: center;
+    background-color: rgba($neutral-100, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid $neutral-300;
+    color: $neutral-700;
+    padding: $spacing-2 $spacing-4;
+    border-radius: $border-radius-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-normal;
+    box-shadow: $shadow-sm;
+    
+    &:hover {
+      border-color: $primary-color;
+      color: $primary-color;
+      box-shadow: $shadow-md;
+    }
+    
+    &.expanded {
+      border-radius: $border-radius-lg $border-radius-lg 0 0;
+      border-bottom-color: transparent;
+    }
+    
+    .current-mode {
+      margin-right: $spacing-2;
+    }
+    
+    .chevron {
+      transition: transform 0.3s ease;
+      color: $primary-color;
+      
+      &.up {
+        transform: rotate(180deg);
+      }
+    }
+  }
+  
+  .mode-options {
+    background-color: rgba($neutral-100, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid $neutral-300;
+    border-top: none;
+    border-radius: 0 0 $border-radius-lg $border-radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-md;
+    animation: slideDown 0.2s ease-out;
+    
+    button {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: none;
+      border: none;
+      color: $neutral-600;
+      padding: $spacing-3 $spacing-4;
+      text-align: left;
+      cursor: pointer;
+      transition: all $transition-normal;
+      
+      .mode-icon {
+        margin-right: $spacing-3;
+        color: $neutral-500;
+        transition: color $transition-normal;
+      }
+      
+      &:hover {
+        background-color: rgba($neutral-200, 0.8);
+        color: $primary-dark;
+        
+        .mode-icon {
+          color: $primary-color;
+        }
+      }
+      
+      &.active {
+        background-color: rgba($primary-color, 0.1);
+        color: $primary-dark;
+        
+        .mode-icon {
+          color: $primary-color;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-$spacing-2);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .mode-switcher {
+    top: $spacing-2;
+    left: $spacing-2;
+    
+    .mode-toggle {
+      padding: $spacing-2 $spacing-3;
+      font-size: $font-size-xs;
+    }
+    
+    .mode-options button {
+      padding: $spacing-2 $spacing-3;
+      font-size: $font-size-xs;
+    }
+  }
+}

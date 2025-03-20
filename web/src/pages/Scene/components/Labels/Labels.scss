@@ -1,0 +1,138 @@
+/* labels.scss - Base compartilhada para LocationLabel e DestinationLabel */
+@import "../../../../styles/variables.scss";
+
+// Mixin para estilo base dos labels
+@mixin label-base {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  transition: all $transition-normal;
+  filter: drop-shadow(0 2px 4px rgba($neutral-900, 0.25));
+  font-family: $font-family;
+  
+  &.hidden {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.95);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+  
+  &.visible {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+    animation: bounce 0.5s ease-out;
+  }
+  
+  .label-content {
+    border-radius: $border-radius-xl;
+    padding: $spacing-3 $spacing-4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-3;
+    max-width: 220px;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    box-shadow: $shadow-md;
+    transition: all 0.3s ease;
+    
+    // Gradiente sutil para profundidade visual
+    background-image: linear-gradient(
+      to bottom, 
+      rgba(255, 255, 255, 0.15), 
+      rgba(0, 0, 0, 0.05)
+    );
+    
+    // Seta na parte inferior do balão
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      transition: border-top-color 0.3s ease;
+    }
+    
+    svg {
+      flex-shrink: 0;
+    }
+    
+    span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: $font-size-md;
+      line-height: 1.4;
+      font-weight: $font-weight-medium;
+      letter-spacing: 0.01em;
+      transition: all 0.3s ease;
+    }
+  }
+  
+  // Estado de ajuste de posição para evitar sobreposição
+  &.position-adjusted {
+    // Adicionar um indicador visual para logs de depuração
+    &::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 2px solid transparent;
+      border-radius: inherit;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+  }
+}
+
+// Animações compartilhadas
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translate(-50%, -100%) translateY(0);
+  }
+  40% {
+    transform: translate(-50%, -100%) translateY(-8px);
+  }
+  60% {
+    transform: translate(-50%, -100%) translateY(-4px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+// Utilitário para garantir espaçamento inteligente entre labels
+.anti-overlap-spacer {
+  display: none; // Normalmente invisível
+  position: absolute;
+  pointer-events: none;
+  background-color: transparent;
+  z-index: 999;
+}

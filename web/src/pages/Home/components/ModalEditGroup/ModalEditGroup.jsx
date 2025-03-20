@@ -3,7 +3,7 @@ import { doc, getDoc, updateDoc, deleteDoc, collection, getDocs, arrayRemove, ar
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import { FaTimes, FaTrash } from "react-icons/fa";
-import "./ModalEditGroup.scss";
+//import "./ModalEditGroup.scss";
 
 export default function ModalEditGroup({ habitatId, selectedGroup, onClose }) {
   const [group, setGroup] = useState(null);

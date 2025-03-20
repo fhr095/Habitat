@@ -14,7 +14,7 @@ import ContextMenu from "./ContextMenu";
 import EditBotPanel from "../EditBotPanel/EditBotPanel"; 
 import ModalEditBot from "../ModalEditBot/ModalEditBot"
 import { FaChartBar } from "react-icons/fa";
-import "./Access.scss";
+//import "./Access.scss";
 
 // Objeto de configuração para mapeamento de componentes
 const componentConfig = {

@@ -1,0 +1,112 @@
+// BASE NEUTRA
+$white: #FFFFFF;
+$surface-light: #F8F9FA;
+$surface: #F1F3F5;
+$border-color: #E9ECEF;
+$text-muted: #ADB5BD;
+$text-secondary: #495057;
+$text-primary: #212529;
+
+// COR DE DESTAQUE
+$accent: #FF7A50;
+$accent-light: #FFE8E0;
+$accent-dark: #D65F3A;
+
+// UTILITÁRIAS
+$success: #51CF66;
+$error: #FA5252;
+
+// LEGADO (mapeamento para compatibilidade)
+$primary-color: $accent;
+$secondary-color: $surface;
+$danger-color: $error;
+$gray: $text-muted;
+$light-gray: $border-color;
+$text: $text-primary;
+
+// TIPOGRAFIA
+$font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+// TAMANHOS DE FONTE
+$font-size-display: 2.5rem;    // 40px
+$font-size-h1: 2rem;           // 32px
+$font-size-h2: 1.5rem;         // 24px
+$font-size-h3: 1.25rem;        // 20px
+$font-size-body: 1rem;         // 16px
+$font-size-small: 0.875rem;    // 14px
+$font-size-caption: 0.75rem;   // 12px
+
+// PESOS DE FONTE
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+// ESPAÇAMENTO (sistema 4px)
+$space-4: 0.25rem;    // 4px
+$space-8: 0.5rem;     // 8px
+$space-12: 0.75rem;   // 12px
+$space-16: 1rem;      // 16px
+$space-24: 1.5rem;    // 24px
+$space-32: 2rem;      // 32px
+$space-48: 3rem;      // 48px
+$space-64: 4rem;      // 64px
+
+// ARREDONDAMENTO
+$radius-small: 6px;
+$radius-medium: 12px;
+$radius-large: 20px;
+$radius-pill: 9999px;
+
+// ELEVAÇÃO
+$elevation-1: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+$elevation-2: 0 3px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.08);
+$elevation-3: 0 10px 20px rgba(0,0,0,0.06), 0 6px 6px rgba(0,0,0,0.1);
+$elevation-4: 0 14px 28px rgba(0,0,0,0.08), 0 10px 10px rgba(0,0,0,0.12);
+
+// TRANSIÇÕES
+$transition-fast: 150ms ease-out;
+$transition-normal: 250ms ease-out;
+$transition-slow: 400ms ease-out;
+
+// BREAKPOINTS
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// ELEMENTOS COMUNS
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: $border-color;
+  margin: $space-16 0;
+}
+
+// MIXINS ÚTEIS
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin card {
+  background-color: $white;
+  border-radius: $radius-medium;
+  box-shadow: $elevation-1;
+  padding: $space-24;
+}
+
+@mixin button {
+  height: 48px;
+  padding: 0 $space-24;
+  border-radius: $radius-medium;
+  font-weight: $font-weight-medium;
+  transition: all $transition-normal;
+  cursor: pointer;
+  @include flex-center;
+}

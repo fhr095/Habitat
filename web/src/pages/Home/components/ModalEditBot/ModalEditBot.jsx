@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaTimes } from "react-icons/fa";
-import "./ModalEditBot.scss";
+//import "./ModalEditBot.scss";
 import Scene from "./Scene";
 
 const username = "habitat";

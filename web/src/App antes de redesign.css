@@ -1,0 +1,56 @@
+/* App.css ou um arquivo CSS global */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Evita scroll indesejado */
+}
+
+.loading-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  z-index: 1000; /* Certifique-se de que está acima de outros elementos */
+
+  .spinner-border {
+    width: 5vmin;
+    height: 5vmin;
+    border: 0.5vmin solid #ccc;
+    border-top: 0.5vmin solid #004736;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+
+  
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

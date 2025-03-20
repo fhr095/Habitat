@@ -1,21 +1,21 @@
-import { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback, useContext } from "react";
 import { useAnimations } from "../../../../context/AnimationContext";
-import { SceneConfigContext } from "../../../../context/SceneConfigContext"; // Importa o contexto de configuração da cena
+import { useSceneConfig } from "../../../../context/SceneConfigContext";
 import { ModelContext } from "../../../../context/ModelContext";
 import LoadModel from "./LoadModel/LoadModel";
 import * as THREE from "three";
 
 export default function Model1({ modelUrl, components, world, onLoad }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isModelLoaded, setIsModelLoaded] = useState(false); // Novo estado para rastrear se o modelo foi carregado
-  const isModelLoadedRef = useRef(false); // Referência para rastrear o carregamento
+  const [isModelLoaded, setIsModelLoaded] = useState(false);
+  const isModelLoadedRef = useRef(false);
   const { setAnimations, setMixer } = useAnimations();
-  const { sceneConfig, setSceneConfig } = useContext(SceneConfigContext); // Para aplicar configurações específicas da cena
-  const { currentModel } = useContext(ModelContext); // Controla qual modelo está sendo exibido (model1, model2, etc.)
+  const { updateConfig, updateObjectStatus } = useSceneConfig();
+  const { currentModel } = useContext(ModelContext);
   const modelRef = useRef(null);
 
-  // Função para atualizar a posição do modelo
-  const updateModelPosition = () => {
+  // Função para atualizar a posição do modelo com base no tamanho da tela
+  const updateModelPosition = useCallback(() => {
     if (modelRef.current) {
       const scene = modelRef.current;
       const windowWidth = window.innerWidth;
@@ -49,7 +49,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
       // Ajusta a rotação, se necessário
       scene.rotation.y = -Math.PI / 1.2;
     }
-  };
+  }, []);
 
   useEffect(() => {
     console.log("Model1 useEffect executado com modelUrl:", modelUrl);
@@ -57,7 +57,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
 
     async function fetchModel() {
       if (
-        !isModelLoadedRef.current && // Carrega apenas se ainda não foi carregado
+        !isModelLoadedRef.current &&
         modelUrl &&
         modelUrl.length > 0 &&
         components &&
@@ -76,8 +76,6 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
 
           if (isMounted && scene) {
             modelRef.current = scene;
-            //world.scene.add(scene);
-            //scene.frustumCulled = false
             world.camera.add(scene);
             world.scene.add(world.camera);
 
@@ -86,6 +84,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
               scene.rotation.copy(new THREE.Euler(0, 0, 0));
             };
 
+            // Log de componentes do modelo
             scene.traverse((child) => {
               console.log("Child in Model1:", child.name, child);
             });
@@ -103,34 +102,24 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
 
             // Atualiza as configurações da cena com o status inicial do modelo
             if (initialStatus) {
-              setSceneConfig((prevConfig) => ({
-                ...prevConfig,
-                both: {
-                  // Aplica as configurações específicas para o modelo 1
-                  ...prevConfig.both,
-                  bloomEffect: {
-                    ...prevConfig.both.bloomEffect,
-                    status: initialStatus,
-                  },
-                },
-                model1: {
-                  // Aplica as configurações específicas para o modelo 1
-                  ...prevConfig.model1,
-                  bloomEffect: {
-                    ...prevConfig.model1.bloomEffect,
-                    status: initialStatus,
-                  },
-                  renderSettings: {
-                    ...prevConfig.model1.renderSettings,
-                    envMapIntensity: 0.79, // Armazena os objetos no contexto
-                  },
-                },
-              }));
+              // Atualiza o status de bloom para o modelo 1 e para ambos
+              updateConfig('both', 'bloomEffect', {
+                status: initialStatus
+              });
+              
+              updateConfig('model1', 'bloomEffect', {
+                status: initialStatus
+              });
+              
+              updateConfig('model1', 'renderSettings', {
+                envMapIntensity: 0.79
+              });
+              
               console.log("Estado inicial dos objetos armazenado no contexto:", initialStatus);
             }
 
-            isModelLoadedRef.current = true; // Marca como carregado
-            setIsModelLoaded(true); // Atualiza o estado para indicar que o modelo foi carregado
+            isModelLoadedRef.current = true;
+            setIsModelLoaded(true);
 
             if (onLoad) onLoad();
           }
@@ -149,16 +138,16 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
     return () => {
       isMounted = false;
     };
-  }, [modelUrl, components, world, sceneConfig, setSceneConfig]);
+  }, [modelUrl, components, world, updateConfig]);
 
-  // Controle de visibilidade do modelo
+  // Controle de visibilidade do modelo com base no modelo atual selecionado
   useEffect(() => {
     if (modelRef.current) {
       modelRef.current.visible = currentModel === "model1" || currentModel === "both";
     }
   }, [currentModel]);
 
-  // Atualiza a posição do modelo quando ele é carregado ou quando a janela é redimensionada
+  // Atualiza a posição do modelo quando redimensionar ou mudar orientação
   useEffect(() => {
     if (isModelLoaded) {
       // Atualiza a posição inicialmente
@@ -174,7 +163,7 @@ export default function Model1({ modelUrl, components, world, onLoad }) {
         window.removeEventListener("orientationchange", updateModelPosition);
       };
     }
-  }, [isModelLoaded]);
+  }, [isModelLoaded, updateModelPosition]);
 
   return null;
 }

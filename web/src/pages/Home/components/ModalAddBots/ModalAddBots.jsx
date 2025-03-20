@@ -4,7 +4,7 @@ import { db, storage } from "../../../../firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import axios from "axios";
 import { FaTimes } from "react-icons/fa";
-import "./ModalAddBots.scss";
+//import "./ModalAddBots.scss";
 
 export default function ModalAddBots({ onClose, habitatId }) {
   const [botData, setBotData] = useState({

@@ -6,7 +6,7 @@ import { db } from "../../../../firebase";
 import ModalCreateHabitat from "../ModalCreateHabitat/ModalCreateHabitat";
 import ListHabitats from "../ListHabitats/ListHabitats";
 import { useHabitatUser } from "../../../../context/HabitatUserContext";
-import './Habitats.scss';
+//import './Habitats.scss';
 
 export default function Habitats() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -52,8 +52,8 @@ export default function Habitats() {
   }, [user?.email]);
 
   const toggleCreateModal = () => {
-    //setIsCreateModalOpen(prevState => !prevState);
-    //setIsListModalOpen(false);
+    setIsCreateModalOpen(prevState => !prevState);
+    setIsListModalOpen(false);
   };
 
   const closeCreateModal = () => {

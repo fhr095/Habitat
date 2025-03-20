@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
-import "./ModalCreateHabitat.scss";
+//import "./ModalCreateHabitat.scss";
 
 export default function ModalCreateHabitat({ onClose, userEmail }) {
   const [name, setName] = useState("");
@@ -11,7 +11,7 @@ export default function ModalCreateHabitat({ onClose, userEmail }) {
   const [mainFile, setMainFile] = useState(null); // Arquivo principal (IFC ou GLB)
   const [mobileFile, setMobileFile] = useState(null); // Arquivo opcional para celular (IFC ou GLB)
   const [isPublic, setIsPublic] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0);ModalCreateHabitat.scss
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {

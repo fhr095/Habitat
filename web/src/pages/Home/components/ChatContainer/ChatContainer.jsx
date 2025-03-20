@@ -4,7 +4,7 @@ import { collection, addDoc, query, onSnapshot, orderBy, doc, setDoc, getDocs, w
 import { db } from "../../../../firebase";
 import { useHabitatUser } from "../../../../context/HabitatUserContext";
 import { FaTimes, FaCheck } from "react-icons/fa";
-import "./ChatContainer.scss";
+//import "./ChatContainer.scss";
 
 export default function ChatContainer() {
   const { habitat, user, chatMember, chatGroup, chatBot, setChatMember, setChatGroup, setChatBot, setFade } = useHabitatUser();

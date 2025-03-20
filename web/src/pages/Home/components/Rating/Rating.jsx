@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../../../firebase";
 import { FaThumbsUp, FaThumbsDown, FaTimes } from "react-icons/fa";
 
-import "./Rating.scss";
+//import "./Rating.scss";
 
 export default function Rating({ habitatId, onClose }) {
   const [feedbacks, setFeedbacks] = useState([]);

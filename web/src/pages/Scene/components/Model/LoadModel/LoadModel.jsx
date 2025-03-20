@@ -1,6 +1,7 @@
 // LoadModel.jsx
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { openDB, getFromDB, saveToDB } from "../Cache/Cache";
+import { materialProxySystem } from "../../SetupScene/MaterialProxySystem";
 
 export default async function LoadModel(modelUrl, components, world, setArrayName) {
   try {
@@ -88,13 +89,28 @@ async function loadGlb(buffer, world, setArrayName) {
       console.log("Adicionando modelo GLB à cena...");
       world.scene.add(gltf.scene);
 
+      // Registra todos os materiais da cena diretamente no sistema de proxy
+      console.log("Registrando materiais originais no sistema de proxy...");
+      materialProxySystem.registerScene(gltf.scene);
+
       // Inicializando o status dos objetos carregados
       const initialStatus = {};
 
       // Inspeção dos objetos e camadas do modelo principal
       gltf.scene.traverse((child) => {
         if (child.isMesh) {
-          //console.log(`Objeto da cena principal ${child.name} está na camada: ${child.layers.mask}`);
+          // Preserva detalhes importantes do material original
+          child.userData._originalMaterialInfo = {
+            hasEmissive: !!child.material.emissive,
+            hasMap: !!child.material.map,
+            hasNormalMap: !!child.material.normalMap,
+            hasMetalnessMap: !!child.material.metalnessMap,
+            hasRoughnessMap: !!child.material.roughnessMap,
+            isTransparent: child.material.transparent,
+            opacity: child.material.opacity,
+            metalness: child.material.metalness,
+            roughness: child.material.roughness
+          };
 
           let st = true;
           if (child.name === "Plane" || child.name === "Robo-Corpo") {
@@ -105,12 +121,19 @@ async function loadGlb(buffer, world, setArrayName) {
             child.visible = false;
           }
 
+          // Detecta elementos especiais como olhos, boca, etc.
+          const isSpecialPart = child.name.toLowerCase().includes('olho') || 
+                               child.name.toLowerCase().includes('eye') ||
+                               child.name.toLowerCase().includes('boca') ||
+                               child.name.toLowerCase().includes('mouth');
+          
           // Armazena o status inicial de cada objeto, incluindo emissiveIntensity
           initialStatus[child.uuid] = {
             name: child.name,        // Nome original do objeto
             status: st,              // Define o status inicial
-            emissiveIntensity: 0.05,  // Valor padrão da emissividade
+            emissiveIntensity: isSpecialPart ? 2.0 : 0.05,  // Valor diferente para olhos/boca
             oscillate: false,
+            isSpecialPart: isSpecialPart // Indica se é uma parte especial
           };
         }
       });

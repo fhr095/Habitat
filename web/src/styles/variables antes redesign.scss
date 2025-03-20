@@ -1,0 +1,14 @@
+$primary-color: #004736;
+$secondary-color: #f3f3f3;
+$white: #ffffff;
+$gray: #888888;
+$light-gray: #dddddd;
+$text: #333;
+$danger-color: #ff0000;
+
+.divider {
+  width: 100%;
+  height: 2.5px;
+  background-color: $light-gray;
+  border-radius: 5px;
+}

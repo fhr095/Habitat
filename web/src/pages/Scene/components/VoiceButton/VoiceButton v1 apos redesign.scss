@@ -1,0 +1,185 @@
+@import "../../../../styles/variables.scss";
+
+.voice-button-container {
+  position: fixed;
+  bottom: $space-64 + $space-32;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-12;
+}
+
+.bar-container {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  
+  .bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .voice-button {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: $radius-pill;
+    background-color: $white;
+    color: $accent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: $elevation-2;
+    position: relative;
+    transition: all $transition-normal;
+    
+    // Sutilmente eleva o botão com sombra em hover
+    &:hover {
+      box-shadow: $elevation-3;
+      transform: translateY(-2px);
+    }
+    
+    // Pressiona o botão visualmente quando clicado
+    &:active {
+      box-shadow: $elevation-1;
+      transform: translateY(1px);
+    }
+    
+    // Desativa a aparência quando desabilitado
+    &:disabled {
+      background-color: $surface;
+      color: $text-muted;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    
+    svg {
+      width: 32px;
+      height: 32px;
+      transition: all $transition-normal;
+    }
+  }
+
+  // Estado de escuta
+  .listening {
+    background-color: $accent;
+    color: $white;
+    box-shadow: 0 0 0 6px rgba($accent, 0.2);
+    animation: pulse 2s infinite;
+    
+    svg {
+      animation: wave 1.5s infinite;
+    }
+  }
+}
+
+.text-container {
+  min-height: $space-24;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.status-text, 
+.hint-text {
+  font-family: $font-family;
+  font-size: $font-size-small;
+  color: $text-secondary;
+  transition: all $transition-normal;
+  text-align: center;
+}
+
+.listening-text {
+  color: $accent;
+  font-weight: $font-weight-medium;
+}
+
+.hint-text {
+  opacity: 0.8;
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba($accent, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba($accent, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba($accent, 0);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+// RESPONSIVIDADE
+@media (max-width: $breakpoint-md) {
+  .voice-button-container {
+    bottom: $space-64;
+  }
+  
+  .bar-container {
+    width: 64px;
+    height: 64px;
+    
+    .voice-button svg {
+      width: 28px;
+      height: 28px;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .voice-button-container {
+    bottom: $space-48;
+  }
+  
+  .bar-container {
+    width: 56px;
+    height: 56px;
+    
+    .voice-button svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+}

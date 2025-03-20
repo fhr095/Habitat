@@ -4,7 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
 
-import "./ModalEditHabitat.scss";
+//import "./ModalEditHabitat.scss";
 
 export default function ModalEditHabitat({ habitatId, onClose }) {
   const [habitatData, setHabitatData] = useState(null);

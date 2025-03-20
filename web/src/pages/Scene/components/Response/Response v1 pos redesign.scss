@@ -1,0 +1,218 @@
+@import "../../../../styles/variables.scss";
+
+.response-container {
+  position: fixed;
+  bottom: $space-32;
+  right: $space-32;
+  max-width: 450px;
+  width: calc(100% - $space-64);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: $space-16;
+  pointer-events: none;
+  
+  // Todos os elementos internos devem ter eventos de mouse
+  > * {
+    pointer-events: auto;
+  }
+
+  // BALÃO DE PERGUNTA (USUÁRIO)
+  .question {
+    align-self: flex-end;
+    background-color: $accent-light;
+    color: $text-primary;
+    padding: $space-12 $space-16;
+    border-radius: $radius-medium $radius-medium 0 $radius-medium;
+    box-shadow: $elevation-1;
+    animation: slideInFromBottom 0.3s $transition-normal;
+    max-width: 90%;
+    
+    p {
+      margin: 0;
+      font-family: $font-family;
+      font-size: $font-size-body;
+      line-height: 1.5;
+    }
+  }
+  
+  // CONTAINER DE LOADING
+  .loading-response {
+    align-self: flex-start;
+    display: flex;
+    gap: $space-12;
+    animation: slideInFromBottom 0.3s $transition-normal;
+    max-width: 90%;
+    
+    .loading-response-text {
+      background-color: $white;
+      padding: $space-12 $space-16;
+      border-radius: $radius-medium $radius-medium $radius-medium 0;
+      box-shadow: $elevation-1;
+      
+      p {
+        margin: 0;
+        font-family: $font-family;
+        font-size: $font-size-body;
+        color: $text-secondary;
+        
+        // Efeito de loading de três pontos
+        &::after {
+          content: "";
+          display: inline-block;
+          width: 1em;
+          animation: loadingDots 1.5s infinite;
+        }
+      }
+    }
+  }
+  
+  // CONTAINER DE RESPOSTA
+  .response {
+    align-self: flex-start;
+    display: flex;
+    gap: $space-12;
+    animation: slideInFromBottom 0.3s $transition-normal;
+    max-width: 90%;
+    
+    .response-text {
+      background-color: $white;
+      padding: $space-12 $space-16;
+      border-radius: $radius-medium $radius-medium $radius-medium 0;
+      box-shadow: $elevation-1;
+      
+      p {
+        margin: 0;
+        font-family: $font-family;
+        font-size: $font-size-body;
+        line-height: 1.5;
+        color: $text-primary;
+      }
+      
+      // CONTAINER DE FEEDBACK
+      .feedback-container {
+        margin-top: $space-16;
+        padding-top: $space-12;
+        border-top: 1px solid $border-color;
+        
+        .button-group {
+          display: flex;
+          justify-content: center;
+          gap: $space-16;
+          margin-bottom: $space-12;
+          
+          button {
+            background: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: $radius-pill;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all $transition-normal;
+            color: $text-muted;
+            
+            &:hover {
+              background-color: $surface-light;
+              transform: scale(1.1);
+            }
+            
+            &.like:hover {
+              color: $success;
+            }
+            
+            &.dislike:hover {
+              color: $error;
+            }
+          }
+        }
+        
+        // PROGRESS BAR
+        .progress-bar {
+          height: 4px;
+          background-color: $border-color;
+          border-radius: $radius-pill;
+          overflow: hidden;
+          
+          .progress {
+            height: 100%;
+            background-color: $accent;
+            border-radius: $radius-pill;
+            transition: width 0.5s linear;
+          }
+        }
+      }
+    }
+    
+    // Animação para saída
+    &.response-exit {
+      animation: slideOutToLeft 0.3s $transition-normal forwards;
+    }
+  }
+}
+
+// ANIMAÇÕES
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+@keyframes loadingDots {
+  0%, 20% {
+    content: ".";
+  }
+  40%, 60% {
+    content: "..";
+  }
+  80%, 100% {
+    content: "...";
+  }
+}
+
+// RESPONSIVIDADE
+@media (max-width: $breakpoint-md) {
+  .response-container {
+    bottom: $space-24;
+    right: $space-24;
+    max-width: 400px;
+    width: calc(100% - $space-48);
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .response-container {
+    bottom: $space-16;
+    right: $space-16;
+    max-width: none;
+    width: calc(100% - $space-32);
+    
+    .question,
+    .loading-response,
+    .response {
+      max-width: 100%;
+      
+      p {
+        font-size: $font-size-small;
+      }
+    }
+  }
+}

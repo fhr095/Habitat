@@ -1,0 +1,63 @@
+.location-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 19000;
+    pointer-events: none;
+  }
+  
+  .location-label .label-content {
+    background: linear-gradient(135deg, #f8f5e5, #8b8b8b);
+    color: #ffffff;
+    padding: 0.5rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    transform-origin: center bottom;
+    text-align: center;
+    white-space: nowrap;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    /* Não aplicar transform aqui para não conflitar com o posicionamento */
+  }
+  
+  // Quando o container estiver "hidden", o conteúdo interno ficará invisível
+  .location-label.hidden .label-content {
+    opacity: 0.5;
+  }
+  
+  // Quando "visible", aplica a animação de pulsação somente no conteúdo interno
+  .location-label.visible .label-content {
+    animation: pulse 2s infinite;
+  }
+  
+  // Cauda da etiqueta
+  .location-label .label-content:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #050000;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 2px 20px rgba(255, 78, 80, 0.4);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+  }
+  

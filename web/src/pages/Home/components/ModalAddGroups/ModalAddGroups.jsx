@@ -3,7 +3,7 @@ import { collection, addDoc, doc, updateDoc, getDoc, arrayUnion } from "firebase
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../../firebase";
 import { FaTimes } from "react-icons/fa";
-import "./ModalAddGroups.scss";
+//import "./ModalAddGroups.scss";
 
 export default function ModalAddGroups({ habitatId, onClose, userEmail }) {
   const [groupName, setGroupName] = useState("");

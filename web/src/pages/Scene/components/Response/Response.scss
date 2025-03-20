@@ -2,48 +2,55 @@
 
 .response-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: $spacing-8;
+  right: $spacing-8;
   display: flex;
   flex-direction: column;
-
+  gap: $spacing-4;
+  max-width: 50%;
+  z-index: 100;
+  
   .question,
   .loading-response,
   .response {
     display: flex;
-    align-items: center;
-    padding: 15px; // Aumentado para acomodar fontes maiores
-    border-radius: 10px;
-    color: $text;
-    max-width: 50vw; // Proporcional à largura da tela
-    animation-duration: 0.5s;
-    animation-timing-function: ease-out;
+    align-items: flex-start;
+    padding: $spacing-4 $spacing-5;
+    border-radius: $border-radius-xl;
+    max-width: 100%;
+    box-shadow: $shadow-md;
+    animation-duration: 0.4s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    font-size: 1.4rem; // Fonte ajustada para maior legibilidade
-    line-height: 1.2;
+    font-size: $font-size-lg;
+    line-height: 1.4;
+    backdrop-filter: blur(8px);
   }
 
   .question {
-    background-color: $primary-color;
-    color: $white;
+    background: linear-gradient(135deg, $primary-color, $primary-dark);
+    color: $neutral-100;
     align-self: flex-end;
     animation-name: slideInFromRight;
+    padding-right: $spacing-6;
 
     p {
-      font-size: 1.4rem; // Aumentar tamanho da fonte
-      line-height: 1.2;
+      font-size: $font-size-lg;
+      line-height: 1.4;
+      font-weight: $font-weight-medium;
+      margin: 0;
     }
 
     &:after {
       content: "";
       position: absolute;
       top: 50%;
-      right: -9px;
+      right: -$spacing-3;
       width: 0;
       height: 0;
-      border-left: 10px solid $primary-color;
-      border-top: 10px solid transparent;
-      border-bottom: 10px solid transparent;
+      border-left: $spacing-3 solid $primary-dark;
+      border-top: $spacing-3 solid transparent;
+      border-bottom: $spacing-3 solid transparent;
       transform: translateY(-50%);
     }
   }
@@ -53,155 +60,187 @@
     align-self: flex-start;
     animation-name: slideInFromLeft;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    gap: $spacing-4;
 
     .avatar-container {
-      width: 120px; // Ajustado para balões maiores
-      height: 120px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: $shadow-md;
+      border: 2px solid $neutral-200;
+      background-color: $neutral-300;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-right: 15px;
-    }
-
-    .avatar-gif {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
     }
 
     .loading-response-text,
     .response-text {
-      background-color: $light-gray;
-      padding: 15px; // Aumentado para fontes maiores
-      border-radius: 10px;
-      color: $text;
-      max-width: 80vw; // Proporcional à largura da tela
+      background-color: $neutral-200;
+      padding: $spacing-4 $spacing-5;
+      border-radius: $border-radius-xl;
       position: relative;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      gap: $spacing-3;
+      color: $neutral-800;
 
       p {
-        font-size: 1.4rem; // Aumentar tamanho da fonte
-        line-height: 1.2;
-        text-align: left; // Opcional para melhor legibilidade
+        font-size: $font-size-lg;
+        line-height: 1.4;
+        margin: 0;
       }
 
       &:after {
         content: "";
         position: absolute;
-        top: 50%;
-        left: -9px;
+        top: $spacing-4;
+        left: -$spacing-3;
         width: 0;
         height: 0;
-        border-right: 10px solid $light-gray;
-        border-top: 10px solid transparent;
-        border-bottom: 10px solid transparent;
-        transform: translateY(-50%);
+        border-right: $spacing-3 solid $neutral-200;
+        border-top: $spacing-3 solid transparent;
+        border-bottom: $spacing-3 solid transparent;
       }
 
       .feedback-container {
         width: 100%;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        gap: $spacing-3;
+        margin-top: $spacing-2;
 
         .button-group {
           display: flex;
-          justify-content: space-around;
-          width: 100%;
-          margin-top: 10px;
+          justify-content: flex-end;
+          gap: $spacing-3;
 
           button {
-            background: none;
-            border: none;
-            font-size: 1.8rem; // Botões proporcionais
-            cursor: pointer;
-            margin-bottom: 10px;
+            @include button-reset;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: all $transition-normal;
+            background-color: $neutral-300;
+            
+            &:hover {
+              background-color: $neutral-400;
+              transform: translateY(-2px);
+            }
 
             &.like:hover {
-              color: green;
+              background-color: rgba($success-color, 0.2);
+              color: $success-color;
             }
 
             &.dislike:hover {
-              color: red;
+              background-color: rgba($error-color, 0.2);
+              color: $error-color;
             }
           }
         }
 
         .progress-bar {
           width: 100%;
-          background-color: $light-gray;
-          border-radius: 5px;
+          height: 4px;
+          background-color: $neutral-300;
+          border-radius: $border-radius-full;
           overflow: hidden;
-          height: 6px; // Aumentado para melhor visibilidade
-          margin-top: 5px;
 
           .progress {
-            background-color: $primary-color;
             height: 100%;
-            transition: width 0.5s linear;
+            background: linear-gradient(to right, $primary-light, $primary-color);
+            border-radius: $border-radius-full;
+            transition: width 0.3s linear;
           }
         }
       }
     }
-  }
 
-  @keyframes slideInFromRight {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
+    .loading-response-text {
+      p {
+        display: flex;
+        align-items: center;
+        gap: $spacing-2;
+        
+        &::after {
+          content: "";
+          display: inline-block;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: $primary-color;
+          animation: loading-dots 1.4s infinite;
+        }
+        
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: $primary-color;
+          animation: loading-dots 1.4s infinite 0.2s;
+          margin-right: 4px;
+        }
+      }
     }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideInFromLeft {
-    from {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideOutToLeft {
-    from {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(-100%);
-      opacity: 0;
-    }
-  }
-
-  .response-exit {
-    animation-name: slideOutToLeft;
   }
 }
 
-// Media query para ajustar em telas menores
-@media (max-width: 600px) {
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(20%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-20%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-20%);
+    opacity: 0;
+  }
+}
+
+@keyframes loading-dots {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@media (max-width: 768px) {
   .response-container {
-    bottom: 10px;
-    right: 10px;
-
-    .question,
-    .loading-response,
-    .response {
-      padding: 10px;
-      max-width: 90vw;
-
-      p {
-        font-size: 1.4rem; // Ajuste para dispositivos menores
-      }
+    bottom: $spacing-4;
+    right: $spacing-4;
+    max-width: 80%;
+    
+    .question, .response, .loading-response {
+      font-size: $font-size-md;
+      padding: $spacing-3 $spacing-4;
     }
   }
 }
